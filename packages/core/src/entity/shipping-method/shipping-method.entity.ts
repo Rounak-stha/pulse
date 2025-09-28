@@ -1,11 +1,11 @@
 import { ConfigurableOperation } from '@vendure/common/lib/generated-types';
 import { omit } from '@vendure/common/lib/omit';
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
 import { roundMoney } from '../../common/round-money';
-import { ChannelAware, SoftDeletable } from '../../common/types/common-types';
+import { ChannelAware, ShopAware, SoftDeletable } from '../../common/types/common-types';
 import { LocaleString, Translatable, Translation } from '../../common/types/locale-types';
 import { getConfig } from '../../config/config-helpers';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
@@ -18,6 +18,7 @@ import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
 import { CustomShippingMethodFields } from '../custom-entity-fields';
 import { Order } from '../order/order.entity';
+import { Shop } from '../shop/shop.entity';
 
 import { ShippingMethodTranslation } from './shipping-method-translation.entity';
 
@@ -34,7 +35,7 @@ import { ShippingMethodTranslation } from './shipping-method-translation.entity'
 @Entity()
 export class ShippingMethod
     extends VendureEntity
-    implements ChannelAware, SoftDeletable, HasCustomFields, Translatable
+    implements ChannelAware, SoftDeletable, HasCustomFields, Translatable, ShopAware
 {
     private readonly allCheckers: { [code: string]: ShippingEligibilityChecker } = {};
     private readonly allCalculators: { [code: string]: ShippingCalculator } = {};
@@ -46,6 +47,10 @@ export class ShippingMethod
         this.allCheckers = checkers.reduce((hash, o) => ({ ...hash, [o.code]: o }), {});
         this.allCalculators = calculators.reduce((hash, o) => ({ ...hash, [o.code]: o }), {});
     }
+
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column({ type: Date, nullable: true })
     deletedAt: Date | null;

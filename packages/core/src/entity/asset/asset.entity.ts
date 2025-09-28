@@ -1,15 +1,16 @@
 import { AssetType } from '@vendure/common/lib/generated-types';
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
-import { ChannelAware, Taggable } from '../../common/types/common-types';
+import { ChannelAware, ShopAware, Taggable } from '../../common/types/common-types';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
 import { Collection } from '../collection/collection.entity';
 import { CustomAssetFields } from '../custom-entity-fields';
-import { Product } from '../product/product.entity';
 import { ProductVariant } from '../product-variant/product-variant.entity';
+import { Product } from '../product/product.entity';
+import { Shop } from '../shop/shop.entity';
 import { Tag } from '../tag/tag.entity';
 
 /**
@@ -20,10 +21,14 @@ import { Tag } from '../tag/tag.entity';
  * @docsCategory entities
  */
 @Entity()
-export class Asset extends VendureEntity implements Taggable, ChannelAware, HasCustomFields {
+export class Asset extends VendureEntity implements Taggable, ChannelAware, HasCustomFields, ShopAware {
     constructor(input?: DeepPartial<Asset>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column() name: string;
 

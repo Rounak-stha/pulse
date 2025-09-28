@@ -3,9 +3,21 @@ import { Type } from '@vendure/common/lib/shared-types';
 
 import { VendureEntity } from '../../entity/base/base.entity';
 import { Channel } from '../../entity/channel/channel.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 import { Tag } from '../../entity/tag/tag.entity';
 
 import { LocaleString } from './locale-types';
+
+/**
+ * @description
+ * Entities which should be assigned to Shop should implement this interface.
+ *
+ * @docsCategory entities
+ * @docsPage interfaces
+ */
+export interface ShopAware {
+    shop: Shop;
+}
 
 /**
  * @description

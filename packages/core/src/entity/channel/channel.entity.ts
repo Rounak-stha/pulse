@@ -1,17 +1,19 @@
 import { CurrencyCode, LanguageCode } from '@vendure/common/lib/generated-types';
 import { DeepPartial, ID } from '@vendure/common/lib/shared-types';
-import { Column, Entity, Index, ManyToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToMany, ManyToOne, Unique } from 'typeorm';
 
 import { Customer, PaymentMethod, Promotion, Role, ShippingMethod, StockLocation } from '..';
+import { ShopAware } from '../../common';
 import { VendureEntity } from '../base/base.entity';
 import { Collection } from '../collection/collection.entity';
 import { CustomChannelFields } from '../custom-entity-fields';
 import { EntityId } from '../entity-id.decorator';
-import { Facet } from '../facet/facet.entity';
 import { FacetValue } from '../facet-value/facet-value.entity';
-import { Product } from '../product/product.entity';
+import { Facet } from '../facet/facet.entity';
 import { ProductVariant } from '../product-variant/product-variant.entity';
+import { Product } from '../product/product.entity';
 import { Seller } from '../seller/seller.entity';
+import { Shop } from '../shop/shop.entity';
 import { Zone } from '../zone/zone.entity';
 
 /**
@@ -35,7 +37,8 @@ import { Zone } from '../zone/zone.entity';
  * @docsCategory entities
  */
 @Entity()
-export class Channel extends VendureEntity {
+@Unique('UQ_shop_channel_code', ['shop', 'code'])
+export class Channel extends VendureEntity implements ShopAware {
     constructor(input?: DeepPartial<Channel>) {
         super(input);
         if (!input || !input.token) {
@@ -45,9 +48,17 @@ export class Channel extends VendureEntity {
 
     /**
      * @description
+     * The Shop to which the Channel belongs.
+     */
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
+
+    /**
+     * @description
      * The name of the Channel. For example "US Webstore" or "German Webstore".
      */
-    @Column({ unique: true })
+    @Column()
     code: string;
 
     /**

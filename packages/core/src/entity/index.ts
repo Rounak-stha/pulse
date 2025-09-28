@@ -51,6 +51,7 @@ export * from './session/session.entity';
 export * from './settings-store-entry/settings-store-entry.entity';
 export * from './shipping-line/shipping-line.entity';
 export * from './shipping-method/shipping-method.entity';
+export * from './shop/shop.entity';
 export * from './stock-level/stock-level.entity';
 export * from './stock-location/stock-location.entity';
 export * from './stock-movement/allocation.entity';

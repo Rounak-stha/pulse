@@ -1,10 +1,12 @@
 import { LanguageCode } from '@vendure/common/lib/generated-types';
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Index, ManyToOne } from 'typeorm';
 
 import { VendureEntity } from '..';
+import { ShopAware } from '../../common';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { CustomGlobalSettingsFields } from '../custom-entity-fields';
+import { Shop } from '../shop/shop.entity';
 
 /**
  * @description Stores global settings for the whole application
@@ -12,10 +14,18 @@ import { CustomGlobalSettingsFields } from '../custom-entity-fields';
  * @docsCategory entities
  */
 @Entity()
-export class GlobalSettings extends VendureEntity implements HasCustomFields {
+export class GlobalSettings extends VendureEntity implements HasCustomFields, ShopAware {
     constructor(input?: DeepPartial<GlobalSettings>) {
         super(input);
     }
+
+    /**
+     * @description
+     * The shop the settings belongs to
+     */
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     /**
      * @deprecated use `Channel.availableLanguageCodes`

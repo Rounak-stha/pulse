@@ -56,6 +56,7 @@ import { SettingsStoreEntry } from './settings-store-entry/settings-store-entry.
 import { ShippingLine } from './shipping-line/shipping-line.entity';
 import { ShippingMethodTranslation } from './shipping-method/shipping-method-translation.entity';
 import { ShippingMethod } from './shipping-method/shipping-method.entity';
+import { Shop } from './shop/shop.entity';
 import { StockLevel } from './stock-level/stock-level.entity';
 import { StockLocation } from './stock-location/stock-location.entity';
 import { Allocation } from './stock-movement/allocation.entity';
@@ -136,6 +137,7 @@ export const coreEntitiesMap = {
     ShippingLine,
     ShippingMethod,
     ShippingMethodTranslation,
+    Shop,
     StockAdjustment,
     StockLevel,
     StockLocation,

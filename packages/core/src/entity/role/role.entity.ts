@@ -1,10 +1,11 @@
 import { Permission } from '@vendure/common/lib/generated-types';
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
-import { ChannelAware } from '../../common/types/common-types';
+import { ChannelAware, ShopAware } from '../../common/types/common-types';
 import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
+import { Shop } from '../shop/shop.entity';
 
 /**
  * @description
@@ -14,10 +15,14 @@ import { Channel } from '../channel/channel.entity';
  * @docsCategory entities
  */
 @Entity()
-export class Role extends VendureEntity implements ChannelAware {
+export class Role extends VendureEntity implements ChannelAware, ShopAware {
     constructor(input?: DeepPartial<Role>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column() code: string;
 

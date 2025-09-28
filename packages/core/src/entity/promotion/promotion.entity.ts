@@ -1,11 +1,11 @@
 import { Adjustment, AdjustmentType, ConfigurableOperation } from '@vendure/common/lib/generated-types';
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
 import { roundMoney } from '../../common/round-money';
 import { AdjustmentSource } from '../../common/types/adjustment-source';
-import { ChannelAware, SoftDeletable } from '../../common/types/common-types';
+import { ChannelAware, ShopAware, SoftDeletable } from '../../common/types/common-types';
 import { LocaleString, Translatable, Translation } from '../../common/types/locale-types';
 import { getConfig } from '../../config/config-helpers';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
@@ -19,9 +19,10 @@ import {
 import { PromotionCondition, PromotionConditionState } from '../../config/promotion/promotion-condition';
 import { Channel } from '../channel/channel.entity';
 import { CustomPromotionFields } from '../custom-entity-fields';
-import { Order } from '../order/order.entity';
 import { OrderLine } from '../order-line/order-line.entity';
+import { Order } from '../order/order.entity';
 import { ShippingLine } from '../shipping-line/shipping-line.entity';
+import { Shop } from '../shop/shop.entity';
 
 import { PromotionTranslation } from './promotion-translation.entity';
 
@@ -61,7 +62,7 @@ export type PromotionTestResult = boolean | PromotionState;
 @Entity()
 export class Promotion
     extends AdjustmentSource
-    implements ChannelAware, SoftDeletable, HasCustomFields, Translatable
+    implements ChannelAware, SoftDeletable, HasCustomFields, Translatable, ShopAware
 {
     type = AdjustmentType.PROMOTION;
     private readonly allConditions: { [code: string]: PromotionCondition } = {};
@@ -87,6 +88,10 @@ export class Promotion
         this.allConditions = conditions.reduce((hash, o) => ({ ...hash, [o.code]: o }), {});
         this.allActions = actions.reduce((hash, o) => ({ ...hash, [o.code]: o }), {});
     }
+
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column({ type: Date, nullable: true })
     deletedAt: Date | null;

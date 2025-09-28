@@ -1,12 +1,14 @@
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
+import { ShopAware } from '../../common';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { FulfillmentState } from '../../service/helpers/fulfillment-state-machine/fulfillment-state';
 import { VendureEntity } from '../base/base.entity';
 import { CustomFulfillmentFields } from '../custom-entity-fields';
-import { Order } from '../order/order.entity';
 import { FulfillmentLine } from '../order-line-reference/fulfillment-line.entity';
+import { Order } from '../order/order.entity';
+import { Shop } from '../shop/shop.entity';
 
 /**
  * @description
@@ -16,10 +18,17 @@ import { FulfillmentLine } from '../order-line-reference/fulfillment-line.entity
  * @docsCategory entities
  */
 @Entity()
-export class Fulfillment extends VendureEntity implements HasCustomFields {
+export class Fulfillment extends VendureEntity implements HasCustomFields, ShopAware {
     constructor(input?: DeepPartial<Fulfillment>) {
         super(input);
     }
+    /**
+     * @description
+     * The shop the fulfillment belongs to
+     */
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column('varchar') state: FulfillmentState;
 

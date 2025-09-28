@@ -4,7 +4,7 @@ import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } fr
 
 import { Calculated } from '../../common/calculated-decorator';
 import { roundMoney } from '../../common/round-money';
-import { ChannelAware, SoftDeletable } from '../../common/types/common-types';
+import { ChannelAware, ShopAware, SoftDeletable } from '../../common/types/common-types';
 import { LocaleString, Translatable, Translation } from '../../common/types/locale-types';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { Asset } from '../asset/asset.entity';
@@ -15,8 +15,9 @@ import { CustomProductVariantFields } from '../custom-entity-fields';
 import { EntityId } from '../entity-id.decorator';
 import { FacetValue } from '../facet-value/facet-value.entity';
 import { OrderLine } from '../order-line/order-line.entity';
-import { Product } from '../product/product.entity';
 import { ProductOption } from '../product-option/product-option.entity';
+import { Product } from '../product/product.entity';
+import { Shop } from '../shop/shop.entity';
 import { StockLevel } from '../stock-level/stock-level.entity';
 import { StockMovement } from '../stock-movement/stock-movement.entity';
 import { TaxCategory } from '../tax-category/tax-category.entity';
@@ -38,11 +39,15 @@ import { ProductVariantTranslation } from './product-variant-translation.entity'
 @Entity()
 export class ProductVariant
     extends VendureEntity
-    implements Translatable, HasCustomFields, SoftDeletable, ChannelAware
+    implements Translatable, HasCustomFields, SoftDeletable, ChannelAware, ShopAware
 {
     constructor(input?: DeepPartial<ProductVariant>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column({ type: Date, nullable: true })
     deletedAt: Date | null;

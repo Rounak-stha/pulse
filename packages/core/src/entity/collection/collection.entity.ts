@@ -13,7 +13,7 @@ import {
     TreeParent,
 } from 'typeorm';
 
-import { ChannelAware, Orderable } from '../../common/types/common-types';
+import { ChannelAware, Orderable, ShopAware } from '../../common/types/common-types';
 import { LocaleString, Translatable, Translation } from '../../common/types/locale-types';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { Asset } from '../asset/asset.entity';
@@ -22,6 +22,7 @@ import { Channel } from '../channel/channel.entity';
 import { CustomCollectionFields } from '../custom-entity-fields';
 import { EntityId } from '../entity-id.decorator';
 import { ProductVariant } from '../product-variant/product-variant.entity';
+import { Shop } from '../shop/shop.entity';
 
 import { CollectionAsset } from './collection-asset.entity';
 import { CollectionTranslation } from './collection-translation.entity';
@@ -36,11 +37,19 @@ import { CollectionTranslation } from './collection-translation.entity';
 @Tree('closure-table')
 export class Collection
     extends VendureEntity
-    implements Translatable, HasCustomFields, ChannelAware, Orderable
+    implements Translatable, HasCustomFields, ChannelAware, Orderable, ShopAware
 {
     constructor(input?: DeepPartial<Collection>) {
         super(input);
     }
+
+    /**
+     * @description
+     * The Shop to which the Collection belongs.
+     */
+    @Index()
+    @ManyToOne(type => Shop)
+    shop: Shop;
 
     @Column({ default: false })
     isRoot: boolean;
