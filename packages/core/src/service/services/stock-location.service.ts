@@ -26,7 +26,6 @@ import { StockLocation } from '../../entity/stock-location/stock-location.entity
 import { EventBus, StockLocationEvent } from '../../event-bus/index';
 import { CustomFieldRelationService } from '../helpers/custom-field-relation/custom-field-relation.service';
 import { ListQueryBuilder } from '../helpers/list-query-builder/list-query-builder';
-import { RequestContextService } from '../helpers/request-context/request-context.service';
 import { patchEntity } from '../helpers/utils/patch-entity';
 
 import { ChannelService } from './channel.service';
@@ -36,7 +35,6 @@ import { RoleService } from './role.service';
 @Instrument()
 export class StockLocationService {
     constructor(
-        private requestContextService: RequestContextService,
         private connection: TransactionalConnection,
         private channelService: ChannelService,
         private roleService: RoleService,
@@ -46,10 +44,6 @@ export class StockLocationService {
         private customFieldRelationService: CustomFieldRelationService,
         private eventBus: EventBus,
     ) {}
-
-    async initStockLocations() {
-        await this.ensureDefaultStockLocationExists();
-    }
 
     findOne(ctx: RequestContext, stockLocationId: ID): Promise<StockLocation | undefined> {
         return this.connection
@@ -209,7 +203,7 @@ export class StockLocationService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }
@@ -282,35 +276,5 @@ export class StockLocationService {
             quantity,
         );
         return cancellationLocations;
-    }
-
-    private async ensureDefaultStockLocationExists() {
-        const ctx = await this.requestContextService.create({
-            apiType: 'admin',
-        });
-        const stockLocations = await this.connection.getRepository(ctx, StockLocation).find({
-            relations: {
-                channels: true,
-            },
-        });
-        if (stockLocations.length === 0) {
-            const defaultStockLocation = await this.connection.getRepository(ctx, StockLocation).save(
-                new StockLocation({
-                    name: 'Default Stock Location',
-                    description: 'The default stock location',
-                }),
-            );
-            defaultStockLocation.channels = [];
-            stockLocations.push(defaultStockLocation);
-            await this.connection.getRepository(ctx, StockLocation).save(defaultStockLocation);
-        }
-        const defaultChannel = await this.channelService.getDefaultChannel();
-        for (const stockLocation of stockLocations) {
-            if (!stockLocation.channels.find(c => c.id === defaultChannel.id)) {
-                await this.channelService.assignToChannels(ctx, StockLocation, stockLocation.id, [
-                    defaultChannel.id,
-                ]);
-            }
-        }
     }
 }

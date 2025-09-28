@@ -83,3 +83,11 @@ export const CacheKey = {
     ActiveTaxZone: 'ActiveTaxZone',
     ActiveTaxZone_PPA: 'ActiveTaxZone_PPA',
 };
+
+export enum DEFAULT_ZONES {
+    ASIA = 'Asia',
+    EUROPE = 'Europe',
+    AMERICAS = 'Americas',
+    AFRICA = 'Africa',
+    OCEANIA = 'Oceania',
+}

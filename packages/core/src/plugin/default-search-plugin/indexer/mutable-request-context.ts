@@ -3,6 +3,7 @@ import { ID } from '@vendure/common/lib/shared-types';
 
 import { RequestContext, SerializedRequestContext } from '../../../api/common/request-context';
 import { Channel } from '../../../entity/channel/channel.entity';
+import { Shop } from '../../../entity/shop/shop.entity';
 
 /**
  * @description
@@ -37,6 +38,7 @@ export class MutableRequestContext extends RequestContext {
         return new MutableRequestContext({
             req: ctxObject._req,
             apiType: ctxObject._apiType,
+            shop: new Shop(ctxObject._shop),
             channel: new Channel(ctxObject._channel),
             session: {
                 ...ctxObject._session,

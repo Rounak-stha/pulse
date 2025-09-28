@@ -4,7 +4,7 @@ import { ID, JsonCompatible } from '@vendure/common/lib/shared-types';
 import { isObject } from '@vendure/common/lib/shared-utils';
 import { Request } from 'express';
 import { TFunction } from 'i18next';
-import { ReplicationMode, EntityManager } from 'typeorm';
+import { EntityManager, ReplicationMode } from 'typeorm';
 
 import {
     REQUEST_CONTEXT_KEY,
@@ -14,6 +14,7 @@ import {
 import { idsAreEqual } from '../../common/utils';
 import { CachedSession } from '../../config/session-cache/session-cache-strategy';
 import { Channel } from '../../entity/channel/channel.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 
 import { ApiType } from './get-api-type';
 
@@ -22,6 +23,7 @@ export type SerializedRequestContext = {
     _session: JsonCompatible<Required<CachedSession>>;
     _apiType: ApiType;
     _channel: JsonCompatible<Channel>;
+    _shop: JsonCompatible<Shop>;
     _languageCode: LanguageCode;
     _isAuthorized: boolean;
     _authorizedAsOwnerOnly: boolean;
@@ -150,7 +152,7 @@ export function internal_getRequestContext(
  * _all_ resolvers & REST handler, and then pass it through to the service layer.
  *
  * This allows the service layer to access information about the current user, the active language,
- * the active Channel, and so on. In addition, the {@link TransactionalConnection} relies on the
+ * the active Channel, the Shop, and so on. In addition, the {@link TransactionalConnection} relies on the
  * presence of the RequestContext object in order to correctly handle per-request database transactions.
  *
  * The RequestContext also provides mechanisms for managing the database replication mode via the
@@ -179,6 +181,7 @@ export function internal_getRequestContext(
 export class RequestContext {
     private readonly _languageCode: LanguageCode;
     private readonly _currencyCode: CurrencyCode;
+    private readonly _shop: Shop;
     private readonly _channel: Channel;
     private readonly _session?: CachedSession;
     private readonly _isAuthorized: boolean;
@@ -194,6 +197,7 @@ export class RequestContext {
     constructor(options: {
         req?: Request;
         apiType: ApiType;
+        shop: Shop;
         channel: Channel;
         session?: CachedSession;
         languageCode?: LanguageCode;
@@ -202,9 +206,10 @@ export class RequestContext {
         authorizedAsOwnerOnly: boolean;
         translationFn?: TFunction;
     }) {
-        const { req, apiType, channel, session, languageCode, currencyCode, translationFn } = options;
+        const { req, apiType, shop, channel, session, languageCode, currencyCode, translationFn } = options;
         this._req = req;
         this._apiType = apiType;
+        this._shop = shop;
         this._channel = channel;
         this._session = session;
         this._languageCode = languageCode || (channel && channel.defaultLanguageCode);
@@ -226,6 +231,7 @@ export class RequestContext {
         return new RequestContext({
             apiType: 'admin',
             authorizedAsOwnerOnly: false,
+            shop: new Shop(),
             channel: new Channel(),
             isAuthorized: true,
         });
@@ -240,6 +246,7 @@ export class RequestContext {
         return new RequestContext({
             req: ctxObject._req,
             apiType: ctxObject._apiType,
+            shop: new Shop(ctxObject._shop),
             channel: new Channel(ctxObject._channel),
             session: {
                 ...ctxObject._session,
@@ -294,6 +301,19 @@ export class RequestContext {
 
     /**
      * @description
+     * Creates a new RequestContext object with the specified Shop and Channel.
+     * This is only supposed to be used during registration when initially the Shop and Channel are not defined
+     */
+    withShopAndChannel(shop: Shop, channel: Channel): RequestContext {
+        return new RequestContext({
+            ...this,
+            shop,
+            channel,
+        });
+    }
+
+    /**
+     * @description
      * The raw Express request object.
      */
     get req(): Request | undefined {
@@ -306,6 +326,18 @@ export class RequestContext {
      */
     get apiType(): ApiType {
         return this._apiType;
+    }
+
+    /**
+     * @description
+     * The active {@link Shop} of this request.
+     */
+    get shop(): Shop {
+        return this._shop;
+    }
+
+    get shopId(): ID {
+        return this._shop.id;
     }
 
     /**

@@ -26,6 +26,8 @@ import { AttemptedLoginEvent } from '../../event-bus/events/attempted-login-even
 import { LoginEvent } from '../../event-bus/events/login-event';
 import { LogoutEvent } from '../../event-bus/events/logout-event';
 
+import { AdministratorService } from './administrator.service';
+import { ChannelService } from './channel.service';
 import { SessionService } from './session.service';
 
 /**
@@ -41,6 +43,8 @@ export class AuthService {
         private connection: TransactionalConnection,
         private configService: ConfigService,
         private sessionService: SessionService,
+        private administratorService: AdministratorService,
+        private channelService: ChannelService,
         private eventBus: EventBus,
     ) {}
 
@@ -70,6 +74,20 @@ export class AuthService {
         }
         if (!authenticateResult) {
             return new InvalidCredentialsError({ authenticationError: '' });
+        }
+
+        if (ctx.apiType === 'admin') {
+            const administrator = await this.administratorService.findOneByUserId(
+                ctx,
+                authenticateResult.id,
+                ['shop'],
+            );
+            if (!administrator) {
+                return new InvalidCredentialsError({ authenticationError: '' });
+            }
+            const shop = administrator.shop;
+            const channel = await this.channelService.getDefaultChannel(shop);
+            ctx = ctx.withShopAndChannel(ctx.shop, channel);
         }
         return this.createAuthenticatedSessionForUser(ctx, authenticateResult, authenticationStrategy.name);
     }
@@ -103,6 +121,7 @@ export class AuthService {
         await this.connection.getRepository(ctx, User).save(user, { reload: false });
         const session = await this.sessionService.createNewAuthenticatedSession(
             ctx,
+            ctx.shop,
             user,
             authenticationStrategyName,
         );

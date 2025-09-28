@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAdministratorInput, Permission } from '@vendure/common/lib/generated-types';
+import { Permission } from '@vendure/common/lib/generated-types';
 import { normalizeString } from '@vendure/common/lib/normalize-string';
 import {
     AdministratorService,
@@ -49,7 +49,7 @@ export class MultivendorService {
     }
 
     private async createSellerShippingMethod(ctx: RequestContext, shopName: string, sellerChannel: Channel) {
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         const { shippingEligibilityCheckers, shippingCalculators, fulfillmentHandlers } =
             this.configService.shippingOptions;
         const shopCode = normalizeString(shopName, '-');
@@ -108,7 +108,7 @@ export class MultivendorService {
         ctx: RequestContext,
         input: { shopName: string; seller: CreateSellerInput },
     ) {
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         const shopCode = normalizeString(input.shopName, '-');
         const seller = await this.sellerService.create(ctx, {
             name: input.shopName,

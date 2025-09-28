@@ -16,6 +16,7 @@ import { Role } from '../../entity/role/role.entity';
 import { AnonymousSession } from '../../entity/session/anonymous-session.entity';
 import { AuthenticatedSession } from '../../entity/session/authenticated-session.entity';
 import { Session } from '../../entity/session/session.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 import { User } from '../../entity/user/user.entity';
 import { JobQueue } from '../../job-queue/job-queue';
 import { JobQueueService } from '../../job-queue/job-queue.service';
@@ -62,6 +63,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
             process: async job => {
                 const ctx = await this.requestContextService.create({
                     apiType: 'admin',
+                    shopOrCode: '', // we don't need a Shop to clean out expired session. All expired session regardless of Shop should be cleared
                 });
                 const result = await this.cleanExpiredSessions(ctx, job.data.batchSize);
                 return {
@@ -91,10 +93,14 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
         event: InsertEvent<any> | RemoveEvent<any> | UpdateEvent<any>,
     ) {
         if (event.entity) {
-            // If a Channel or Role changes, potentially all the cached permissions in the
+            // If a Shop or Channel or Role changes, potentially all the cached permissions in the
             // session cache will be wrong, so we just clear the entire cache. It should however
             // be a very rare occurrence in normal operation, once initial setup is complete.
-            if (event.entity instanceof Channel || event.entity instanceof Role) {
+            if (
+                event.entity instanceof Shop ||
+                event.entity instanceof Channel ||
+                event.entity instanceof Role
+            ) {
                 await this.withTimeout(this.sessionCacheStrategy.clear());
             }
         }
@@ -106,6 +112,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
      */
     async createNewAuthenticatedSession(
         ctx: RequestContext,
+        shop: Shop,
         user: User,
         authenticationStrategyName: string,
     ): Promise<AuthenticatedSession> {
@@ -119,6 +126,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
         const authenticatedSession = await this.connection.getRepository(ctx, AuthenticatedSession).save(
             new AuthenticatedSession({
                 token,
+                shop,
                 user,
                 activeOrder,
                 authenticationStrategy: authenticationStrategyName,
@@ -186,6 +194,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
             token: session.token,
             expires: session.expires,
             activeOrderId: session.activeOrderId,
+            shop: session.shop,
             activeChannelId: session.activeChannelId,
         };
         if (this.isAuthenticatedSession(session)) {
@@ -221,6 +230,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
         const session = await this.connection.rawConnection
             .getRepository(Session)
             .createQueryBuilder('session')
+            .leftJoinAndSelect('session.shop', 'shop')
             .leftJoinAndSelect('session.user', 'user')
             .leftJoinAndSelect('user.roles', 'roles')
             .leftJoinAndSelect('roles.channels', 'channels')
@@ -245,7 +255,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
     ): Promise<CachedSession> {
         const session = await this.connection.getRepository(ctx, Session).findOne({
             where: { id: serializedSession.id },
-            relations: ['user', 'user.roles', 'user.roles.channels'],
+            relations: ['user', 'user.roles', 'user.roles.channels', 'shop'],
         });
         if (session) {
             session.activeOrder = order;
@@ -265,7 +275,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
         if (serializedSession.activeOrderId) {
             const session = await this.connection.getRepository(ctx, Session).findOne({
                 where: { id: serializedSession.id },
-                relations: ['user', 'user.roles', 'user.roles.channels'],
+                relations: ['user', 'user.roles', 'user.roles.channels', 'shop'],
             });
             if (session) {
                 session.activeOrder = null;
@@ -285,7 +295,7 @@ export class SessionService implements EntitySubscriberInterface, OnApplicationB
     async setActiveChannel(serializedSession: CachedSession, channel: Channel): Promise<CachedSession> {
         const session = await this.connection.rawConnection.getRepository(Session).findOne({
             where: { id: serializedSession.id },
-            relations: ['user', 'user.roles', 'user.roles.channels'],
+            relations: ['user', 'user.roles', 'user.roles.channels', 'shop'],
         });
         if (session) {
             session.activeChannel = channel;

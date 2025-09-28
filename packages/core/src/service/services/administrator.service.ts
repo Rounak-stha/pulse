@@ -12,7 +12,7 @@ import { RelationPaths } from '../../api/decorators/relations.decorator';
 import { Instrument } from '../../common';
 import { EntityNotFoundError, InternalServerError, UserInputError } from '../../common/error/errors';
 import { ListQueryOptions } from '../../common/types/common-types';
-import { assertFound, idsAreEqual, normalizeEmailAddress } from '../../common/utils';
+import { idsAreEqual, normalizeEmailAddress } from '../../common/utils';
 import { ConfigService } from '../../config';
 import { TransactionalConnection } from '../../connection/transactional-connection';
 import { Administrator } from '../../entity/administrator/administrator.entity';
@@ -52,11 +52,6 @@ export class AdministratorService {
         private eventBus: EventBus,
         private requestContextService: RequestContextService,
     ) {}
-
-    /** @internal */
-    async initAdministrators() {
-        await this.ensureSuperAdminExists();
-    }
 
     /**
      * @description
@@ -287,72 +282,6 @@ export class AdministratorService {
             return false;
         } else {
             return idsAreEqual(superAdmins[0].id, id);
-        }
-    }
-
-    /**
-     * @description
-     * There must always exist a SuperAdmin, otherwise full administration via API will
-     * no longer be possible.
-     *
-     * @internal
-     */
-    private async ensureSuperAdminExists() {
-        const { superadminCredentials } = this.configService.authOptions;
-
-        const superAdminUser = await this.connection.rawConnection.getRepository(User).findOne({
-            where: {
-                identifier: superadminCredentials.identifier,
-            },
-        });
-
-        if (!superAdminUser) {
-            const ctx = await this.requestContextService.create({ apiType: 'admin' });
-            const superAdminRole = await this.roleService.getSuperAdminRole();
-            const administrator = new Administrator({
-                emailAddress: superadminCredentials.identifier,
-                firstName: 'Super',
-                lastName: 'Admin',
-            });
-            administrator.user = await this.userService.createAdminUser(
-                ctx,
-                superadminCredentials.identifier,
-                superadminCredentials.password,
-            );
-            const { id } = await this.connection.getRepository(ctx, Administrator).save(administrator);
-            const createdAdministrator = await assertFound(this.findOne(ctx, id));
-            createdAdministrator.user.roles.push(superAdminRole);
-            await this.connection.getRepository(ctx, User).save(createdAdministrator.user, { reload: false });
-        } else {
-            const superAdministrator = await this.connection.rawConnection
-                .getRepository(Administrator)
-                .findOne({
-                    where: {
-                        user: {
-                            id: superAdminUser.id,
-                        },
-                    },
-                });
-            if (!superAdministrator) {
-                const administrator = new Administrator({
-                    emailAddress: superadminCredentials.identifier,
-                    firstName: 'Super',
-                    lastName: 'Admin',
-                });
-                const createdAdministrator = await this.connection.rawConnection
-                    .getRepository(Administrator)
-                    .save(administrator);
-                createdAdministrator.user = superAdminUser;
-                await this.connection.rawConnection.getRepository(Administrator).save(createdAdministrator);
-            } else if (superAdministrator.deletedAt != null) {
-                superAdministrator.deletedAt = null;
-                await this.connection.rawConnection.getRepository(Administrator).save(superAdministrator);
-            }
-
-            if (superAdminUser.deletedAt != null) {
-                superAdminUser.deletedAt = null;
-                await this.connection.rawConnection.getRepository(User).save(superAdminUser);
-            }
         }
     }
 }

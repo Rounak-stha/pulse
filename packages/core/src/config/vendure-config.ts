@@ -1070,6 +1070,17 @@ export interface EntityOptions {
     moneyStrategy?: MoneyStrategy;
     /**
      * @description
+     * Shop get cached in-memory as they are accessed very frequently. This
+     * setting determines how long the cache lives (in ms) until it is considered stale and
+     * refreshed. For multi-instance deployments (e.g. serverless, load-balanced), a
+     * smaller value here will prevent data inconsistencies between instances.
+     *
+     * @since 1.3.0
+     * @default 30000
+     */
+    shopCacheTtl?: number;
+    /**
+     * @description
      * Channels get cached in-memory as they are accessed very frequently. This
      * setting determines how long the cache lives (in ms) until it is considered stale and
      * refreshed. For multi-instance deployments (e.g. serverless, load-balanced), a

@@ -86,6 +86,19 @@ export class ChannelNotFoundError extends I18nError {
 
 /**
  * @description
+ * This error should be thrown when a {@link Shop} cannot be found based on the provided code.
+ *
+ * @docsCategory errors
+ * @docsPage Error Types
+ */
+export class ShopNotFoundError extends I18nError {
+    constructor(code: string) {
+        super('error.shop-not-found', { code }, 'SHOP_NOT_FOUND', LogLevel.Info);
+    }
+}
+
+/**
+ * @description
  * This error should be thrown when an entity cannot be found in the database, i.e. no entity of
  * the given entityName (Product, User etc.) exists with the provided id.
  *

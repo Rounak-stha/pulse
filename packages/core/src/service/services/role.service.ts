@@ -6,12 +6,7 @@ import {
     Permission,
     UpdateRoleInput,
 } from '@vendure/common/lib/generated-types';
-import {
-    CUSTOMER_ROLE_CODE,
-    CUSTOMER_ROLE_DESCRIPTION,
-    SUPER_ADMIN_ROLE_CODE,
-    SUPER_ADMIN_ROLE_DESCRIPTION,
-} from '@vendure/common/lib/shared-constants';
+import { CUSTOMER_ROLE_CODE, SUPER_ADMIN_ROLE_CODE } from '@vendure/common/lib/shared-constants';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
 import { unique } from '@vendure/common/lib/unique';
 
@@ -63,8 +58,6 @@ export class RoleService {
     ) {}
 
     async initRoles() {
-        await this.ensureSuperAdminRoleExists();
-        await this.ensureCustomerRoleExists();
         await this.ensureRolesHaveValidPermissions();
     }
 
@@ -374,32 +367,11 @@ export class RoleService {
     }
 
     /**
-     * Ensure that the SuperAdmin role exists and that it has all possible Permissions.
-     */
-    private async ensureSuperAdminRoleExists() {
-        const assignablePermissions = this.getAllAssignablePermissions();
-        try {
-            const superAdminRole = await this.getSuperAdminRole();
-            superAdminRole.permissions = assignablePermissions;
-            await this.connection.rawConnection.getRepository(Role).save(superAdminRole, { reload: false });
-        } catch (err: any) {
-            const defaultChannel = await this.channelService.getDefaultChannel();
-            await this.createRoleForChannels(
-                RequestContext.empty(),
-                {
-                    code: SUPER_ADMIN_ROLE_CODE,
-                    description: SUPER_ADMIN_ROLE_DESCRIPTION,
-                    permissions: assignablePermissions,
-                },
-                [defaultChannel],
-            );
-        }
-    }
-
-    /**
      * The Customer Role is a special case which must always exist.
      */
-    private async ensureCustomerRoleExists() {
+    // UpdateThis
+    // Must create a default customer role when a Shop is creted
+    /* private async ensureCustomerRoleExists() {
         try {
             await this.getCustomerRole();
         } catch (err: any) {
@@ -414,7 +386,7 @@ export class RoleService {
                 [defaultChannel],
             );
         }
-    }
+    } */
 
     /**
      * Since custom permissions can be added and removed by config, there may exist one or more Roles with

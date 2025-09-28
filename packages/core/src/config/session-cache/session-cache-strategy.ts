@@ -1,6 +1,7 @@
 import { ID } from '@vendure/common/lib/shared-types';
 
 import { InjectableStrategy } from '../../common/types/injectable-strategy';
+import { Shop } from '../../entity/shop/shop.entity';
 import { UserChannelPermissions } from '../../service/helpers/utils/get-user-channels-permissions';
 
 /**
@@ -40,6 +41,7 @@ export type CachedSession = {
     activeOrderId?: ID;
     authenticationStrategy?: string;
     user?: CachedSessionUser;
+    shop: Shop;
     activeChannelId?: ID;
 };
 

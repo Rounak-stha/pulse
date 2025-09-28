@@ -2,6 +2,7 @@ import CronTime from 'cron-time-generator';
 
 import { RequestContext } from '../api';
 import { Injector } from '../common/index';
+import { Shop } from '../entity/shop/shop.entity';
 import { RequestContextService } from '../service/helpers/request-context/request-context.service';
 import { ChannelService } from '../service/services/channel.service';
 
@@ -131,10 +132,11 @@ export class ScheduledTask<C extends Record<string, any> = Record<string, any>> 
     async execute(injector: Injector) {
         const requestContextService = injector.get(RequestContextService);
         const channelService = injector.get(ChannelService);
-        const defaultChannel = await channelService.getDefaultChannel();
+        const defaultChannel = await channelService.getDefaultChannel({} as Shop); // UpdateThis
 
         const scheduledContext = await requestContextService.create({
             apiType: 'admin',
+            shopOrCode: '',
             channelOrToken: defaultChannel,
         });
 

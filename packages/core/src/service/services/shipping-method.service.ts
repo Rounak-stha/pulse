@@ -234,7 +234,7 @@ export class ShippingMethodService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }

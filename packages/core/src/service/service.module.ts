@@ -61,6 +61,7 @@ import { SearchService } from './services/search.service';
 import { SellerService } from './services/seller.service';
 import { SessionService } from './services/session.service';
 import { ShippingMethodService } from './services/shipping-method.service';
+import { ShopService } from './services/shop.service';
 import { StockLevelService } from './services/stock-level.service';
 import { StockLocationService } from './services/stock-location.service';
 import { StockMovementService } from './services/stock-movement.service';
@@ -98,6 +99,7 @@ const services = [
     SellerService,
     SessionService,
     ShippingMethodService,
+    ShopService,
     StockLevelService,
     StockLocationService,
     StockMovementService,

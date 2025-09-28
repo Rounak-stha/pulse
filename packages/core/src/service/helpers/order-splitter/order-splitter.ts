@@ -6,8 +6,8 @@ import { RequestContext } from '../../../api/common/request-context';
 import { ConfigService } from '../../../config/config.service';
 import { TransactionalConnection } from '../../../connection/transactional-connection';
 import { Channel } from '../../../entity/channel/channel.entity';
-import { Order } from '../../../entity/order/order.entity';
 import { OrderLine } from '../../../entity/order-line/order-line.entity';
+import { Order } from '../../../entity/order/order.entity';
 import { ShippingLine } from '../../../entity/shipping-line/shipping-line.entity';
 import { ChannelService } from '../../services/channel.service';
 import { OrderService } from '../../services/order.service';
@@ -28,7 +28,7 @@ export class OrderSplitter {
             // No split is needed
             return [];
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
 
         order.type = OrderType.Aggregate;
         const sellerOrders: Order[] = [];

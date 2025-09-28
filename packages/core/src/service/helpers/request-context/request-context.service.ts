@@ -7,13 +7,15 @@ import ms from 'ms';
 
 import { ApiType, getApiType } from '../../../api/common/get-api-type';
 import { RequestContext } from '../../../api/common/request-context';
-import { UserInputError } from '../../../common/error/errors';
+import { ForbiddenError, ShopNotFoundError, UserInputError } from '../../../common/error/errors';
 import { idsAreEqual } from '../../../common/utils';
 import { ConfigService } from '../../../config/config.service';
 import { CachedSession, CachedSessionUser } from '../../../config/session-cache/session-cache-strategy';
 import { Channel } from '../../../entity/channel/channel.entity';
+import { Shop } from '../../../entity/shop/shop.entity';
 import { User } from '../../../entity/user/user.entity';
 import { ChannelService } from '../../services/channel.service';
+import { ShopService } from '../../services/shop.service';
 import { getUserChannelsPermissions } from '../utils/get-user-channels-permissions';
 
 /**
@@ -26,6 +28,7 @@ import { getUserChannelsPermissions } from '../utils/get-user-channels-permissio
 export class RequestContextService {
     /** @internal */
     constructor(
+        private shopService: ShopService,
         private channelService: ChannelService,
         private configService: ConfigService,
     ) {}
@@ -41,20 +44,30 @@ export class RequestContextService {
     async create(config: {
         req?: Request;
         apiType: ApiType;
+        shopOrCode: Shop | string;
         channelOrToken?: Channel | string;
         languageCode?: LanguageCode;
         currencyCode?: CurrencyCode;
         user?: User;
         activeOrderId?: ID;
     }): Promise<RequestContext> {
-        const { req, apiType, channelOrToken, languageCode, currencyCode, user, activeOrderId } = config;
+        const { req, apiType, shopOrCode, channelOrToken, languageCode, currencyCode, user, activeOrderId } =
+            config;
+        let shop: Shop;
         let channel: Channel;
+
+        if (shopOrCode instanceof Shop) {
+            shop = shopOrCode;
+        } else {
+            shop = await this.shopService.getShop(shopOrCode);
+        }
+
         if (channelOrToken instanceof Channel) {
             channel = channelOrToken;
         } else if (typeof channelOrToken === 'string') {
-            channel = await this.channelService.getChannelFromToken(channelOrToken);
+            channel = await this.channelService.getChannelFromToken(shop.id, channelOrToken);
         } else {
-            channel = await this.channelService.getDefaultChannel();
+            channel = await this.channelService.getDefaultChannel(shop);
         }
         let session: CachedSession | undefined;
         if (user) {
@@ -67,6 +80,7 @@ export class RequestContextService {
                     channelPermissions,
                 },
                 id: '__dummy_session_id__',
+                shop,
                 token: '__dummy_session_token__',
                 expires: new Date(Date.now() + ms('1y')),
                 cacheExpiry: ms('1y'),
@@ -76,6 +90,7 @@ export class RequestContextService {
         return new RequestContext({
             req,
             apiType,
+            shop,
             channel,
             languageCode,
             currencyCode,
@@ -87,19 +102,102 @@ export class RequestContextService {
 
     /**
      * @description
+     * Creates a RequestContext based on the config provided. This can be useful when interacting
+     * with services outside the request-response cycle, for example in stand-alone scripts or in
+     * worker jobs.
+     *
+     * @since 1.5.0
+     */
+    createSystemContext(config: {
+        apiType: ApiType;
+        languageCode?: LanguageCode;
+        currencyCode?: CurrencyCode;
+        user?: User;
+        activeOrderId?: ID;
+    }): RequestContext {
+        const { apiType, languageCode, currencyCode, user, activeOrderId } = config;
+        const shop = new Shop();
+        const channel = new Channel();
+
+        let session: CachedSession | undefined;
+        if (user) {
+            const channelPermissions = user.roles ? getUserChannelsPermissions(user) : [];
+            session = {
+                user: {
+                    id: user.id,
+                    identifier: user.identifier,
+                    verified: user.verified,
+                    channelPermissions,
+                },
+                id: '__dummy_session_id__',
+                shop,
+                token: '__dummy_session_token__',
+                expires: new Date(Date.now() + ms('1y')),
+                cacheExpiry: ms('1y'),
+                activeOrderId,
+            };
+        }
+        return new RequestContext({
+            apiType,
+            shop,
+            channel,
+            languageCode,
+            currencyCode,
+            session,
+            isAuthorized: true,
+            authorizedAsOwnerOnly: false,
+        });
+    }
+
+    /**
+     * To be used for Shop API
+     */
+    private async getShopFromRequest(req: Request): Promise<Shop> {
+        const hostname = req.hostname.split(':')[0].toLowerCase();
+        const parts = hostname.split('.');
+        if (parts.length >= 3) {
+            const shopCode = parts[0];
+            if (shopCode === 'www') throw new ShopNotFoundError(shopCode);
+            return this.shopService.getShop(shopCode);
+        } else {
+            throw new ForbiddenError();
+        }
+    }
+
+    /**
+     * @description
      * Creates a new RequestContext based on an Express request object. This is used internally
      * in the API layer by the AuthGuard, and creates the RequestContext which is then passed
      * to all resolvers & controllers.
      */
     async fromRequest(
         req: Request,
+        isPublic: boolean,
         info?: GraphQLResolveInfo,
         requiredPermissions?: Permission[],
         session?: CachedSession,
     ): Promise<RequestContext> {
-        const channelToken = this.getChannelToken(req);
-        const channel = await this.channelService.getChannelFromToken(channelToken);
         const apiType = getApiType(info);
+        const channelToken = this.getChannelToken(req);
+
+        // Initialize an empty shop for public routes
+        let shop: Shop = new Shop();
+        let channel: Channel = new Channel();
+
+        if (apiType === 'admin') {
+            if (!session && !isPublic) throw new ForbiddenError();
+            if (session) {
+                shop = await this.shopService.getShop(session.shop.code);
+                channel = channelToken
+                    ? await this.channelService.getChannelFromToken(shop.id, channelToken)
+                    : await this.channelService.getDefaultChannel(shop);
+            }
+        } else if (apiType === 'shop') {
+            shop = await this.getShopFromRequest(req);
+            channel = channelToken
+                ? await this.channelService.getChannelFromToken(shop.id, channelToken)
+                : await this.channelService.getDefaultChannel(shop);
+        } else throw new ForbiddenError();
 
         const hasOwnerPermission = !!requiredPermissions && requiredPermissions.includes(Permission.Owner);
         const languageCode = this.getLanguageCode(req, channel);
@@ -108,9 +206,11 @@ export class RequestContextService {
         const isAuthorized = this.userHasRequiredPermissionsOnChannel(requiredPermissions, channel, user);
         const authorizedAsOwnerOnly = !isAuthorized && hasOwnerPermission;
         const translationFn = (req as any).t;
+
         return new RequestContext({
             req,
             apiType,
+            shop,
             channel,
             languageCode,
             currencyCode,

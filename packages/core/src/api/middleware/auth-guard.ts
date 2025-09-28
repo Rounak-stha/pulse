@@ -60,12 +60,19 @@ export class AuthGuard implements CanActivate {
             requestContext = internal_getRequestContext(req);
         } else {
             const session = await this.getSession(req, res, hasOwnerPermission);
-            requestContext = await this.requestContextService.fromRequest(req, info, permissions, session);
+            requestContext = await this.requestContextService.fromRequest(
+                req,
+                isPublic,
+                info,
+                permissions,
+                session,
+            );
 
             const requestContextShouldBeReinitialized = await this.setActiveChannel(requestContext, session);
             if (requestContextShouldBeReinitialized) {
                 requestContext = await this.requestContextService.fromRequest(
                     req,
+                    isPublic,
                     info,
                     permissions,
                     session,
