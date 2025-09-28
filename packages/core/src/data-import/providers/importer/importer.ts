@@ -11,9 +11,8 @@ import { InternalServerError } from '../../../common/error/errors';
 import { ConfigService } from '../../../config/config.service';
 import { CustomFieldConfig } from '../../../config/custom-field/custom-field-types';
 import { Logger } from '../../../config/index';
-import { Facet } from '../../../entity/facet/facet.entity';
+import { Facet, Shop, TaxCategory } from '../../../entity';
 import { FacetValue } from '../../../entity/facet-value/facet-value.entity';
-import { TaxCategory } from '../../../entity/tax-category/tax-category.entity';
 import { ChannelService } from '../../../service/services/channel.service';
 import { FacetValueService } from '../../../service/services/facet-value.service';
 import { FacetService } from '../../../service/services/facet.service';
@@ -68,13 +67,13 @@ export class Importer {
      */
     parseAndImport(
         input: string | Stream,
-        ctxOrLanguageCode: RequestContext | LanguageCode,
+        ctx: RequestContext,
         reportProgress: boolean = false,
     ): Observable<ImportProgress> {
         let bar: ProgressBar | undefined;
 
         return new Observable(subscriber => {
-            const p = this.doParseAndImport(input, ctxOrLanguageCode, progress => {
+            const p = this.doParseAndImport(input, ctx, progress => {
                 if (reportProgress) {
                     if (!bar) {
                         bar = new ProgressBar('  importing [:bar] :percent :etas  Importing: :prodName', {
@@ -96,10 +95,9 @@ export class Importer {
 
     private async doParseAndImport(
         input: string | Stream,
-        ctxOrLanguageCode: RequestContext | LanguageCode,
+        ctx: RequestContext,
         onProgress: OnProgressFn,
     ): Promise<ImportInfo> {
-        const ctx = await this.getRequestContext(ctxOrLanguageCode);
         const parsed = await this.importParser.parseProducts(input, ctx.languageCode);
         if (parsed && parsed.results.length) {
             try {
@@ -132,15 +130,17 @@ export class Importer {
 
     private async getRequestContext(
         ctxOrLanguageCode: RequestContext | LanguageCode,
+        shop: Shop,
     ): Promise<RequestContext> {
         if (ctxOrLanguageCode instanceof RequestContext) {
             return ctxOrLanguageCode;
         } else {
-            const channel = await this.channelService.getDefaultChannel();
+            const channel = await this.channelService.getDefaultChannel(shop);
             return new RequestContext({
                 apiType: 'admin',
                 isAuthorized: true,
                 authorizedAsOwnerOnly: false,
+                shop,
                 channel,
                 languageCode: ctxOrLanguageCode,
             });
@@ -171,7 +171,7 @@ export class Importer {
                 `No TaxCategories found in the database. Ensure the IntialData.taxRates array is not empty.`,
             );
         }
-        await this.fastImporter.initialize(ctx.channel);
+        await this.fastImporter.initialize(ctx.shop, ctx.channel);
         for (const { product, variants } of rows) {
             const productMainTranslation = this.getTranslationByCodeOrFirst(
                 product.translations,

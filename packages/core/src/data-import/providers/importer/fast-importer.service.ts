@@ -11,18 +11,19 @@ import { unique } from '@vendure/common/lib/unique';
 
 import { RequestContext } from '../../../api/common/request-context';
 import { TransactionalConnection } from '../../../connection/transactional-connection';
+import { Shop } from '../../../entity';
 import { Channel } from '../../../entity/channel/channel.entity';
-import { ProductAsset } from '../../../entity/product/product-asset.entity';
-import { ProductTranslation } from '../../../entity/product/product-translation.entity';
-import { Product } from '../../../entity/product/product.entity';
-import { ProductOptionTranslation } from '../../../entity/product-option/product-option-translation.entity';
-import { ProductOption } from '../../../entity/product-option/product-option.entity';
 import { ProductOptionGroupTranslation } from '../../../entity/product-option-group/product-option-group-translation.entity';
 import { ProductOptionGroup } from '../../../entity/product-option-group/product-option-group.entity';
+import { ProductOptionTranslation } from '../../../entity/product-option/product-option-translation.entity';
+import { ProductOption } from '../../../entity/product-option/product-option.entity';
 import { ProductVariantAsset } from '../../../entity/product-variant/product-variant-asset.entity';
 import { ProductVariantPrice } from '../../../entity/product-variant/product-variant-price.entity';
 import { ProductVariantTranslation } from '../../../entity/product-variant/product-variant-translation.entity';
 import { ProductVariant } from '../../../entity/product-variant/product-variant.entity';
+import { ProductAsset } from '../../../entity/product/product-asset.entity';
+import { ProductTranslation } from '../../../entity/product/product-translation.entity';
+import { Product } from '../../../entity/product/product.entity';
 import { RequestContextService } from '../../../service/helpers/request-context/request-context.service';
 import { TranslatableSaver } from '../../../service/helpers/translatable-saver/translatable-saver';
 import { ChannelService } from '../../../service/services/channel.service';
@@ -60,14 +61,15 @@ export class FastImporterService {
      * Passing a `channel` argument means that Products and ProductVariants will be assigned
      * to that Channel.
      */
-    async initialize(channel?: Channel) {
+    async initialize(shop: Shop, channel?: Channel) {
         this.importCtx = channel
             ? await this.requestContextService.create({
                   apiType: 'admin',
                   channelOrToken: channel,
+                  shopOrCode: shop,
               })
             : RequestContext.empty();
-        this.defaultChannel = await this.channelService.getDefaultChannel(this.importCtx);
+        this.defaultChannel = await this.channelService.getDefaultChannel(this.importCtx.shop);
     }
 
     async createProduct(input: CreateProductInput): Promise<ID> {

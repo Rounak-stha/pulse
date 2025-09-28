@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Permission } from '@vendure/common/lib/generated-types';
+import { CreateShopInput, Permission } from '@vendure/common/lib/generated-types';
 import { ID, Type } from '@vendure/common/lib/shared-types';
 
 import { RequestContext } from '../../api/common/request-context';
@@ -149,6 +149,25 @@ export class ShopService {
             .getRepository(ctx, Shop)
             .findOne({ where: { code } })
             .then(result => result ?? undefined);
+    }
+
+    async registerShop(ctx: RequestContext, input: CreateShopInput): Promise<RequestContext> {
+        const shop = await this.create(ctx, input);
+        const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop);
+        shop.channels = [channel];
+        ctx = ctx.withShopAndChannel(shop, channel);
+        await this.shippingMethodService.createDefaultShippingMethodAfterRegistration(ctx);
+        await this.stockLocationService.createDefaultStockocationAfterRegistration(ctx);
+        await this.globalSettingsService.createDefaultGlobalSettinsAfterRegistration(ctx);
+        return ctx;
+    }
+
+    // When creating shop, one default channel should be created
+    async create(ctx: RequestContext, input: CreateShopInput): Promise<Shop> {
+        const shop = new Shop(input);
+        const createdShop = await this.connection.getRepository(ctx, Shop).save(shop);
+        await this.createCache(createdShop.code);
+        return createdShop;
     }
 
     /**

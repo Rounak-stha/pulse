@@ -315,6 +315,8 @@ export type AuthenticationMethod = Node & {
 export type AuthenticationResult = CurrentUser | InvalidCredentialsError;
 
 export type BooleanCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -934,6 +936,7 @@ export type CreateRoleInput = {
     code: Scalars['String']['input'];
     description: Scalars['String']['input'];
     permissions: Array<Permission>;
+    shopId: Scalars['ID']['input'];
 };
 
 export type CreateSellerInput = {
@@ -948,6 +951,12 @@ export type CreateShippingMethodInput = {
     customFields?: InputMaybe<Scalars['JSON']['input']>;
     fulfillmentHandler: Scalars['String']['input'];
     translations: Array<ShippingMethodTranslationInput>;
+};
+
+export type CreateShopInput = {
+    code: Scalars['String']['input'];
+    domain?: InputMaybe<Scalars['String']['input']>;
+    name: Scalars['String']['input'];
 };
 
 export type CreateStockLocationInput = {
@@ -1319,6 +1328,8 @@ export type CurrentUserChannel = {
 };
 
 export type CustomField = {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -1524,6 +1535,8 @@ export type DateRange = {
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#Additional_attributes
  */
 export type DateTimeCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -1681,6 +1694,7 @@ export enum ErrorCode {
     REFUND_PAYMENT_ID_MISSING_ERROR = 'REFUND_PAYMENT_ID_MISSING_ERROR',
     REFUND_STATE_TRANSITION_ERROR = 'REFUND_STATE_TRANSITION_ERROR',
     SETTLE_PAYMENT_ERROR = 'SETTLE_PAYMENT_ERROR',
+    SHOP_CODE_CONFLICT_ERROR = 'SHOP_CODE_CONFLICT_ERROR',
     UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
@@ -1859,6 +1873,8 @@ export type FacetValueTranslationInput = {
 };
 
 export type FloatCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -2066,6 +2082,8 @@ export type InsufficientStockOnHandError = ErrorResult & {
 };
 
 export type IntCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -2534,6 +2552,8 @@ export type LanguageNotAvailableError = ErrorResult & {
 };
 
 export type LocaleStringCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -2549,6 +2569,8 @@ export type LocaleStringCustomFieldConfig = CustomField & {
 };
 
 export type LocaleTextCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -2892,6 +2914,8 @@ export type Mutation = {
     /** Move a Collection to a different parent or index */
     moveCollection: Collection;
     refundOrder: RefundOrderResult;
+    /** Registers a new Shop and its first Administrator (native auth). If autoLogin is true, starts a session for the new admin. */
+    registerShop: RegisterShopResult;
     reindex: Job;
     /** Removes Collections from the specified Channel */
     removeCollectionsFromChannel: Array<Collection>;
@@ -3004,6 +3028,8 @@ export type Mutation = {
     updateSeller: Seller;
     /** Update an existing ShippingMethod */
     updateShippingMethod: ShippingMethod;
+    /** Update an existing Shop */
+    updateShop: UpdateShopResult;
     updateStockLocation: StockLocation;
     /** Update an existing Tag */
     updateTag: Tag;
@@ -3444,6 +3470,11 @@ export type MutationRefundOrderArgs = {
     input: RefundOrderInput;
 };
 
+export type MutationRegisterShopArgs = {
+    autoLogin?: InputMaybe<Scalars['Boolean']['input']>;
+    input: RegisterShopInput;
+};
+
 export type MutationRemoveCollectionsFromChannelArgs = {
     input: RemoveCollectionsFromChannelInput;
 };
@@ -3694,6 +3725,10 @@ export type MutationUpdateSellerArgs = {
 
 export type MutationUpdateShippingMethodArgs = {
     input: UpdateShippingMethodInput;
+};
+
+export type MutationUpdateShopArgs = {
+    input: UpdateShopInput;
 };
 
 export type MutationUpdateStockLocationArgs = {
@@ -4933,6 +4968,7 @@ export type Query = {
     shippingEligibilityCheckers: Array<ConfigurableOperationDefinition>;
     shippingMethod?: Maybe<ShippingMethod>;
     shippingMethods: ShippingMethodList;
+    shop?: Maybe<Shop>;
     stockLocation?: Maybe<StockLocation>;
     stockLocations: StockLocationList;
     tag: Tag;
@@ -5143,6 +5179,10 @@ export type QueryShippingMethodsArgs = {
     options?: InputMaybe<ShippingMethodListOptions>;
 };
 
+export type QueryShopArgs = {
+    id: Scalars['ID']['input'];
+};
+
 export type QueryStockLocationArgs = {
     id: Scalars['ID']['input'];
 };
@@ -5299,7 +5339,30 @@ export type RegionTranslation = {
     updatedAt: Scalars['DateTime']['output'];
 };
 
+export type RegisterShopAdminInput = {
+    email: Scalars['String']['input'];
+    password: Scalars['String']['input'];
+};
+
+export type RegisterShopInput = {
+    administrator: RegisterShopAdminInput;
+    shop: CreateShopInput;
+};
+
+export type RegisterShopResult =
+    | EmailAddressConflictError
+    | NativeAuthStrategyError
+    | RegisterShopSuccess
+    | ShopCodeConflictError;
+
+export type RegisterShopSuccess = {
+    currentUser: CurrentUser;
+    shop: Shop;
+};
+
 export type RelationCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     entity: Scalars['String']['output'];
     internal?: Maybe<Scalars['Boolean']['output']>;
@@ -5712,6 +5775,21 @@ export type ShippingMethodTranslationInput = {
     name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type Shop = Node & {
+    code: Scalars['String']['output'];
+    createdAt: Scalars['DateTime']['output'];
+    domain?: Maybe<Scalars['String']['output']>;
+    id: Scalars['ID']['output'];
+    name: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+};
+
+/** Returned when attempting to create a Shop with a code that is already in use */
+export type ShopCodeConflictError = ErrorResult & {
+    errorCode: ErrorCode;
+    message: Scalars['String']['output'];
+};
+
 /** The price value where the result has a single price */
 export type SinglePrice = {
     value: Scalars['Money']['output'];
@@ -5826,6 +5904,8 @@ export enum StockMovementType {
 }
 
 export type StringCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -5876,6 +5956,8 @@ export type StringStructFieldConfig = StructField & {
 };
 
 export type StructCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     fields: Array<StructFieldConfig>;
     internal?: Maybe<Scalars['Boolean']['output']>;
@@ -6101,6 +6183,8 @@ export type TestShippingMethodResult = {
 };
 
 export type TextCustomFieldConfig = CustomField & {
+    deprecated?: Maybe<Scalars['Boolean']['output']>;
+    deprecationReason?: Maybe<Scalars['String']['output']>;
     description?: Maybe<Array<LocalizedString>>;
     internal?: Maybe<Scalars['Boolean']['output']>;
     label?: Maybe<Array<LocalizedString>>;
@@ -6432,6 +6516,15 @@ export type UpdateShippingMethodInput = {
     id: Scalars['ID']['input'];
     translations: Array<ShippingMethodTranslationInput>;
 };
+
+export type UpdateShopInput = {
+    code?: InputMaybe<Scalars['String']['input']>;
+    domain?: InputMaybe<Scalars['String']['input']>;
+    id: Scalars['ID']['input'];
+    name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateShopResult = Shop;
 
 export type UpdateStockLocationInput = {
     customFields?: InputMaybe<Scalars['JSON']['input']>;

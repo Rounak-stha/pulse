@@ -267,7 +267,7 @@ export function addGraphQLCustomFields(
                     type ${publicEntityName}CustomFields {
                         ${mapToFields(customEntityFields, wrapListType(getGraphQlType(entityName)))}
                     }
-    
+
                     extend type ${publicEntityName} {
                         customFields: ${publicEntityName}CustomFields
                     }
@@ -758,7 +758,7 @@ function getDeprecationDirective(field: CustomFieldConfig): string {
 
     if (typeof field.deprecated === 'string') {
         // Escape quotes in the deprecation reason
-        const escapedReason = field.deprecated.replace(/"/g, '\\"');
+        const escapedReason = String(field.deprecated).replace(/"/g, '\\"');
         return `@deprecated(reason: "${escapedReason}")`;
     }
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
     CreateAdministratorInput,
     DeletionResult,
+    RegisterShopAdminInput,
     UpdateAdministratorInput,
 } from '@vendure/common/lib/generated-types';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
@@ -9,7 +10,7 @@ import { In, IsNull } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
 import { RelationPaths } from '../../api/decorators/relations.decorator';
-import { Instrument } from '../../common';
+import { Instrument, isEmailAddressLike } from '../../common';
 import { EntityNotFoundError, InternalServerError, UserInputError } from '../../common/error/errors';
 import { ListQueryOptions } from '../../common/types/common-types';
 import { idsAreEqual, normalizeEmailAddress } from '../../common/utils';
@@ -79,6 +80,27 @@ export class AdministratorService {
      * @description
      * Get an Administrator by id.
      */
+    findOneByEmail(
+        ctx: RequestContext,
+        email: string,
+        relations?: RelationPaths<Administrator>,
+    ): Promise<Administrator | undefined> {
+        return this.connection
+            .getRepository(ctx, Administrator)
+            .findOne({
+                relations: relations ?? ['user', 'user.roles'],
+                where: {
+                    emailAddress: email,
+                    deletedAt: IsNull(),
+                },
+            })
+            .then(result => result ?? undefined);
+    }
+
+    /**
+     * @description
+     * Get an Administrator by id.
+     */
     findOne(
         ctx: RequestContext,
         administratorId: ID,
@@ -115,6 +137,35 @@ export class AdministratorService {
                 },
             })
             .then(result => result ?? undefined);
+    }
+
+    /**
+     * @description
+     * Registers a new Administrator.
+     */
+    async registerAdministrator(ctx: RequestContext, input: RegisterShopAdminInput): Promise<Administrator> {
+        if (!isEmailAddressLike(input.email)) {
+            throw new UserInputError('Invalid email address');
+        }
+        const shop = ctx.shop;
+        const channel = ctx.channel;
+        const [firstName, lastName = ''] = input.email.split('@')[0].split(/[._]/);
+        const administrator = new Administrator({ shop, firstName, lastName });
+
+        administrator.emailAddress = normalizeEmailAddress(input.email);
+        administrator.user = await this.userService.createAdminUser(ctx, input.email, input.password);
+
+        const adminRole = await this.roleService.createShopAdminRole(ctx, channel);
+        const createdAdministrator = await this.connection
+            .getRepository(ctx, Administrator)
+            .save(administrator);
+
+        createdAdministrator.user.roles = [adminRole];
+
+        await this.connection.getRepository(ctx, User).save(createdAdministrator.user, { reload: false });
+        await this.eventBus.publish(new AdministratorEvent(ctx, createdAdministrator, 'created'));
+
+        return createdAdministrator;
     }
 
     /**

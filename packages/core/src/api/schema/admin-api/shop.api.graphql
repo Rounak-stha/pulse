@@ -1,0 +1,23 @@
+type Query {
+    shop(id: ID!): Shop
+}
+
+type Mutation {
+    "Update an existing Shop"
+    updateShop(input: UpdateShopInput!): UpdateShopResult!
+}
+
+input CreateShopInput {
+    name: String!
+    code: String!
+    domain: String
+}
+
+input UpdateShopInput {
+    id: ID!
+    name: String
+    code: String
+    domain: String
+}
+
+union UpdateShopResult = Shop

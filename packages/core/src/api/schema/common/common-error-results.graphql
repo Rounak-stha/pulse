@@ -1,3 +1,9 @@
+"Returned when attempting to create a Shop with a code that is already in use"
+type ShopCodeConflictError implements ErrorResult {
+    errorCode: ErrorCode!
+    message: String!
+}
+
 "Returned when attempting an operation that relies on the NativeAuthStrategy, if that strategy is not configured."
 type NativeAuthStrategyError implements ErrorResult {
     errorCode: ErrorCode!
@@ -110,7 +116,7 @@ type OrderInterceptorError implements ErrorResult {
 Union type of all possible errors that can occur when adding or removing items from an Order.
 """
 union UpdateOrderItemErrorResult =
-      OrderModificationError
+    | OrderModificationError
     | OrderLimitError
     | NegativeQuantityError
     | InsufficientStockError

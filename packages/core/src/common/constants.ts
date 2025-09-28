@@ -1,4 +1,4 @@
-import { LanguageCode } from '@vendure/common/lib/generated-types';
+import { LanguageCode, Permission } from '@vendure/common/lib/generated-types';
 
 import { CrudPermissionDefinition, PermissionDefinition, PermissionMetadata } from './permission-definition';
 
@@ -91,3 +91,102 @@ export enum DEFAULT_ZONES {
     AFRICA = 'Africa',
     OCEANIA = 'Oceania',
 }
+
+// In RoleService (used by createShopAdminRole())
+export const SHOP_ADMIN_PERMISSIONS: Permission[] = [
+    // Read and Create Administrator
+    Permission.CreateAdministrator,
+    Permission.ReadAdministrator,
+    Permission.UpdateAdministrator,
+    Permission.DeleteAdministrator,
+
+    // Catalog and merchandising
+    Permission.CreateCatalog,
+    Permission.ReadCatalog,
+    Permission.UpdateCatalog,
+    Permission.DeleteCatalog,
+    Permission.CreateProduct,
+    Permission.ReadProduct,
+    Permission.UpdateProduct,
+    Permission.DeleteProduct,
+    Permission.CreateCollection,
+    Permission.ReadCollection,
+    Permission.UpdateCollection,
+    Permission.DeleteCollection,
+    Permission.CreateFacet,
+    Permission.ReadFacet,
+    Permission.UpdateFacet,
+    Permission.DeleteFacet,
+    Permission.CreateAsset,
+    Permission.ReadAsset,
+    Permission.UpdateAsset,
+    Permission.DeleteAsset,
+    Permission.CreateTag,
+    Permission.ReadTag,
+    Permission.UpdateTag,
+    Permission.DeleteTag,
+
+    // Orders and customers
+    Permission.CreateOrder,
+    Permission.ReadOrder,
+    Permission.UpdateOrder,
+    Permission.DeleteOrder,
+    Permission.CreateCustomer,
+    Permission.ReadCustomer,
+    Permission.UpdateCustomer,
+    Permission.DeleteCustomer,
+    Permission.CreateCustomerGroup,
+    Permission.ReadCustomerGroup,
+    Permission.UpdateCustomerGroup,
+    Permission.DeleteCustomerGroup,
+
+    // Promotions
+    Permission.CreatePromotion,
+    Permission.ReadPromotion,
+    Permission.UpdatePromotion,
+    Permission.DeletePromotion,
+
+    // Shipping and payments (if per-shop managed)
+    Permission.CreateShippingMethod,
+    Permission.ReadShippingMethod,
+    Permission.UpdateShippingMethod,
+    Permission.DeleteShippingMethod,
+    Permission.CreatePaymentMethod,
+    Permission.ReadPaymentMethod,
+    Permission.UpdatePaymentMethod,
+    Permission.DeletePaymentMethod,
+
+    // Tax/country/zone management (if per-shop)
+    Permission.CreateTaxCategory,
+    Permission.ReadTaxCategory,
+    Permission.UpdateTaxCategory,
+    Permission.DeleteTaxCategory,
+    Permission.CreateTaxRate,
+    Permission.ReadTaxRate,
+    Permission.UpdateTaxRate,
+    Permission.DeleteTaxRate,
+    Permission.CreateCountry,
+    Permission.ReadCountry,
+    Permission.UpdateCountry,
+    Permission.DeleteCountry,
+    Permission.CreateZone,
+    Permission.ReadZone,
+    Permission.UpdateZone,
+    Permission.DeleteZone,
+
+    // Inventory and sellers (if applicable to shop)
+    Permission.CreateStockLocation,
+    Permission.ReadStockLocation,
+    Permission.UpdateStockLocation,
+    Permission.DeleteStockLocation,
+    Permission.CreateSeller,
+    Permission.ReadSeller,
+    Permission.UpdateSeller,
+    Permission.DeleteSeller,
+
+    // Channel management within their shop
+    Permission.CreateChannel,
+    Permission.ReadChannel,
+    Permission.UpdateChannel,
+    // Intentionally exclude Permission.DeleteChannel unless you want to allow it
+];

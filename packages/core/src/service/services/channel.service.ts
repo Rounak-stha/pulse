@@ -16,6 +16,7 @@ import { FindOptionsWhere } from 'typeorm';
 
 import { RelationPaths } from '../../api';
 import { RequestContext } from '../../api/common/request-context';
+import { DEFAULT_ZONES } from '../../common/constants';
 import { ErrorResultUnion, isGraphQlErrorResult } from '../../common/error/error-result';
 import {
     ChannelNotFoundError,
@@ -357,6 +358,38 @@ export class ChannelService {
             .getRepository(ctx, Channel)
             .findOne({ where: { id, shop }, relations: ['defaultShippingZone', 'defaultTaxZone'] })
             .then(result => result ?? undefined);
+    }
+
+    async createDefaultChannelAfterRegistration(ctx: RequestContext, shop: Shop): Promise<Channel> {
+        const defaultCurrencyCode = CurrencyCode.NPR;
+        const defaultLanguageCode = ctx.languageCode;
+        const code = DEFAULT_CHANNEL_CODE;
+        const token = shop.code + code;
+        const defaultShippingZone = (await this.zoneService.getAllWithMembers(ctx)).find(
+            zone => zone.name === DEFAULT_ZONES.ASIA,
+        );
+
+        if (!defaultShippingZone) {
+            throw new InternalServerError('error.default-shipping-zone-not-found');
+        }
+
+        const channel = new Channel({
+            shop,
+            code,
+            token,
+            pricesIncludeTax: true,
+            defaultLanguageCode,
+            defaultCurrencyCode,
+            defaultShippingZone,
+            defaultTaxZone: defaultShippingZone,
+            availableCurrencyCodes: [defaultCurrencyCode],
+            availableLanguageCodes: [defaultLanguageCode],
+        });
+
+        const newChannel = await this.connection.getRepository(ctx, Channel).save(channel);
+        await this.refreshCache(ctx, shop);
+        await this.eventBus.publish(new ChannelEvent(ctx, newChannel, 'created'));
+        return newChannel;
     }
 
     async create(

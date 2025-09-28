@@ -1,0 +1,8 @@
+type Shop implements Node {
+    id: ID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    name: String!
+    code: String!
+    domain: String
+}

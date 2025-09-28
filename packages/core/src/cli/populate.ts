@@ -1,9 +1,17 @@
 import { INestApplicationContext } from '@nestjs/common';
+import { MutationRegisterShopArgs } from '@vendure/common/lib/generated-types';
 import fs from 'fs-extra';
 import path from 'path';
 import { lastValueFrom } from 'rxjs';
 
 const loggerCtx = 'Populate';
+
+const REGISTER_DATA: MutationRegisterShopArgs = {
+    input: {
+        shop: { code: 'AutoPopulatedShop', name: 'Auto Populated Shop', domain: 'autopopulatedshop.com' },
+        administrator: { email: 'autopopulated@shop.com', password: 'autopopulated' },
+    },
+};
 
 /* eslint-disable no-console */
 /**
@@ -52,38 +60,32 @@ export async function populate<T extends INestApplicationContext>(
     bootstrapFn: () => Promise<T | undefined>,
     initialDataPathOrObject: string | object,
     productsCsvPath?: string,
-    channelOrToken?: string | import('@vendure/core').Channel,
 ): Promise<T> {
     const app = await bootstrapFn();
     if (!app) {
         throw new Error('Could not bootstrap the Vendure app');
     }
-    let channel: import('@vendure/core').Channel | undefined;
-    const { ChannelService, Channel, Logger } = await import('@vendure/core');
-    if (typeof channelOrToken === 'string') {
-        channel = await app.get(ChannelService).getChannelFromToken(channelOrToken);
-        if (!channel) {
-            Logger.warn(
-                `Warning: channel with token "${channelOrToken}" was not found. Using default Channel instead.`,
-                loggerCtx,
-            );
-        }
-    } else if (channelOrToken instanceof Channel) {
-        channel = channelOrToken;
-    }
+
+    const { Logger } = await import('@vendure/core');
+
     const initialData: import('@vendure/core').InitialData =
         typeof initialDataPathOrObject === 'string'
             ? require(initialDataPathOrObject)
             : initialDataPathOrObject;
 
-    await populateInitialData(app, initialData, channel);
+    await populateInitialData(app, initialData);
+    const shopPopulateResult = await populateShopAndAdministrator(app);
+
+    if (!shopPopulateResult) return app;
+
+    const { shop } = shopPopulateResult;
 
     if (productsCsvPath) {
         const importResult = await importProductsFromCsv(
             app,
             productsCsvPath,
             initialData.defaultLanguage,
-            channel,
+            shop,
         );
         if (importResult.errors && importResult.errors.length) {
             const errorFile = path.join(process.cwd(), 'vendure-import-error.log');
@@ -96,23 +98,32 @@ export async function populate<T extends INestApplicationContext>(
 
         Logger.info(`Imported ${importResult.imported} products`, loggerCtx);
 
-        await populateCollections(app, initialData, channel);
+        await populateCollections(app, shop, initialData);
     }
 
     Logger.info('Done!', loggerCtx);
     return app;
 }
 
+export async function populateShopAndAdministrator(app: INestApplicationContext) {
+    const { Populator, Logger } = await import('@vendure/core');
+    const populator = app.get(Populator);
+    try {
+        return await populator.populateShopAndAdministrator(REGISTER_DATA);
+    } catch (err: any) {
+        Logger.error(err.message, loggerCtx);
+    }
+}
+
 export async function populateInitialData(
     app: INestApplicationContext,
     initialData: import('@vendure/core').InitialData,
-    channel?: import('@vendure/core').Channel,
 ) {
     const { Populator, Logger } = await import('@vendure/core');
     const populator = app.get(Populator);
     try {
-        await populator.populateInitialData(initialData, channel);
-        Logger.info('Populated initial data', loggerCtx);
+        // Populate Shop Independent data like Countries, Tax Rates
+        await populator.populateInitialData(initialData);
     } catch (err: any) {
         Logger.error(err.message, loggerCtx);
     }
@@ -120,15 +131,15 @@ export async function populateInitialData(
 
 export async function populateCollections(
     app: INestApplicationContext,
+    shop: import('@vendure/core').Shop,
     initialData: import('@vendure/core').InitialData,
-    channel?: import('@vendure/core').Channel,
 ) {
     const { Populator, Logger } = await import('@vendure/core');
     const populator = app.get(Populator);
     try {
-        if (initialData.collections.length) {
-            await populator.populateCollections(initialData, channel);
-            Logger.info(`Created ${initialData.collections.length} Collections`, loggerCtx);
+        if (initialData.afterShop.collections?.length) {
+            await populator.populateCollections(shop, initialData);
+            // Logger.info(`Created ${initialData.afterShop.collections.length} Collections`, loggerCtx);
         }
     } catch (err: any) {
         Logger.info(err.message, loggerCtx);
@@ -139,7 +150,7 @@ export async function importProductsFromCsv(
     app: INestApplicationContext,
     productsCsvPath: string,
     languageCode: import('@vendure/core').LanguageCode,
-    channel?: import('@vendure/core').Channel,
+    shop: import('@vendure/core').Shop,
 ): Promise<import('@vendure/core').ImportProgress> {
     const { Importer, RequestContextService } = await import('@vendure/core');
     const importer = app.get(Importer);
@@ -148,7 +159,7 @@ export async function importProductsFromCsv(
     const ctx = await requestContextService.create({
         apiType: 'admin',
         languageCode,
-        channelOrToken: channel,
+        shopOrCode: shop,
     });
     const createEnvVar: import('@vendure/common/lib/shared-constants').CREATING_VENDURE_APP =
         'CREATING_VENDURE_APP';

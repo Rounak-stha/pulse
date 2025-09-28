@@ -13,7 +13,7 @@ import { unique } from '@vendure/common/lib/unique';
 import { RequestContext } from '../../api/common/request-context';
 import { RelationPaths } from '../../api/decorators/relations.decorator';
 import { RequestContextCacheService } from '../../cache/request-context-cache.service';
-import { getAllPermissionsMetadata } from '../../common/constants';
+import { getAllPermissionsMetadata, SHOP_ADMIN_PERMISSIONS } from '../../common/constants';
 import {
     EntityNotFoundError,
     ForbiddenError,
@@ -27,6 +27,7 @@ import { ConfigService } from '../../config/config.service';
 import { TransactionalConnection } from '../../connection/transactional-connection';
 import { Channel } from '../../entity/channel/channel.entity';
 import { Role } from '../../entity/role/role.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 import { User } from '../../entity/user/user.entity';
 import { EventBus } from '../../event-bus';
 import { RoleEvent } from '../../event-bus/events/role-event';
@@ -56,10 +57,6 @@ export class RoleService {
         private eventBus: EventBus,
         private requestContextCache: RequestContextCacheService,
     ) {}
-
-    async initRoles() {
-        await this.ensureRolesHaveValidPermissions();
-    }
 
     findAll(
         ctx: RequestContext,
@@ -243,6 +240,21 @@ export class RoleService {
         return role;
     }
 
+    async createShopAdminRole(ctx: RequestContext, channel: Channel) {
+        const permissions = SHOP_ADMIN_PERMISSIONS;
+        const input: CreateRoleInput = {
+            code: 'shop_admin',
+            description: 'Shop Admin',
+            permissions,
+            shopId: channel.shop.id,
+            channelIds: [channel.id],
+        };
+        const targetChannels = [channel];
+        const role = await this.createRoleForChannels(ctx, input, targetChannels);
+        await this.eventBus.publish(new RoleEvent(ctx, role, 'created', input));
+        return role;
+    }
+
     async update(ctx: RequestContext, input: UpdateRoleInput): Promise<Role> {
         this.checkPermissionsAreValid(input.permissions);
         const role = await this.findOne(ctx, input.id);
@@ -369,8 +381,6 @@ export class RoleService {
     /**
      * The Customer Role is a special case which must always exist.
      */
-    // UpdateThis
-    // Must create a default customer role when a Shop is creted
     /* private async ensureCustomerRoleExists() {
         try {
             await this.getCustomerRole();
@@ -408,6 +418,7 @@ export class RoleService {
 
     private createRoleForChannels(ctx: RequestContext, input: CreateRoleInput, channels: Channel[]) {
         const role = new Role({
+            shop: new Shop({ id: input.shopId }),
             code: input.code,
             description: input.description,
             permissions: unique([Permission.Authenticated, ...input.permissions]),

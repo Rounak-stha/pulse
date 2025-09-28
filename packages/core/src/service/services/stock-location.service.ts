@@ -69,6 +69,24 @@ export class StockLocationService {
             }));
     }
 
+    /**
+     * @description
+     * Creates a default shipping method for the shop after registration
+     */
+    async createDefaultStockocationAfterRegistration(ctx: RequestContext) {
+        const shop = ctx.shop;
+        const channel = ctx.channel;
+        const defaultStockLocation = await this.connection.getRepository(ctx, StockLocation).save(
+            new StockLocation({
+                name: `${shop.code} Default Stock Location`,
+                description: 'The default stock location',
+                shop,
+                channels: [channel],
+            }),
+        );
+        await this.connection.getRepository(ctx, StockLocation).save(defaultStockLocation);
+    }
+
     async create(ctx: RequestContext, input: CreateStockLocationInput): Promise<StockLocation> {
         const stockLocation = await this.connection.getRepository(ctx, StockLocation).save(
             new StockLocation({
