@@ -97,7 +97,7 @@ export class AuthService {
             }
             const shop = administrator.shop;
             const channel = await this.channelService.getDefaultChannel(shop);
-            ctx = ctx.withShopAndChannel(ctx.shop, channel);
+            ctx = ctx.withShopAndChannel(shop, channel);
         }
         return this.createAuthenticatedSessionForUser(ctx, authenticateResult, authenticationStrategy.name);
     }
@@ -212,7 +212,8 @@ export class AuthService {
 
         const { shop, administrator } = registerShopResult;
 
-        ctx = ctx.withShopAndChannel(shop, shop.channels[0]);
+        const channel = await this.channelService.getDefaultChannel(shop);
+        ctx = ctx.withShopAndChannel(shop, channel);
 
         const session = await this.createAuthenticatedSessionForUser(
             ctx,

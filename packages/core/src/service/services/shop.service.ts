@@ -154,7 +154,6 @@ export class ShopService {
     async registerShop(ctx: RequestContext, input: CreateShopInput): Promise<RequestContext> {
         const shop = await this.create(ctx, input);
         const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop);
-        shop.channels = [channel];
         ctx = ctx.withShopAndChannel(shop, channel);
         await this.shippingMethodService.createDefaultShippingMethodAfterRegistration(ctx);
         await this.stockLocationService.createDefaultStockocationAfterRegistration(ctx);
