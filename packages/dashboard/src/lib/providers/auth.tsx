@@ -97,6 +97,12 @@ const CurrentUserQuery = graphql(`
             firstName
             lastName
             emailAddress
+            shop {
+                id
+                name
+                code
+                domain
+            }
         }
     }
 `);

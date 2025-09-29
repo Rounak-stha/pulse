@@ -92,6 +92,7 @@ export type Administrator = Node & {
   firstName: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lastName: Scalars['String']['output'];
+  shop: Shop;
   updatedAt: Scalars['DateTime']['output'];
   user: User;
 };

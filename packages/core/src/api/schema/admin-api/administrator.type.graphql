@@ -6,6 +6,7 @@ type Administrator implements Node {
     lastName: String!
     emailAddress: String!
     user: User!
+    shop: Shop!
 }
 
 type AdministratorList implements PaginatedList {
