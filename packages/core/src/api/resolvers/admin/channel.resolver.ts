@@ -30,7 +30,7 @@ export class ChannelResolver {
     ) {}
 
     @Query()
-    @Allow(Permission.SuperAdmin)
+    @Allow(Permission.SuperAdmin, Permission.ReadChannel)
     async channels(
         @Ctx() ctx: RequestContext,
         @Args() args: QueryChannelsArgs,
