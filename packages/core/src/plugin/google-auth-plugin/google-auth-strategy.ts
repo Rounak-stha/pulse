@@ -1,19 +1,18 @@
-
 import { OAuth2Client } from 'google-auth-library';
 import { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
 
+import { RequestContext } from '../../api/common/request-context';
+import { Injector, ShopCodeExistsError } from '../../common';
 import { AuthenticationStrategy, Logger } from '../../config';
+import { User } from '../../entity';
 import { ExternalAuthenticationService } from '../../service';
-import { RequestContext } from '../../api/common/request-context'
-import { Injector } from '../../common'
-import { User } from '../../entity'
 
 export type GoogleAuthData = {
     token: string;
     shopname?: string;
     shopcode?: string;
-}
+};
 
 export interface GoogleAuthOptions {
     googleClientId: string;
@@ -32,7 +31,6 @@ export class GoogleAuthStrategy implements AuthenticationStrategy<GoogleAuthData
     constructor(private options: GoogleAuthOptions) {
         this.client = new OAuth2Client(options.googleClientId, options.googleClientSecret, 'postmessage');
         this.logger = new Logger();
-
     }
 
     init(injector: Injector) {
@@ -50,67 +48,74 @@ export class GoogleAuthStrategy implements AuthenticationStrategy<GoogleAuthData
         `;
     }
 
-    async authenticate(ctx: RequestContext, data: GoogleAuthData): Promise<User | false> {
+    async authenticate(ctx: RequestContext, data: GoogleAuthData): Promise<User | string | false> {
         try {
-        // Step 1: Exchange Code for Token
-        const { tokens } = await this.client.getToken(data.token);
-        const idToken = tokens.id_token;
+            // Step 1: Exchange Code for Token
+            const { tokens } = await this.client.getToken(data.token);
+            const idToken = tokens.id_token;
 
-        if (!idToken) {
-            this.logger.error('Invalid Google token', 'GoogleAuthStrategy');
-            return false;
-        }
+            if (!idToken) {
+                this.logger.error('Invalid Google token', 'GoogleAuthStrategy');
+                return false;
+            }
 
-        // Step 2: Verify the Google ID token
-        const ticket = await this.client.verifyIdToken({
-            idToken: idToken,
-            audience: this.options.googleClientId,
-        });
+            // Step 2: Verify the Google ID token
+            const ticket = await this.client.verifyIdToken({
+                idToken,
+                audience: this.options.googleClientId,
+            });
 
-        const payload = ticket.getPayload();
+            const payload = ticket.getPayload();
 
-        if (!payload || !payload.email) {
-            this.logger.error('Invalid Google token or missing email', 'GoogleAuthStrategy');
-            return false;
-        }
+            if (!payload || !payload.email) {
+                this.logger.error('Invalid Google token or missing email', 'GoogleAuthStrategy');
+                return false;
+            }
 
-        // Step 3: Check if this Google user already has a Vendure account
-        const existingAdministrator = await this.externalAuthenticationService.findAdministratorUser(
-            ctx,
-            this.name,
-            payload.sub, // Google's unique user ID
-        );
+            // Step 3: Check if this Google user already has a Vendure account
+            const existingAdministrator = await this.externalAuthenticationService.findAdministratorUser(
+                ctx,
+                this.name,
+                payload.sub, // Google's unique user ID
+            );
 
-        if (existingAdministrator) {
-            // User exists, log them in
-            this.options.onUserFound?.(ctx, this.injector, existingAdministrator);
-            return existingAdministrator;
-        }
+            if (existingAdministrator) {
+                // User exists, log them in
+                this.options.onUserFound?.(ctx, this.injector, existingAdministrator);
+                return existingAdministrator;
+            }
 
-        // Step 4: Create a new customer account for first-time Google users
-        /**
-         * If we're at this step, than it means that a new Shop is being registered
-         * So if the shop data is not passed, then we must throw an error
-         */
-        if (!data.shopname || !data.shopcode) {
-            return false;
-        }
+            // Step 4: Create a new customer account for first-time Google users
+            /**
+             * If we're at this step, than it means that a new Shop is being registered
+             * So if the shop data is not passed, then we must throw an error
+             */
+            if (!data.shopname || !data.shopcode) {
+                return false;
+            }
 
-        const createdUser = await this.externalAuthenticationService.createShopAndAdministratorAndUser(ctx, {
-            strategy: this.name,
-            externalIdentifier: payload.sub, // Store Google user ID
-            emailAddress: payload.email,
-            firstName: payload.given_name || 'Google',
-            lastName: payload.family_name || 'User',
-            shopName: data.shopname,
-            shopCode: data.shopcode,
-        });
+            const createdUser = await this.externalAuthenticationService.createShopAndAdministratorAndUser(
+                ctx,
+                {
+                    strategy: this.name,
+                    externalIdentifier: payload.sub, // Store Google user ID
+                    emailAddress: payload.email,
+                    firstName: payload.given_name || 'Google',
+                    lastName: payload.family_name || 'User',
+                    shopName: data.shopname,
+                    shopCode: data.shopcode,
+                },
+            );
 
-        this.options.onUserCreated?.(ctx, this.injector, createdUser);
+            this.options.onUserCreated?.(ctx, this.injector, createdUser);
 
-        return createdUser;
+            return createdUser;
         } catch (error) {
-            this.logger.error(`Google authentication failed: ${(error as Error).message}`, 'GoogleAuthStrategy');
+            this.logger.error(
+                `Google authentication failed: ${(error as Error).message}`,
+                'GoogleAuthStrategy',
+            );
+            if (error instanceof ShopCodeExistsError) return 'Shop Code exists';
             return false;
         }
     }

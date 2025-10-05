@@ -3,7 +3,7 @@ import { CreateShopInput, Permission } from '@vendure/common/lib/generated-types
 import { ID, Type } from '@vendure/common/lib/shared-types';
 
 import { RequestContext } from '../../api/common/request-context';
-import { ShopAware, ShopNotFoundError } from '../../common';
+import { ShopAware, ShopCodeExistsError, ShopNotFoundError } from '../../common';
 import { ForbiddenError } from '../../common/error/errors';
 import { Instrument } from '../../common/instrument-decorator';
 import { createSelfRefreshingCache, SelfRefreshingCache } from '../../common/self-refreshing-cache';
@@ -153,7 +153,7 @@ export class ShopService {
 
     /**
      * @description
-     * Registers a new shop and the defaults 
+     * Registers a new shop and the defaults
      * Returns the RequestContext with the shop and channel
      */
     async registerShop(ctx: RequestContext, input: CreateShopInput): Promise<RequestContext> {
@@ -168,12 +168,16 @@ export class ShopService {
 
     /**
      * Creates a new shop and returns it
-     * Cache is deliberately not created here as the self registering cache refresh function requires a RequestContext 
+     * Cache is deliberately not created here as the self registering cache refresh function requires a RequestContext
      * and by default it creates an empty context to pass it into the query method
      * But while creating a new shop, usually it is inside a transaction qand while in a transaction, the new reocrd is not yet commited
-     * and the query inside the refresh function in cache can not find it 
+     * and the query inside the refresh function in cache can not find it
      */
     async create(ctx: RequestContext, input: CreateShopInput): Promise<Shop> {
+        const existingShop = await this.findByCode(ctx, input.code);
+
+        if (existingShop) throw new ShopCodeExistsError(input.code);
+
         const shop = new Shop(input);
         const createdShop = await this.connection.getRepository(ctx, Shop).save(shop);
         return createdShop;

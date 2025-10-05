@@ -101,6 +101,14 @@ export enum AssetType {
   VIDEO = 'VIDEO'
 }
 
+/** Returned if there is an error during the Authentication Process */
+export type AuthenticationError = ErrorResult & {
+  __typename?: 'AuthenticationError';
+  additionalMessage: Scalars['String']['output'];
+  errorCode: ErrorCode;
+  message: Scalars['String']['output'];
+};
+
 export type AuthenticationInput = {
   native?: InputMaybe<NativeAuthInput>;
 };
@@ -932,6 +940,7 @@ export type EmailAddressConflictError = ErrorResult & {
 
 export enum ErrorCode {
   ALREADY_LOGGED_IN_ERROR = 'ALREADY_LOGGED_IN_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   COUPON_CODE_EXPIRED_ERROR = 'COUPON_CODE_EXPIRED_ERROR',
   COUPON_CODE_INVALID_ERROR = 'COUPON_CODE_INVALID_ERROR',
   COUPON_CODE_LIMIT_ERROR = 'COUPON_CODE_LIMIT_ERROR',

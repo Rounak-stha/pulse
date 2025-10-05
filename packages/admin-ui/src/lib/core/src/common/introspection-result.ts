@@ -28,7 +28,8 @@
     ],
     "AuthenticationResult": [
       "CurrentUser",
-      "InvalidCredentialsError"
+      "InvalidCredentialsError",
+      "ShopCodeConflictError"
     ],
     "CancelOrderResult": [
       "CancelActiveOrderError",
@@ -89,6 +90,7 @@
     ],
     "ErrorResult": [
       "AlreadyRefundedError",
+      "AuthenticationError",
       "CancelActiveOrderError",
       "CancelPaymentError",
       "ChannelDefaultLanguageError",

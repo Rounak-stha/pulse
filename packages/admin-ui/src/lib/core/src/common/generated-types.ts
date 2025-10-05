@@ -300,6 +300,14 @@ export type AssignStockLocationsToChannelInput = {
   stockLocationIds: Array<Scalars['ID']['input']>;
 };
 
+/** Returned if there is an error during the Authentication Process */
+export type AuthenticationError = ErrorResult & {
+  __typename?: 'AuthenticationError';
+  additionalMessage: Scalars['String']['output'];
+  errorCode: ErrorCode;
+  message: Scalars['String']['output'];
+};
+
 export type AuthenticationInput = {
   native?: InputMaybe<NativeAuthInput>;
 };
@@ -312,7 +320,7 @@ export type AuthenticationMethod = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type AuthenticationResult = CurrentUser | InvalidCredentialsError;
+export type AuthenticationResult = CurrentUser | InvalidCredentialsError | ShopCodeConflictError;
 
 export type BooleanCustomFieldConfig = CustomField & {
   __typename?: 'BooleanCustomFieldConfig';
@@ -1684,6 +1692,7 @@ export type EntityDuplicatorDefinition = {
 
 export enum ErrorCode {
   ALREADY_REFUNDED_ERROR = 'ALREADY_REFUNDED_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   CANCEL_ACTIVE_ORDER_ERROR = 'CANCEL_ACTIVE_ORDER_ERROR',
   CANCEL_PAYMENT_ERROR = 'CANCEL_PAYMENT_ERROR',
   CHANNEL_DEFAULT_LANGUAGE_ERROR = 'CHANNEL_DEFAULT_LANGUAGE_ERROR',
@@ -8716,6 +8725,8 @@ export type ConfigurableOperationDefFragment = { __typename?: 'ConfigurableOpera
 
 type ErrorResult_AlreadyRefundedError_Fragment = { __typename?: 'AlreadyRefundedError', errorCode: ErrorCode, message: string };
 
+type ErrorResult_AuthenticationError_Fragment = { __typename?: 'AuthenticationError', errorCode: ErrorCode, message: string };
+
 type ErrorResult_CancelActiveOrderError_Fragment = { __typename?: 'CancelActiveOrderError', errorCode: ErrorCode, message: string };
 
 type ErrorResult_CancelPaymentError_Fragment = { __typename?: 'CancelPaymentError', errorCode: ErrorCode, message: string };
@@ -8806,7 +8817,7 @@ type ErrorResult_SettlePaymentError_Fragment = { __typename?: 'SettlePaymentErro
 
 type ErrorResult_ShopCodeConflictError_Fragment = { __typename?: 'ShopCodeConflictError', errorCode: ErrorCode, message: string };
 
-export type ErrorResultFragment = ErrorResult_AlreadyRefundedError_Fragment | ErrorResult_CancelActiveOrderError_Fragment | ErrorResult_CancelPaymentError_Fragment | ErrorResult_ChannelDefaultLanguageError_Fragment | ErrorResult_CouponCodeExpiredError_Fragment | ErrorResult_CouponCodeInvalidError_Fragment | ErrorResult_CouponCodeLimitError_Fragment | ErrorResult_CreateFulfillmentError_Fragment | ErrorResult_DuplicateEntityError_Fragment | ErrorResult_EmailAddressConflictError_Fragment | ErrorResult_EmptyOrderLineSelectionError_Fragment | ErrorResult_FacetInUseError_Fragment | ErrorResult_FulfillmentStateTransitionError_Fragment | ErrorResult_GuestCheckoutError_Fragment | ErrorResult_IneligibleShippingMethodError_Fragment | ErrorResult_InsufficientStockError_Fragment | ErrorResult_InsufficientStockOnHandError_Fragment | ErrorResult_InvalidCredentialsError_Fragment | ErrorResult_InvalidFulfillmentHandlerError_Fragment | ErrorResult_ItemsAlreadyFulfilledError_Fragment | ErrorResult_LanguageNotAvailableError_Fragment | ErrorResult_ManualPaymentStateError_Fragment | ErrorResult_MimeTypeError_Fragment | ErrorResult_MissingConditionsError_Fragment | ErrorResult_MultipleOrderError_Fragment | ErrorResult_NativeAuthStrategyError_Fragment | ErrorResult_NegativeQuantityError_Fragment | ErrorResult_NoActiveOrderError_Fragment | ErrorResult_NoChangesSpecifiedError_Fragment | ErrorResult_NothingToRefundError_Fragment | ErrorResult_OrderInterceptorError_Fragment | ErrorResult_OrderLimitError_Fragment | ErrorResult_OrderModificationError_Fragment | ErrorResult_OrderModificationStateError_Fragment | ErrorResult_OrderStateTransitionError_Fragment | ErrorResult_PaymentMethodMissingError_Fragment | ErrorResult_PaymentOrderMismatchError_Fragment | ErrorResult_PaymentStateTransitionError_Fragment | ErrorResult_ProductOptionInUseError_Fragment | ErrorResult_QuantityTooGreatError_Fragment | ErrorResult_RefundAmountError_Fragment | ErrorResult_RefundOrderStateError_Fragment | ErrorResult_RefundPaymentIdMissingError_Fragment | ErrorResult_RefundStateTransitionError_Fragment | ErrorResult_SettlePaymentError_Fragment | ErrorResult_ShopCodeConflictError_Fragment;
+export type ErrorResultFragment = ErrorResult_AlreadyRefundedError_Fragment | ErrorResult_AuthenticationError_Fragment | ErrorResult_CancelActiveOrderError_Fragment | ErrorResult_CancelPaymentError_Fragment | ErrorResult_ChannelDefaultLanguageError_Fragment | ErrorResult_CouponCodeExpiredError_Fragment | ErrorResult_CouponCodeInvalidError_Fragment | ErrorResult_CouponCodeLimitError_Fragment | ErrorResult_CreateFulfillmentError_Fragment | ErrorResult_DuplicateEntityError_Fragment | ErrorResult_EmailAddressConflictError_Fragment | ErrorResult_EmptyOrderLineSelectionError_Fragment | ErrorResult_FacetInUseError_Fragment | ErrorResult_FulfillmentStateTransitionError_Fragment | ErrorResult_GuestCheckoutError_Fragment | ErrorResult_IneligibleShippingMethodError_Fragment | ErrorResult_InsufficientStockError_Fragment | ErrorResult_InsufficientStockOnHandError_Fragment | ErrorResult_InvalidCredentialsError_Fragment | ErrorResult_InvalidFulfillmentHandlerError_Fragment | ErrorResult_ItemsAlreadyFulfilledError_Fragment | ErrorResult_LanguageNotAvailableError_Fragment | ErrorResult_ManualPaymentStateError_Fragment | ErrorResult_MimeTypeError_Fragment | ErrorResult_MissingConditionsError_Fragment | ErrorResult_MultipleOrderError_Fragment | ErrorResult_NativeAuthStrategyError_Fragment | ErrorResult_NegativeQuantityError_Fragment | ErrorResult_NoActiveOrderError_Fragment | ErrorResult_NoChangesSpecifiedError_Fragment | ErrorResult_NothingToRefundError_Fragment | ErrorResult_OrderInterceptorError_Fragment | ErrorResult_OrderLimitError_Fragment | ErrorResult_OrderModificationError_Fragment | ErrorResult_OrderModificationStateError_Fragment | ErrorResult_OrderStateTransitionError_Fragment | ErrorResult_PaymentMethodMissingError_Fragment | ErrorResult_PaymentOrderMismatchError_Fragment | ErrorResult_PaymentStateTransitionError_Fragment | ErrorResult_ProductOptionInUseError_Fragment | ErrorResult_QuantityTooGreatError_Fragment | ErrorResult_RefundAmountError_Fragment | ErrorResult_RefundOrderStateError_Fragment | ErrorResult_RefundPaymentIdMissingError_Fragment | ErrorResult_RefundStateTransitionError_Fragment | ErrorResult_SettlePaymentError_Fragment | ErrorResult_ShopCodeConflictError_Fragment;
 
 export type ShippingMethodFragment = { __typename?: 'ShippingMethod', id: string, createdAt: any, updatedAt: any, code: string, name: string, description: string, fulfillmentHandlerCode: string, checker: { __typename?: 'ConfigurableOperation', code: string, args: Array<{ __typename?: 'ConfigArg', name: string, value: string }> }, calculator: { __typename?: 'ConfigurableOperation', code: string, args: Array<{ __typename?: 'ConfigArg', name: string, value: string }> }, translations: Array<{ __typename?: 'ShippingMethodTranslation', id: string, languageCode: LanguageCode, name: string, description: string }> };
 

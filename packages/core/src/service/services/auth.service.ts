@@ -67,7 +67,7 @@ export class AuthService {
         apiType: ApiType,
         authenticationMethod: string,
         authenticationData: any,
-    ): Promise<AuthenticatedSession | InvalidCredentialsError | NotVerifiedError> {
+    ): Promise<AuthenticatedSession | InvalidCredentialsError | NotVerifiedError | ShopCodeConflictError> {
         await this.eventBus.publish(
             new AttemptedLoginEvent(
                 ctx,
@@ -80,7 +80,7 @@ export class AuthService {
         const authenticationStrategy = this.getAuthenticationStrategy(apiType, authenticationMethod);
         const authenticateResult = await authenticationStrategy.authenticate(ctx, authenticationData);
         if (typeof authenticateResult === 'string') {
-            return new InvalidCredentialsError({ authenticationError: authenticateResult });
+            return new ShopCodeConflictError();
         }
         if (!authenticateResult) {
             return new InvalidCredentialsError({ authenticationError: '' });

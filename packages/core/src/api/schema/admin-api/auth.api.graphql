@@ -39,7 +39,7 @@ type RegisterShopSuccess {
 }
 
 union NativeAuthenticationResult = CurrentUser | InvalidCredentialsError | NativeAuthStrategyError
-union AuthenticationResult = CurrentUser | InvalidCredentialsError
+union AuthenticationResult = CurrentUser | InvalidCredentialsError | ShopCodeConflictError
 union RegisterShopResult =
     | RegisterShopSuccess
     | EmailAddressConflictError

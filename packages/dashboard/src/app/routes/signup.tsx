@@ -1,7 +1,9 @@
+import { createFileRoute, Navigate, redirect, useRouterState } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { z } from 'zod';
+
 import { SignupForm } from '@/vdb/components/signup/signup-form.js';
 import { useAuth } from '@/vdb/hooks/use-auth.js';
-import { createFileRoute, Navigate, redirect, useRouterState } from '@tanstack/react-router';
-import { z } from 'zod';
 
 const fallback = '/' as const;
 
@@ -18,14 +20,33 @@ export const Route = createFileRoute('/signup')({
 });
 
 function SignupPage() {
-    const auth = useAuth();
+    const {
+        isAuthenticated,
+        googleScriptLoaded,
+        signUpWithGoogle,
+        authenticationError,
+        status,
+        initializeGoogleScript,
+    } = useAuth();
+    const isLoading = useRouterState({ select: s => s.isLoading });
     const search = Route.useSearch();
 
-    if (auth.isAuthenticated) {
+    useEffect(() => {
+        initializeGoogleScript();
+    }, []);
+
+    if (isAuthenticated) {
         return <Navigate to={search.redirect || fallback} />;
     }
 
+    const isVerifying = isLoading || status == 'verifying';
+
     return (
-        <SignupForm />
+        <SignupForm
+            googleScriptLoaded={googleScriptLoaded}
+            signUpError={authenticationError}
+            onSubmit={signUpWithGoogle}
+            isVerifying={isVerifying}
+        />
     );
 }

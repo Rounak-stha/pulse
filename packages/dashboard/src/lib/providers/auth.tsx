@@ -3,6 +3,11 @@ import { graphql, ResultOf } from '@/vdb/graphql/graphql.js';
 import { useUserSettings } from '@/vdb/hooks/use-user-settings.js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
+import { loadGoogleScript } from '../lib/utils.js';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+if (!GOOGLE_CLIENT_ID) throw new Error('Auth Error Initialization Error');
 
 /**
  * @description
@@ -33,7 +38,7 @@ export interface AuthContext {
      * @description
      * The function to authenticate the user.
      */
-    authenticate: (token: string, shopName?: string, shopCode?: string) => void;
+    authenticate: (token: string, shopname?: string, shopcode?: string) => void;
     /**
      * @description
      * The function to login the user.
@@ -59,6 +64,28 @@ export interface AuthContext {
      * The function to refresh the current user.
      */
     refreshCurrentUser: () => void;
+
+    /**
+     * @description
+     * Method to initialize google script
+     */
+    initializeGoogleScript: () => void;
+
+    /**
+     * @description
+     * Boolean to indicate if google script is loaded
+     */
+    googleScriptLoaded: boolean;
+
+    /**
+     * @description Methof to handle signin with google
+     */
+    signInWithGoogle: () => void;
+
+    /**
+     * @description Methof to handle signup with google
+     */
+    signUpWithGoogle: (shopname: string, shopcode: string) => void;
 }
 
 const LoginMutation = graphql(`
@@ -91,7 +118,7 @@ const AuthenticateMutation = graphql(`
             }
         }
     }
-`)
+`);
 
 const LogOutMutation = graphql(`
     mutation LogOut {
@@ -134,6 +161,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const [status, setStatus] = React.useState<AuthContext['status']>('initial');
     const [authenticationError, setAuthenticationError] = React.useState<string | undefined>();
     const [isLoginLogoutInProgress, setIsLoginLogoutInProgress] = React.useState(false);
+    const [googleScriptLoaded, setGoogleScriptLoaded] = React.useState(false);
     const { settings, setActiveChannelId } = useUserSettings();
     const queryClient = useQueryClient();
 
@@ -158,37 +186,80 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         }
     }, [settings.activeChannelId, currentUserData?.me?.channels]);
 
-    const authenticate = React.useCallback((token: string, shopname?: string, shopcode?: string) => {
-        console.log('Authenticating')
-        setIsLoginLogoutInProgress(true);
-        setStatus('verifying');
-        api.mutate(AuthenticateMutation)({ input: {
-            google: {
-                token, 
-                shopname,
-                shopcode
-            }
-        } })
-            .then(async data => {
-                if (data.authenticate.__typename === 'CurrentUser') {
-                    setAuthenticationError(undefined);
-                    await refetchCurrentUser();
-                    // Invalidate all queries to ensure fresh data after login
-                    await queryClient.invalidateQueries();
-                    setStatus('authenticated');
-                    setIsLoginLogoutInProgress(false);
-                } else {
-                    setAuthenticationError(data?.authenticate.message);
+    const initializeGoogleScript = () => {
+        loadGoogleScript().then(() => {
+            setGoogleScriptLoaded(true);
+        });
+    };
+
+    const authenticate = React.useCallback(
+        (token: string, shopname?: string, shopcode?: string) => {
+            setIsLoginLogoutInProgress(true);
+            setStatus('verifying');
+            api.mutate(AuthenticateMutation)({
+                input: {
+                    google: {
+                        token,
+                        shopname,
+                        shopcode,
+                    },
+                },
+            })
+                .then(async data => {
+                    if (data.authenticate.__typename === 'CurrentUser') {
+                        setAuthenticationError(undefined);
+                        await refetchCurrentUser();
+                        // Invalidate all queries to ensure fresh data after login
+                        await queryClient.invalidateQueries();
+                        setStatus('authenticated');
+                        setIsLoginLogoutInProgress(false);
+                    } else {
+                        setAuthenticationError(data?.authenticate.message);
+                        setStatus('unauthenticated');
+                        setIsLoginLogoutInProgress(false);
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    setAuthenticationError(error.additionalMessage ?? error.message);
                     setStatus('unauthenticated');
                     setIsLoginLogoutInProgress(false);
-                }
-            })
-            .catch(error => {
-                setAuthenticationError(error.message);
-                setStatus('unauthenticated');
-                setIsLoginLogoutInProgress(false);
+                });
+        },
+        [refetchCurrentUser, queryClient],
+    );
+
+    const handleGoogleSignIn = React.useCallback(
+        (shopname?: string, shopcode?: string) => {
+            setStatus('verifying');
+
+            const client = google.accounts.oauth2.initCodeClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: 'openid email profile',
+                ux_mode: 'popup',
+                callback: ({ code, error }) => {
+                    if (error || !code) {
+                        return;
+                    }
+                    authenticate(code, shopname, shopcode);
+                },
             });
-    }, [refetchCurrentUser, queryClient])
+
+            client.requestCode();
+        },
+        [googleScriptLoaded, authenticate],
+    );
+
+    const signInWithGoogle = React.useCallback(() => {
+        handleGoogleSignIn();
+    }, [handleGoogleSignIn]);
+
+    const signUpWithGoogle = React.useCallback(
+        (shopname: string, shopcode: string) => {
+            handleGoogleSignIn(shopname, shopcode);
+        },
+        [handleGoogleSignIn],
+    );
 
     // Auth actions
     const login = React.useCallback(
@@ -284,6 +355,10 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
                 login,
                 logout,
                 refreshCurrentUser,
+                initializeGoogleScript,
+                googleScriptLoaded,
+                signInWithGoogle,
+                signUpWithGoogle,
             }}
         >
             {children}

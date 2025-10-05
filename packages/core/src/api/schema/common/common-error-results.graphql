@@ -17,6 +17,13 @@ type InvalidCredentialsError implements ErrorResult {
     authenticationError: String!
 }
 
+"Returned if there is an error during the Authentication Process"
+type AuthenticationError implements ErrorResult {
+    errorCode: ErrorCode!
+    message: String!
+    additionalMessage: String!
+}
+
 "Returned if there is an error in transitioning the Order state"
 type OrderStateTransitionError implements ErrorResult {
     errorCode: ErrorCode!

@@ -295,6 +295,14 @@ export type AssignStockLocationsToChannelInput = {
   stockLocationIds: Array<Scalars['ID']['input']>;
 };
 
+/** Returned if there is an error during the Authentication Process */
+export type AuthenticationError = ErrorResult & {
+  __typename?: 'AuthenticationError';
+  additionalMessage: Scalars['String']['output'];
+  errorCode: ErrorCode;
+  message: Scalars['String']['output'];
+};
+
 export type AuthenticationInput = {
   native?: InputMaybe<NativeAuthInput>;
 };
@@ -307,7 +315,7 @@ export type AuthenticationMethod = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type AuthenticationResult = CurrentUser | InvalidCredentialsError;
+export type AuthenticationResult = CurrentUser | InvalidCredentialsError | ShopCodeConflictError;
 
 export type BooleanCustomFieldConfig = CustomField & {
   __typename?: 'BooleanCustomFieldConfig';
@@ -1672,6 +1680,7 @@ export type EntityDuplicatorDefinition = {
 
 export enum ErrorCode {
   ALREADY_REFUNDED_ERROR = 'ALREADY_REFUNDED_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   CANCEL_ACTIVE_ORDER_ERROR = 'CANCEL_ACTIVE_ORDER_ERROR',
   CANCEL_PAYMENT_ERROR = 'CANCEL_PAYMENT_ERROR',
   CHANNEL_DEFAULT_LANGUAGE_ERROR = 'CHANNEL_DEFAULT_LANGUAGE_ERROR',
