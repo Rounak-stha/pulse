@@ -6,6 +6,7 @@ export * from './default-job-queue-plugin/sql-job-buffer-storage-strategy';
 export * from './default-job-queue-plugin/types';
 export * from './default-scheduler-plugin/default-scheduler.plugin';
 export * from './default-search-plugin/index';
+export * from './google-auth-plugin/google-auth-plugin.plugin'
 export * from './plugin-common.module';
 export * from './plugin-metadata';
 export * from './plugin-utils';

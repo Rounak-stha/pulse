@@ -31,6 +31,11 @@ export interface AuthContext {
     isAuthenticated: boolean;
     /**
      * @description
+     * The function to authenticate the user.
+     */
+    authenticate: (token: string, shopName?: string, shopCode?: string) => void;
+    /**
+     * @description
      * The function to login the user.
      */
     login: (username: string, password: string, onSuccess?: () => void) => void;
@@ -71,6 +76,22 @@ const LoginMutation = graphql(`
         }
     }
 `);
+
+const AuthenticateMutation = graphql(`
+    mutation Authenticate($input: AuthenticationInput!) {
+        authenticate(input: $input) {
+            __typename
+            ... on CurrentUser {
+                id
+                identifier
+            }
+            ... on ErrorResult {
+                message
+                errorCode
+            }
+        }
+    }
+`)
 
 const LogOutMutation = graphql(`
     mutation LogOut {
@@ -136,6 +157,38 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
             setActiveChannelId(currentUserData.me.channels[0].id);
         }
     }, [settings.activeChannelId, currentUserData?.me?.channels]);
+
+    const authenticate = React.useCallback((token: string, shopname?: string, shopcode?: string) => {
+        console.log('Authenticating')
+        setIsLoginLogoutInProgress(true);
+        setStatus('verifying');
+        api.mutate(AuthenticateMutation)({ input: {
+            google: {
+                token, 
+                shopname,
+                shopcode
+            }
+        } })
+            .then(async data => {
+                if (data.authenticate.__typename === 'CurrentUser') {
+                    setAuthenticationError(undefined);
+                    await refetchCurrentUser();
+                    // Invalidate all queries to ensure fresh data after login
+                    await queryClient.invalidateQueries();
+                    setStatus('authenticated');
+                    setIsLoginLogoutInProgress(false);
+                } else {
+                    setAuthenticationError(data?.authenticate.message);
+                    setStatus('unauthenticated');
+                    setIsLoginLogoutInProgress(false);
+                }
+            })
+            .catch(error => {
+                setAuthenticationError(error.message);
+                setStatus('unauthenticated');
+                setIsLoginLogoutInProgress(false);
+            });
+    }, [refetchCurrentUser, queryClient])
 
     // Auth actions
     const login = React.useCallback(
@@ -227,6 +280,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
                 status,
                 user: currentUserData?.activeAdministrator,
                 channels: currentUserData?.me?.channels,
+                authenticate,
                 login,
                 logout,
                 refreshCurrentUser,

@@ -155,7 +155,7 @@ export class AdministratorService {
         administrator.emailAddress = normalizeEmailAddress(input.email);
         administrator.user = await this.userService.createAdminUser(ctx, input.email, input.password);
 
-        const adminRole = await this.roleService.createShopAdminRole(ctx, channel);
+        const adminRole = await this.roleService.createShopAdminRole(ctx);
         const createdAdministrator = await this.connection
             .getRepository(ctx, Administrator)
             .save(administrator);

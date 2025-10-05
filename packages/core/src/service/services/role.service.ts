@@ -240,7 +240,8 @@ export class RoleService {
         return role;
     }
 
-    async createShopAdminRole(ctx: RequestContext, channel: Channel) {
+    async createShopAdminRole(ctx: RequestContext) {
+        const channel = ctx.channel;
         const permissions = SHOP_ADMIN_PERMISSIONS;
         const input: CreateRoleInput = {
             code: 'shop_admin',

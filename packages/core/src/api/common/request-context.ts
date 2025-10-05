@@ -303,13 +303,21 @@ export class RequestContext {
      * @description
      * Creates a new RequestContext object with the specified Shop and Channel.
      * This is only supposed to be used during registration when initially the Shop and Channel are not defined
+     * If a transaction manager is present, it will be copied to the new context.
      */
     withShopAndChannel(shop: Shop, channel: Channel): RequestContext {
-        return new RequestContext({
+        const newCtx = new RequestContext({
             ...this,
             shop,
             channel,
         });
+
+        // Preserve transaction manager symbol if exists
+        const manager = (this as any)[TRANSACTION_MANAGER_KEY];
+        if (manager) {
+            (newCtx as any)[TRANSACTION_MANAGER_KEY] = manager;
+        }
+        return newCtx;
     }
 
     /**

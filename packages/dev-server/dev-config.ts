@@ -11,6 +11,7 @@ import {
     LogLevel,
     SettingsStoreScopes,
     VendureConfig,
+    GoogleAuthPlugin
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { defaultEmailHandlers, EmailPlugin, FileBasedTemplateLoader } from '@vendure/email-plugin';
@@ -142,6 +143,7 @@ export const devConfig: VendureConfig = {
             route: 'dashboard',
             appDir: path.join(__dirname, './dist'),
         }),
+        GoogleAuthPlugin.init({ googleClientId: process.env.GOOGLE_CLIENT_ID!, googleClientSecret: process.env.GOOGLE_CLIENT_SECRET! })
     ],
 };
 

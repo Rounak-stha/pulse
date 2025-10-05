@@ -109,3 +109,26 @@ function removeReadonlyFromTranslations(entity: Record<string, any>, readonlyFie
         }
     });
 }
+
+let scriptLoaded = false;
+
+export function loadGoogleScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (scriptLoaded) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      scriptLoaded = true;
+      resolve();
+    };
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
+

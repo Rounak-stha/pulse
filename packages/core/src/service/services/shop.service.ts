@@ -82,7 +82,7 @@ export class ShopService {
      * @internal
      */
     async refreshCache(ctx: RequestContext): Promise<Shop> {
-        const cache = await this.createCache(ctx.shop.code);
+        const cache = await this.getCache(ctx.shop.code);
         return cache.refresh(ctx);
     }
 
@@ -151,6 +151,11 @@ export class ShopService {
             .then(result => result ?? undefined);
     }
 
+    /**
+     * @description
+     * Registers a new shop and the defaults 
+     * Returns the RequestContext with the shop and channel
+     */
     async registerShop(ctx: RequestContext, input: CreateShopInput): Promise<RequestContext> {
         const shop = await this.create(ctx, input);
         const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop);
@@ -161,11 +166,16 @@ export class ShopService {
         return ctx;
     }
 
-    // When creating shop, one default channel should be created
+    /**
+     * Creates a new shop and returns it
+     * Cache is deliberately not created here as the self registering cache refresh function requires a RequestContext 
+     * and by default it creates an empty context to pass it into the query method
+     * But while creating a new shop, usually it is inside a transaction qand while in a transaction, the new reocrd is not yet commited
+     * and the query inside the refresh function in cache can not find it 
+     */
     async create(ctx: RequestContext, input: CreateShopInput): Promise<Shop> {
         const shop = new Shop(input);
         const createdShop = await this.connection.getRepository(ctx, Shop).save(shop);
-        await this.createCache(createdShop.code);
         return createdShop;
     }
 

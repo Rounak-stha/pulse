@@ -13,6 +13,7 @@ import { ChannelService } from '../../services/channel.service';
 import { CustomerService } from '../../services/customer.service';
 import { HistoryService } from '../../services/history.service';
 import { RoleService } from '../../services/role.service';
+import { ShopService } from '../../services/shop.service';
 
 /**
  * @description
@@ -25,6 +26,7 @@ import { RoleService } from '../../services/role.service';
 export class ExternalAuthenticationService {
     constructor(
         private connection: TransactionalConnection,
+        private shopService: ShopService,
         private roleService: RoleService,
         private historyService: HistoryService,
         private customerService: CustomerService,
@@ -206,6 +208,59 @@ export class ExternalAuthenticationService {
             }),
         );
 
+        return savedUser;
+    }
+
+    /**
+     * @description
+     * If an Administrator has been successfully authenticated by an external authentication provider, yet cannot
+     * be found using `findAdministratorUser`, then we need to register a new Shop and User
+     */
+    async createShopAndAdministratorAndUser(
+        ctx: RequestContext,
+        config: {
+            strategy: string;
+            externalIdentifier: string;
+            emailAddress: string;
+            firstName: string;
+            lastName: string;
+            shopName: string,
+            shopCode: string,
+        },
+    ): Promise<User> {
+        ctx = await this.shopService.registerShop(ctx, {
+            name: config.shopName,
+            code: config.shopCode,
+        });
+
+        const customerRole = await this.roleService.createShopAdminRole(ctx);
+
+        const user = new User({
+            identifier: config.emailAddress,
+            roles: [customerRole],
+            verified: true,
+            authenticationMethods: [],
+        });
+
+        const authMethod = await this.connection.getRepository(ctx, ExternalAuthenticationMethod).save(
+            new ExternalAuthenticationMethod({
+                externalIdentifier: config.externalIdentifier,
+                strategy: config.strategy,
+            }),
+        );
+
+        user.authenticationMethods = [...(user.authenticationMethods || []), authMethod];
+        const savedUser = await this.connection.getRepository(ctx, User).save(user);
+
+        const administrator = new Administrator({
+            emailAddress: config.emailAddress,
+            firstName: config.firstName,
+            lastName: config.lastName,
+            user: savedUser,
+            shop: ctx.shop,
+        });
+
+        await this.connection.getRepository(ctx, Administrator).save(administrator);
         return savedUser;
     }
 
