@@ -15,22 +15,11 @@ import { IsNull } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
 import { RelationPaths } from '../../api/decorators/relations.decorator';
-import {
-    EntityNotFoundError,
-    ForbiddenError,
-    InternalServerError,
-    UserInputError,
-} from '../../common/error/errors';
+import { EntityNotFoundError, ForbiddenError, UserInputError } from '../../common/error/errors';
 import { Instrument } from '../../common/instrument-decorator';
 import { ListQueryOptions } from '../../common/types/common-types';
 import { Translated } from '../../common/types/locale-types';
 import { assertFound, idsAreEqual } from '../../common/utils';
-import {
-    defaultShippingCalculator,
-    defaultShippingEligibilityChecker,
-    manualFulfillmentHandler,
-    TaxSetting,
-} from '../../config';
 import { ConfigService } from '../../config/config.service';
 import { Logger } from '../../config/logger/vendure-logger';
 import { TransactionalConnection } from '../../connection/transactional-connection';
@@ -107,57 +96,6 @@ export class ShippingMethodService {
         return (shippingMethod && this.translator.translate(shippingMethod, ctx)) ?? undefined;
     }
 
-    /**
-     * @description
-     * Creates a default shipping method for the shop after registration
-     */
-    async createDefaultShippingMethodAfterRegistration(ctx: RequestContext) {
-        const shop = ctx.shop;
-        const channel = ctx.channel;
-        const { shippingEligibilityCheckers, shippingCalculators, fulfillmentHandlers } =
-            this.configService.shippingOptions;
-        const checker = shippingEligibilityCheckers.find(
-            c => c.code === defaultShippingEligibilityChecker.code,
-        );
-        const calculator = shippingCalculators.find(c => c.code === defaultShippingCalculator.code);
-        const fulfillmentHandler = fulfillmentHandlers.find(h => h.code === manualFulfillmentHandler.code);
-        if (!checker) {
-            throw new InternalServerError(
-                'Could not find a suitable ShippingEligibilityChecker for the seller',
-            );
-        }
-        if (!calculator) {
-            throw new InternalServerError('Could not find a suitable ShippingCalculator for the seller');
-        }
-        if (!fulfillmentHandler) {
-            throw new InternalServerError('Could not find a suitable FulfillmentHandler for the seller');
-        }
-        const shippingMethod = await this.create(ctx, {
-            code: `${shop.code}-default-shipping`,
-            checker: {
-                code: checker.code,
-                arguments: [],
-            },
-            calculator: {
-                code: calculator.code,
-                arguments: [
-                    { name: 'rate', value: '500' },
-                    { name: 'includesTax', value: TaxSetting.auto },
-                    { name: 'taxRate', value: '20' },
-                ],
-            },
-            fulfillmentHandler: fulfillmentHandler.code,
-            translations: [
-                {
-                    languageCode: channel.defaultLanguageCode,
-                    name: `Standard Shipping for ${shop.name}`,
-                },
-            ],
-        });
-
-        await this.channelService.assignToChannels(ctx, ShippingMethod, shippingMethod.id, [channel.id]);
-    }
-
     async create(ctx: RequestContext, input: CreateShippingMethodInput): Promise<Translated<ShippingMethod>> {
         const shippingMethod = await this.translatableSaver.create({
             ctx,
@@ -165,6 +103,7 @@ export class ShippingMethodService {
             entityType: ShippingMethod,
             translationType: ShippingMethodTranslation,
             beforeSave: method => {
+                method.shop = ctx.shop;
                 method.fulfillmentHandlerCode = this.ensureValidFulfillmentHandlerCode(
                     method.code,
                     input.fulfillmentHandler,
@@ -193,8 +132,8 @@ export class ShippingMethodService {
     }
 
     async update(ctx: RequestContext, input: UpdateShippingMethodInput): Promise<Translated<ShippingMethod>> {
-        const shippingMethod = await this.findOne(ctx, input.id);
-        if (!shippingMethod) {
+        const shippingMethod = await this.findOne(ctx, input.id, false, ['shop']);
+        if (!shippingMethod || shippingMethod.shop.id !== ctx.shopId) {
             throw new EntityNotFoundError('ShippingMethod', input.id);
         }
         const updatedShippingMethod = await this.translatableSaver.update({
@@ -237,7 +176,7 @@ export class ShippingMethodService {
     async softDelete(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
         const shippingMethod = await this.connection.getEntityOrThrow(ctx, ShippingMethod, id, {
             channelId: ctx.channelId,
-            where: { deletedAt: IsNull() },
+            where: { deletedAt: IsNull(), shop: { id: ctx.shopId } },
         });
         shippingMethod.deletedAt = new Date();
         await this.connection.getRepository(ctx, ShippingMethod).save(shippingMethod, { reload: false });

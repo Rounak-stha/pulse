@@ -12,13 +12,14 @@ import { unique } from '@vendure/common/lib/unique';
 import { In } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
+import { InternalServerError } from '../../common';
 import { Instrument } from '../../common/instrument-decorator';
 import { createSelfRefreshingCache, SelfRefreshingCache } from '../../common/self-refreshing-cache';
 import { ListQueryOptions } from '../../common/types/common-types';
 import { assertFound } from '../../common/utils';
 import { ConfigService } from '../../config/config.service';
 import { TransactionalConnection } from '../../connection/transactional-connection';
-import { Channel, TaxRate } from '../../entity';
+import { Channel, Shop, TaxRate } from '../../entity';
 import { Country } from '../../entity/region/country.entity';
 import { Zone } from '../../entity/zone/zone.entity';
 import { EventBus } from '../../event-bus';
@@ -40,7 +41,7 @@ export class ZoneService {
     /**
      * We cache all Zones to avoid hitting the DB many times per request.
      */
-    private zones: SelfRefreshingCache<Zone[], [RequestContext]>;
+    private zones = new Map<ID, SelfRefreshingCache<Zone[], [RequestContext]>>();
     constructor(
         private connection: TransactionalConnection,
         private configService: ConfigService,
@@ -49,33 +50,52 @@ export class ZoneService {
         private listQueryBuilder: ListQueryBuilder,
     ) {}
 
-    /** @internal */
-    async initZones() {
-        await this.ensureCacheExists();
-    }
-
     /**
      * Creates a zones cache, that can be used to reduce number of zones queries to database
      *
      * @internal
      */
-    async createCache(): Promise<SelfRefreshingCache<Zone[], [RequestContext]>> {
-        return await createSelfRefreshingCache({
+    async createCache(ctx: RequestContext): Promise<SelfRefreshingCache<Zone[], [RequestContext]>> {
+        const cache = await createSelfRefreshingCache({
             name: 'ZoneService.zones',
             ttl: this.configService.entityOptions.zoneCacheTtl,
             refresh: {
-                fn: ctx =>
-                    this.connection.getRepository(ctx, Zone).find({
+                fn: _ctx =>
+                    this.connection.getRepository(_ctx, Zone).find({
+                        where: { shop: { id: _ctx.shopId } },
                         relations: ['members'],
                     }),
-                defaultArgs: [RequestContext.empty()],
+                defaultArgs: [RequestContext.empty().withShopAndChannel(ctx.shop, ctx.channel)],
             },
         });
+        this.zones.set(ctx.shopId, cache);
+        return cache;
+    }
+
+    /**
+     * Gets the cache entry for the shop
+     * Creates a new cache entry if does not exist
+     * @internal
+     */
+    private async getCache(ctx: RequestContext): Promise<SelfRefreshingCache<Zone[], [RequestContext]>> {
+        if (!this.zones.has(ctx.shopId)) return await this.createCache(ctx);
+        // eslint-disable-next-line
+        return this.zones.get(ctx.shopId)!;
+    }
+
+    /**
+     * Refreshes the cache for the Shop
+     * Optional parameter Shop is used when Registering a new Administrator
+     * @internal
+     */
+    private async refreshCache(ctx: RequestContext): Promise<Zone[]> {
+        const cache = await this.getCache(ctx);
+        return await cache.refresh(ctx);
     }
 
     async findAll(ctx: RequestContext, options?: ListQueryOptions<Zone>): Promise<PaginatedList<Zone>> {
         return this.listQueryBuilder
-            .build(Zone, options, { relations: ['members'], ctx })
+            .build(Zone, options, { relations: ['members'], ctx, where: { shop: { id: ctx.shopId } } })
             .getManyAndCount()
             .then(([items, totalItems]) => {
                 const translated = items.map((zone, i) => {
@@ -94,7 +114,7 @@ export class ZoneService {
         return this.connection
             .getRepository(ctx, Zone)
             .findOne({
-                where: { id: zoneId },
+                where: { id: zoneId, shop: { id: ctx.shopId } },
                 relations: ['members'],
             })
             .then(zone => {
@@ -106,7 +126,8 @@ export class ZoneService {
     }
 
     async getAllWithMembers(ctx: RequestContext): Promise<Zone[]> {
-        return this.zones.memoize([], [ctx], zones => {
+        const cache = await this.getCache(ctx);
+        return cache.memoize([], [ctx], zones => {
             return zones.map((zone, i) => {
                 const cloneZone = { ...zone };
                 cloneZone.members = zone.members.map(country => this.translator.translate(country, ctx));
@@ -121,7 +142,7 @@ export class ZoneService {
             zone.members = await this.getCountriesFromIds(ctx, input.memberIds);
         }
         const newZone = await this.connection.getRepository(ctx, Zone).save(zone);
-        await this.zones.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ZoneEvent(ctx, newZone, 'created', input));
         return assertFound(this.findOne(ctx, newZone.id));
     }
@@ -130,7 +151,7 @@ export class ZoneService {
         const zone = await this.connection.getEntityOrThrow(ctx, Zone, input.id);
         const updatedZone = patchEntity(zone, input);
         await this.connection.getRepository(ctx, Zone).save(updatedZone, { reload: false });
-        await this.zones.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ZoneEvent(ctx, zone, 'updated', input));
         return assertFound(this.findOne(ctx, zone.id));
     }
@@ -169,7 +190,7 @@ export class ZoneService {
             };
         } else {
             await this.connection.getRepository(ctx, Zone).remove(zone);
-            await this.zones.refresh(ctx);
+            await this.refreshCache(ctx);
             await this.eventBus.publish(new ZoneEvent(ctx, deletedZone, 'deleted', id));
             return {
                 result: DeletionResult.DELETED,
@@ -189,7 +210,7 @@ export class ZoneService {
         const members = unique(zone.members.concat(countries), 'id');
         zone.members = members;
         await this.connection.getRepository(ctx, Zone).save(zone, { reload: false });
-        await this.zones.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ZoneMembersEvent(ctx, zone, 'assigned', memberIds));
         return assertFound(this.findOne(ctx, zone.id));
     }
@@ -203,7 +224,7 @@ export class ZoneService {
         });
         zone.members = zone.members.filter(country => !memberIds.includes(country.id));
         await this.connection.getRepository(ctx, Zone).save(zone, { reload: false });
-        await this.zones.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ZoneMembersEvent(ctx, zone, 'removed', memberIds));
         return assertFound(this.findOne(ctx, zone.id));
     }
@@ -212,14 +233,18 @@ export class ZoneService {
         return this.connection.getRepository(ctx, Country).find({ where: { id: In(ids) } });
     }
 
-    /**
-     * Ensures zones cache exists. If not, this method creates one.
-     */
-    private async ensureCacheExists() {
-        if (this.zones) {
-            return;
-        }
+    private getCountryNepal(ctx: RequestContext): Promise<Country | null> {
+        return this.connection.getRepository(ctx, Country).findOne({ where: { code: 'NP' } });
+    }
 
-        this.zones = await this.createCache();
+    async createDefaultZoneAfterRegistration(ctx: RequestContext, shop: Shop): Promise<Zone> {
+        const countryNepal = await this.getCountryNepal(ctx);
+        if (!countryNepal) throw new InternalServerError('Authentication Error');
+        const zone = new Zone({
+            name: 'Nepal',
+            shop,
+            members: [countryNepal],
+        });
+        return await this.connection.getRepository(ctx, Zone).save(zone);
     }
 }

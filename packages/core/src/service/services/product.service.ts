@@ -39,6 +39,7 @@ import { SlugValidator } from '../helpers/slug-validator/slug-validator';
 import { TranslatableSaver } from '../helpers/translatable-saver/translatable-saver';
 import { TranslatorService } from '../helpers/translator/translator.service';
 
+import { Shop } from '../../entity';
 import { AssetService } from './asset.service';
 import { ChannelService } from './channel.service';
 import { FacetValueService } from './facet-value.service';
@@ -99,7 +100,7 @@ export class ProductService {
             .build(Product, options, {
                 relations: effectiveRelations,
                 channelId: ctx.channelId,
-                where: { deletedAt: IsNull() },
+                where: { deletedAt: IsNull(), shop: { id: ctx.shopId } },
                 ctx,
                 customPropertyMap,
             })
@@ -130,6 +131,7 @@ export class ProductService {
             relations: unique(effectiveRelations),
             where: {
                 deletedAt: IsNull(),
+                shop: { id: ctx.shopId },
             },
         });
         if (!product) {
@@ -151,9 +153,11 @@ export class ProductService {
         FindOptionsUtils.joinEagerRelations(qb, qb.alias, qb.expressionMap.mainAlias!.metadata);
         return qb
             .leftJoin('product.channels', 'channel')
+            .leftJoin('product.shop', 'shop')
             .andWhere('product.deletedAt IS NULL')
             .andWhere('product.id IN (:...ids)', { ids: productIds })
             .andWhere('channel.id = :channelId', { channelId: ctx.channelId })
+            .andWhere('shop.id = :shopId', { shopId: ctx.shopId })
             .getMany()
             .then(products => {
                 return products.map(product =>
@@ -170,6 +174,7 @@ export class ProductService {
         const product = await this.connection.getEntityOrThrow(ctx, Product, productId, {
             relations: ['channels'],
             channelId: ctx.channelId,
+            where: { shop: { id: ctx.shopId } },
         });
         return product.channels;
     }
@@ -178,7 +183,7 @@ export class ProductService {
         return this.connection
             .getRepository(ctx, Product)
             .findOne({
-                where: { id: productId },
+                where: { id: productId, shop: { id: ctx.shopId } },
                 relations: ['facetValues'],
             })
             .then(product => {
@@ -237,6 +242,7 @@ export class ProductService {
                 if (input.facetValueIds) {
                     p.facetValues = await this.facetValueService.findByIds(ctx, input.facetValueIds);
                 }
+                p.shop = new Shop({ id: ctx.shopId });
                 await this.assetService.updateFeaturedAsset(ctx, p, input);
             },
         });
@@ -251,6 +257,7 @@ export class ProductService {
         const product = await this.connection.getEntityOrThrow(ctx, Product, input.id, {
             channelId: ctx.channelId,
             relations: ['facetValues', 'facetValues.channels'],
+            where: { shop: { id: ctx.shopId } },
         });
         await this.slugValidator.validateSlugs(ctx, input, ProductTranslation);
         const updatedProduct = await this.translatableSaver.update({
@@ -284,6 +291,7 @@ export class ProductService {
             loadEagerRelations: false,
             channelId: ctx.channelId,
             relations: ['variants', 'optionGroups'],
+            where: { shop: { id: ctx.shopId } },
         });
         product.deletedAt = new Date();
         await this.connection.getRepository(ctx, Product).save(product, { reload: false });
@@ -328,7 +336,7 @@ export class ProductService {
         input: AssignProductsToChannelInput,
     ): Promise<Array<Translated<Product>>> {
         const productsWithVariants = await this.connection.getRepository(ctx, Product).find({
-            where: { id: In(input.productIds) },
+            where: { id: In(input.productIds), shop: { id: ctx.shopId } },
             relations: ['variants', 'assets'],
         });
         await this.productVariantService.assignProductVariantsToChannel(ctx, {
@@ -359,7 +367,7 @@ export class ProductService {
         input: RemoveProductsFromChannelInput,
     ): Promise<Array<Translated<Product>>> {
         const productsWithVariants = await this.connection.getRepository(ctx, Product).find({
-            where: { id: In(input.productIds) },
+            where: { id: In(input.productIds), shop: { id: ctx.shopId } },
             relations: ['variants'],
         });
         await this.productVariantService.removeProductVariantsFromChannel(ctx, {
@@ -468,7 +476,7 @@ export class ProductService {
         const product = await this.connection.getRepository(ctx, Product).findOne({
             relationLoadStrategy: 'query',
             loadEagerRelations: false,
-            where: { id: productId, deletedAt: IsNull() },
+            where: { id: productId, deletedAt: IsNull(), shop: { id: ctx.shopId } },
             relations: ['optionGroups', 'variants', 'variants.options'],
         });
         if (!product) {

@@ -44,8 +44,6 @@ export class InitializerService {
         // IMPORTANT - why manually invoke these init methods rather than just relying on
         // Nest's "onModuleInit" lifecycle hook within each individual service class?
         // The reason is that the order of invocation matters. By explicitly invoking the
-        await this.zoneService.initZones();
-        await this.taxRateService.initTaxRates();
         await this.eventBus.publish(new InitializerEvent());
     }
 

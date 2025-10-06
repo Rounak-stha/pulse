@@ -5,7 +5,6 @@ import {
     CurrencyCode,
     DeletionResponse,
     DeletionResult,
-    Permission,
     UpdateChannelInput,
     UpdateChannelResult,
 } from '@vendure/common/lib/generated-types';
@@ -16,12 +15,10 @@ import { FindOptionsWhere } from 'typeorm';
 
 import { RelationPaths } from '../../api';
 import { RequestContext } from '../../api/common/request-context';
-import { DEFAULT_ZONES } from '../../common/constants';
 import { ErrorResultUnion, isGraphQlErrorResult } from '../../common/error/error-result';
 import {
     ChannelNotFoundError,
     EntityNotFoundError,
-    ForbiddenError,
     InternalServerError,
     UserInputError,
 } from '../../common/error/errors';
@@ -336,6 +333,7 @@ export class ChannelService {
             .build(Channel, options, {
                 relations: relations ?? ['defaultShippingZone', 'defaultTaxZone'],
                 ctx,
+                where: { shop: { id: ctx.shopId } },
             })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
@@ -345,29 +343,25 @@ export class ChannelService {
     }
 
     async findOne(ctx: RequestContext, id: ID): Promise<Channel | undefined> {
-        const shop = ctx.shop;
-        const channelId = ctx.channelId;
-        const isSuperAdmin = ctx.userHasPermissions([Permission.SuperAdmin]);
-
-        // if not super admin and channel does not match (true && true)
-        // if is super admin (false)
-        // if not super admin but channel matches (true && false)
-        if (!isSuperAdmin && channelId !== id) throw new ForbiddenError();
-
         return this.connection
             .getRepository(ctx, Channel)
-            .findOne({ where: { id, shop }, relations: ['defaultShippingZone', 'defaultTaxZone'] })
+            .findOne({
+                where: { id, shop: { id: ctx.shopId } },
+                relations: ['defaultShippingZone', 'defaultTaxZone'],
+            })
             .then(result => result ?? undefined);
     }
 
-    async createDefaultChannelAfterRegistration(ctx: RequestContext, shop: Shop): Promise<Channel> {
+    async createDefaultChannelAfterRegistration(
+        ctx: RequestContext,
+        shop: Shop,
+        zone: Zone,
+    ): Promise<Channel> {
         const defaultCurrencyCode = CurrencyCode.NPR;
         const defaultLanguageCode = ctx.languageCode;
         const code = DEFAULT_CHANNEL_CODE;
         const token = shop.code + code;
-        const defaultShippingZone = (await this.zoneService.getAllWithMembers(ctx)).find(
-            zone => zone.name === DEFAULT_ZONES.ASIA,
-        );
+        const defaultShippingZone = zone;
 
         if (!defaultShippingZone) {
             throw new InternalServerError('error.default-shipping-zone-not-found');

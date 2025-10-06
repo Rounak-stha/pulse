@@ -19,6 +19,7 @@ import { ChannelService } from './channel.service';
 import { GlobalSettingsService } from './global-settings.service';
 import { ShippingMethodService } from './shipping-method.service';
 import { StockLocationService } from './stock-location.service';
+import { ZoneService } from './zone.service';
 /**
  * @description
  * Contains methods relating to {@link Channel} entities.
@@ -33,6 +34,7 @@ export class ShopService {
     constructor(
         private connection: TransactionalConnection,
         private configService: ConfigService,
+        private zoneService: ZoneService,
         private channelService: ChannelService,
         private shippingMethodService: ShippingMethodService,
         private stockLocationService: StockLocationService,
@@ -158,10 +160,9 @@ export class ShopService {
      */
     async registerShop(ctx: RequestContext, input: CreateShopInput): Promise<RequestContext> {
         const shop = await this.create(ctx, input);
-        const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop);
+        const zone = await this.zoneService.createDefaultZoneAfterRegistration(ctx, shop);
+        const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop, zone);
         ctx = ctx.withShopAndChannel(shop, channel);
-        await this.shippingMethodService.createDefaultShippingMethodAfterRegistration(ctx);
-        await this.stockLocationService.createDefaultStockocationAfterRegistration(ctx);
         await this.globalSettingsService.createDefaultGlobalSettinsAfterRegistration(ctx);
         return ctx;
     }

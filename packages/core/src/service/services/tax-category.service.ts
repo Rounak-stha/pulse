@@ -40,7 +40,7 @@ export class TaxCategoryService {
         options?: ListQueryOptions<TaxCategory>,
     ): Promise<PaginatedList<TaxCategory>> {
         return this.listQueryBuilder
-            .build(TaxCategory, options, { ctx })
+            .build(TaxCategory, options, { ctx, where: { shop: { id: ctx.shopId } } })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
                 items,
@@ -51,12 +51,16 @@ export class TaxCategoryService {
     findOne(ctx: RequestContext, taxCategoryId: ID): Promise<TaxCategory | undefined> {
         return this.connection
             .getRepository(ctx, TaxCategory)
-            .findOne({ where: { id: taxCategoryId } })
+            .findOne({
+                where: { id: taxCategoryId, shop: { id: ctx.shopId } },
+                relations: ['shop'],
+            })
             .then(result => result ?? undefined);
     }
 
     async create(ctx: RequestContext, input: CreateTaxCategoryInput): Promise<TaxCategory> {
         const taxCategory = new TaxCategory(input);
+        taxCategory.shop = ctx.shop;
         if (input.isDefault === true) {
             await this.connection
                 .getRepository(ctx, TaxCategory)
@@ -69,7 +73,7 @@ export class TaxCategoryService {
 
     async update(ctx: RequestContext, input: UpdateTaxCategoryInput): Promise<TaxCategory> {
         const taxCategory = await this.findOne(ctx, input.id);
-        if (!taxCategory) {
+        if (!taxCategory || taxCategory.shop.id !== ctx.shopId) {
             throw new EntityNotFoundError('TaxCategory', input.id);
         }
         const updatedTaxCategory = patchEntity(taxCategory, input);
@@ -88,6 +92,12 @@ export class TaxCategoryService {
         const dependentRates = await this.connection
             .getRepository(ctx, TaxRate)
             .count({ where: { category: { id } } });
+
+        if (taxCategory.shop.id !== ctx.shopId)
+            return {
+                result: DeletionResult.NOT_DELETED,
+                message: 'Tax Category Not Found',
+            };
 
         if (0 < dependentRates) {
             const message = ctx.translate('message.cannot-remove-tax-category-due-to-tax-rates', {

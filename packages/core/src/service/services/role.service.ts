@@ -27,7 +27,6 @@ import { ConfigService } from '../../config/config.service';
 import { TransactionalConnection } from '../../connection/transactional-connection';
 import { Channel } from '../../entity/channel/channel.entity';
 import { Role } from '../../entity/role/role.entity';
-import { Shop } from '../../entity/shop/shop.entity';
 import { User } from '../../entity/user/user.entity';
 import { EventBus } from '../../event-bus';
 import { RoleEvent } from '../../event-bus/events/role-event';
@@ -64,7 +63,11 @@ export class RoleService {
         relations?: RelationPaths<Role>,
     ): Promise<PaginatedList<Role>> {
         return this.listQueryBuilder
-            .build(Role, options, { relations: unique([...(relations ?? []), 'channels']), ctx })
+            .build(Role, options, {
+                relations: unique([...(relations ?? []), 'channels']),
+                ctx,
+                where: { shop: { id: ctx.shopId } },
+            })
             .getManyAndCount()
             .then(async ([items, totalItems]) => {
                 const visibleRoles: Role[] = [];
@@ -85,7 +88,7 @@ export class RoleService {
         return this.connection
             .getRepository(ctx, Role)
             .findOne({
-                where: { id: roleId },
+                where: { id: roleId, shop: { id: ctx.shopId } },
                 relations: unique([...(relations ?? []), 'channels']),
             })
             .then(async result => {
@@ -419,7 +422,7 @@ export class RoleService {
 
     private createRoleForChannels(ctx: RequestContext, input: CreateRoleInput, channels: Channel[]) {
         const role = new Role({
-            shop: new Shop({ id: input.shopId }),
+            shop: ctx.shop,
             code: input.code,
             description: input.description,
             permissions: unique([Permission.Authenticated, ...input.permissions]),

@@ -92,6 +92,7 @@ export class FacetValueService {
                 ctx,
                 relations: relations ?? ['facet'],
                 channelId: ctx.channelId,
+                where: { shop: { id: ctx.shopId } },
             })
             .getManyAndCount()
             .then(([items, totalItems]) => {
@@ -106,7 +107,7 @@ export class FacetValueService {
         return this.connection
             .getRepository(ctx, FacetValue)
             .findOne({
-                where: { id },
+                where: { id, shop: { id: ctx.shopId } },
                 relations: ['facet'],
             })
             .then(
@@ -118,6 +119,7 @@ export class FacetValueService {
     findByIds(ctx: RequestContext, ids: ID[]): Promise<Array<Translated<FacetValue>>> {
         const facetValues = this.connection.findByIdsInChannel(ctx, FacetValue, ids, ctx.channelId, {
             relations: ['facet'],
+            where: { shop: { id: ctx.shopId } },
         });
         return facetValues.then(values =>
             values.map(facetValue => this.translator.translate(facetValue, ctx, ['facet'])),
@@ -134,6 +136,7 @@ export class FacetValueService {
             .find({
                 where: {
                     facet: { id },
+                    shop: { id: ctx.shopId },
                 },
             })
             .then(values => values.map(facetValue => this.translator.translate(facetValue, ctx)));
@@ -156,6 +159,8 @@ export class FacetValueService {
                 channelId: ctx.channelId,
                 entityAlias: 'facetValue',
             })
+            .leftJoin('facetValue.shop', 'shop')
+            .andWhere('shop.id = :shopId', { shopId: ctx.shopId })
             .andWhere('facetValue.facetId = :id', { id })
             .getManyAndCount()
             .then(([items, totalItems]) => {
@@ -178,6 +183,7 @@ export class FacetValueService {
             translationType: FacetValueTranslation,
             beforeSave: async fv => {
                 fv.facet = facet;
+                fv.shop = ctx.shop;
                 await this.channelService.assignToCurrentChannel(fv, ctx);
             },
         });
@@ -211,7 +217,9 @@ export class FacetValueService {
         let message = '';
         let result: DeletionResult;
 
-        const facetValue = await this.connection.getEntityOrThrow(ctx, FacetValue, id);
+        const facetValue = await this.connection.getEntityOrThrow(ctx, FacetValue, id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         const i18nVars = {
             products: productCount,
             variants: variantCount,

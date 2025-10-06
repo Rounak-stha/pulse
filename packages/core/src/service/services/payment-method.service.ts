@@ -66,7 +66,12 @@ export class PaymentMethodService {
         relations: RelationPaths<PaymentMethod> = [],
     ): Promise<PaginatedList<PaymentMethod>> {
         return this.listQueryBuilder
-            .build(PaymentMethod, options, { ctx, relations, channelId: ctx.channelId })
+            .build(PaymentMethod, options, {
+                ctx,
+                relations,
+                channelId: ctx.channelId,
+                where: { shop: { id: ctx.shopId } },
+            })
             .getManyAndCount()
             .then(([methods, totalItems]) => {
                 const items = methods.map(m => this.translator.translate(m, ctx));
@@ -85,6 +90,7 @@ export class PaymentMethodService {
         return this.connection
             .findOneInChannel(ctx, PaymentMethod, paymentMethodId, ctx.channelId, {
                 relations,
+                where: { shop: { id: ctx.shopId } },
             })
             .then(paymentMethod => {
                 if (paymentMethod) {
@@ -100,6 +106,7 @@ export class PaymentMethodService {
             entityType: PaymentMethod,
             translationType: PaymentMethodTranslation,
             beforeSave: async pm => {
+                pm.shop = ctx.shop;
                 pm.handler = this.configArgService.parseInput('PaymentMethodHandler', input.handler);
                 if (input.checker) {
                     pm.checker = this.configArgService.parseInput(
@@ -155,6 +162,7 @@ export class PaymentMethodService {
         const paymentMethod = await this.connection.getEntityOrThrow(ctx, PaymentMethod, paymentMethodId, {
             relations: ['channels'],
             channelId: ctx.channelId,
+            where: { shop: { id: ctx.shopId } },
         });
         if (ctx.channel.code === DEFAULT_CHANNEL_CODE) {
             const nonDefaultChannels = paymentMethod.channels.filter(
@@ -307,8 +315,10 @@ export class PaymentMethodService {
             .getRepository(ctx, PaymentMethod)
             .createQueryBuilder('method')
             .leftJoin('method.channels', 'channel')
+            .leftJoin('method.shop', 'shop')
             .where('method.code = :code', { code: method })
             .andWhere('channel.id = :channelId', { channelId: ctx.channelId })
+            .andWhere('shop.id = :shopId', { shopId: ctx.shopId })
             .andWhere('method.enabled IS true')
             .getOne();
         if (!paymentMethod) {
