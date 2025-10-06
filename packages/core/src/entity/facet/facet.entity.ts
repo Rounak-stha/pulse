@@ -34,7 +34,7 @@ export class Facet extends VendureEntity implements Translatable, HasCustomField
      * The Shop to which the Facet belongs.
      */
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     name: LocaleString;

@@ -21,7 +21,7 @@ export class Role extends VendureEntity implements ChannelAware, ShopAware {
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column() code: string;

@@ -48,7 +48,7 @@ export class Collection
      * The Shop to which the Collection belongs.
      */
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column({ default: false })

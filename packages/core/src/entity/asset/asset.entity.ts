@@ -27,7 +27,7 @@ export class Asset extends VendureEntity implements Taggable, ChannelAware, HasC
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column() name: string;

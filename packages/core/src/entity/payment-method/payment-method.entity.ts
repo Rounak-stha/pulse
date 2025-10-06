@@ -33,7 +33,7 @@ export class PaymentMethod
     @Column({ default: '' }) code: string;
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     description: LocaleString;

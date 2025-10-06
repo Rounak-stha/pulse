@@ -31,7 +31,7 @@ export class FacetValue
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
     name: LocaleString;
 

@@ -21,7 +21,7 @@ import { Shop } from '../shop/shop.entity';
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export abstract class Session extends VendureEntity implements HasCustomFields, ShopAware {
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Index({ unique: true })

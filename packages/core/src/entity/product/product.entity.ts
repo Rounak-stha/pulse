@@ -50,7 +50,7 @@ export class Product
     featuredAsset: Asset;
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @EntityId({ nullable: true })

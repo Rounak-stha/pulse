@@ -27,7 +27,7 @@ export class StockLocation extends VendureEntity implements HasCustomFields, Cha
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column()

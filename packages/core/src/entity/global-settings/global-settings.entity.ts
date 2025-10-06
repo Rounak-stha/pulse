@@ -24,7 +24,7 @@ export class GlobalSettings extends VendureEntity implements HasCustomFields, Sh
      * The shop the settings belongs to
      */
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     /**

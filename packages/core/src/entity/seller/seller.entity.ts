@@ -22,7 +22,7 @@ export class Seller extends VendureEntity implements SoftDeletable, HasCustomFie
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column({ type: Date, nullable: true })

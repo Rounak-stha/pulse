@@ -19,7 +19,7 @@ export class Tag extends VendureEntity implements ShopAware {
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column()

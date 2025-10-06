@@ -27,7 +27,7 @@ export class Fulfillment extends VendureEntity implements HasCustomFields, ShopA
      * The shop the fulfillment belongs to
      */
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column('varchar') state: FulfillmentState;

@@ -23,7 +23,7 @@ export class Administrator extends VendureEntity implements SoftDeletable, HasCu
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column({ type: Date, nullable: true })

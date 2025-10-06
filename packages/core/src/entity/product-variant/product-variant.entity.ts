@@ -46,7 +46,7 @@ export class ProductVariant
     }
 
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     @Column({ type: Date, nullable: true })

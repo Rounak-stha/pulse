@@ -51,7 +51,7 @@ export class Channel extends VendureEntity implements ShopAware {
      * The Shop to which the Channel belongs.
      */
     @Index()
-    @ManyToOne(type => Shop)
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
     shop: Shop;
 
     /**
