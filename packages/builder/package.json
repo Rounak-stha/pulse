@@ -1,0 +1,26 @@
+{
+    "name": "@vendure/builder",
+    "version": "3.4.2",
+    "description": "Storefront Builder",
+    "scripts": {
+        "build": "tsc"
+    },
+    "exports": {
+        ".": [
+            "./src/builder/core/builder.js"
+        ],
+        "./app": [
+            "./src/builder/components/app.jsx"
+        ]
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
+        "add": "^2.0.6",
+        "petite-vue": "^0.4.1",
+        "tinykeys": "^3.0.0",
+        "zundo": "^2.3.0",
+        "zustand": "^5.0.8"
+    }
+}
