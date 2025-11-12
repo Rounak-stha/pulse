@@ -49,6 +49,7 @@ import { GlobalSettingsService } from './services/global-settings.service';
 import { HistoryService } from './services/history.service';
 import { OrderTestingService } from './services/order-testing.service';
 import { OrderService } from './services/order.service';
+import { PageService } from './services/page.service';
 import { PaymentMethodService } from './services/payment-method.service';
 import { PaymentService } from './services/payment.service';
 import { ProductOptionGroupService } from './services/product-option-group.service';
@@ -87,6 +88,7 @@ const services = [
     HistoryService,
     OrderService,
     OrderTestingService,
+    PageService,
     PaymentService,
     PaymentMethodService,
     ProductOptionGroupService,

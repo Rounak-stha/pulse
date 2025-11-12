@@ -1,6 +1,6 @@
 import { Trans } from '@/vdb/lib/trans.js';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import GrapesBuilder from './components/Grapes.js';
+import { BuilderEditor } from './components/CraftBuilder.js';
 
 export const Route = createFileRoute('/_builder/builder')({
     beforeLoad: ({ context, location }) => {
@@ -18,5 +18,5 @@ export const Route = createFileRoute('/_builder/builder')({
 });
 
 function BuilderPage() {
-    return <GrapesBuilder />;
+    return <BuilderEditor />;
 }

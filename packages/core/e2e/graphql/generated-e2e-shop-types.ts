@@ -2412,6 +2412,8 @@ export enum Permission {
   CreateFacet = 'CreateFacet',
   /** Grants permission to create Order */
   CreateOrder = 'CreateOrder',
+  /** Grants permission to create Page */
+  CreatePage = 'CreatePage',
   /** Grants permission to create PaymentMethod */
   CreatePaymentMethod = 'CreatePaymentMethod',
   /** Grants permission to create Product */
@@ -2456,6 +2458,8 @@ export enum Permission {
   DeleteFacet = 'DeleteFacet',
   /** Grants permission to delete Order */
   DeleteOrder = 'DeleteOrder',
+  /** Grants permission to delete Page */
+  DeletePage = 'DeletePage',
   /** Grants permission to delete PaymentMethod */
   DeletePaymentMethod = 'DeletePaymentMethod',
   /** Grants permission to delete Product */
@@ -2504,6 +2508,8 @@ export enum Permission {
   ReadFacet = 'ReadFacet',
   /** Grants permission to read Order */
   ReadOrder = 'ReadOrder',
+  /** Grants permission to read Page */
+  ReadPage = 'ReadPage',
   /** Grants permission to read PaymentMethod */
   ReadPaymentMethod = 'ReadPaymentMethod',
   /** Grants permission to read Product */
@@ -2552,6 +2558,8 @@ export enum Permission {
   UpdateGlobalSettings = 'UpdateGlobalSettings',
   /** Grants permission to update Order */
   UpdateOrder = 'UpdateOrder',
+  /** Grants permission to update Page */
+  UpdatePage = 'UpdatePage',
   /** Grants permission to update PaymentMethod */
   UpdatePaymentMethod = 'UpdatePaymentMethod',
   /** Grants permission to update Product */

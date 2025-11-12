@@ -870,6 +870,12 @@ export type CreateGroupOptionInput = {
   translations: Array<ProductOptionGroupTranslationInput>;
 };
 
+export type CreatePageInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  slug: Scalars['String']['input'];
+};
+
 export type CreatePaymentMethodInput = {
   checker?: InputMaybe<ConfigurableOperationInput>;
   code: Scalars['String']['input'];
@@ -2850,6 +2856,8 @@ export type Mutation = {
   createFacetValue: FacetValue;
   /** Create one or more FacetValues */
   createFacetValues: Array<FacetValue>;
+  /** Create a new page with an initial draft version (admin only) */
+  createPage: Page;
   /** Create existing PaymentMethod */
   createPaymentMethod: PaymentMethod;
   /** Create a new Product */
@@ -2918,6 +2926,10 @@ export type Mutation = {
   /** Delete multiple existing Facets */
   deleteFacets: Array<DeletionResponse>;
   deleteOrderNote: DeletionResponse;
+  /** Delete a page and all its versions (admin only) */
+  deletePage: DeletionResponse;
+  /** Delete a specific version (admin only) */
+  deletePageVersion: DeletionResponse;
   /** Delete a PaymentMethod */
   deletePaymentMethod: DeletionResponse;
   /** Delete multiple PaymentMethods */
@@ -2986,6 +2998,8 @@ export type Mutation = {
   modifyOrder: ModifyOrderResult;
   /** Move a Collection to a different parent or index */
   moveCollection: Collection;
+  /** Publish a draft version (admin only) */
+  publishPage: Page;
   refundOrder: RefundOrderResult;
   /** Registers a new Shop and its first Administrator (native auth). If autoLogin is true, starts a session for the new admin. */
   registerShop: RegisterShopResult;
@@ -3025,8 +3039,12 @@ export type Mutation = {
   removeStockLocationsFromChannel: Array<StockLocation>;
   requestCompleted: Scalars['Int']['output'];
   requestStarted: Scalars['Int']['output'];
+  /** Restore an archived version as a new draft (admin only) */
+  restorePageVersion: PageVersion;
   runPendingSearchIndexUpdates: Success;
   runScheduledTask: Success;
+  /** Save a new draft version (admin only) */
+  savePageDraft: PageVersion;
   setActiveChannel: UserStatus;
   setAsLoggedIn: UserStatus;
   setAsLoggedOut: UserStatus;
@@ -3088,6 +3106,8 @@ export type Mutation = {
   updateFacetValues: Array<FacetValue>;
   updateGlobalSettings: UpdateGlobalSettingsResult;
   updateOrderNote: HistoryEntry;
+  /** Update page metadata (admin only) */
+  updatePage: Page;
   /** Update an existing PaymentMethod */
   updatePaymentMethod: PaymentMethod;
   /** Update an existing Product */
@@ -3312,6 +3332,11 @@ export type MutationCreateFacetValuesArgs = {
 };
 
 
+export type MutationCreatePageArgs = {
+  input: CreatePageInput;
+};
+
+
 export type MutationCreatePaymentMethodArgs = {
   input: CreatePaymentMethodInput;
 };
@@ -3495,6 +3520,16 @@ export type MutationDeleteOrderNoteArgs = {
 };
 
 
+export type MutationDeletePageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePageVersionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationDeletePaymentMethodArgs = {
   force?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
@@ -3654,6 +3689,11 @@ export type MutationMoveCollectionArgs = {
 };
 
 
+export type MutationPublishPageArgs = {
+  input: PublishPageInput;
+};
+
+
 export type MutationRefundOrderArgs = {
   input: RefundOrderInput;
 };
@@ -3742,8 +3782,18 @@ export type MutationRemoveStockLocationsFromChannelArgs = {
 };
 
 
+export type MutationRestorePageVersionArgs = {
+  input: RestorePageVersionInput;
+};
+
+
 export type MutationRunScheduledTaskArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type MutationSavePageDraftArgs = {
+  input: SavePageVersionInput;
 };
 
 
@@ -3948,6 +3998,12 @@ export type MutationUpdateGlobalSettingsArgs = {
 
 export type MutationUpdateOrderNoteArgs = {
   input: UpdateOrderNoteInput;
+};
+
+
+export type MutationUpdatePageArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdatePageInput;
 };
 
 
@@ -4431,6 +4487,79 @@ export enum OrderType {
   Seller = 'Seller'
 }
 
+export type Page = Node & {
+  __typename?: 'Page';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<PageVersion>;
+  id: Scalars['ID']['output'];
+  lastPublishedAt?: Maybe<Scalars['DateTime']['output']>;
+  name: Scalars['String']['output'];
+  publishedVersion?: Maybe<PageVersion>;
+  shop: Shop;
+  slug: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  versions: Array<PageVersion>;
+};
+
+export type PageFilterParameter = {
+  _and?: InputMaybe<Array<PageFilterParameter>>;
+  _or?: InputMaybe<Array<PageFilterParameter>>;
+  createdAt?: InputMaybe<DateOperators>;
+  description?: InputMaybe<StringOperators>;
+  id?: InputMaybe<IdOperators>;
+  lastPublishedAt?: InputMaybe<DateOperators>;
+  name?: InputMaybe<StringOperators>;
+  slug?: InputMaybe<StringOperators>;
+  updatedAt?: InputMaybe<DateOperators>;
+};
+
+export type PageList = PaginatedList & {
+  __typename?: 'PageList';
+  items: Array<Page>;
+  totalItems: Scalars['Int']['output'];
+};
+
+export type PageListOptions = {
+  filter?: InputMaybe<PageFilterParameter>;
+  /** Specifies whether multiple top-level "filter" fields should be combined with a logical AND or OR operation. Defaults to AND. */
+  filterOperator?: InputMaybe<LogicalOperator>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<PageSortParameter>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type PageSortParameter = {
+  createdAt?: InputMaybe<SortOrder>;
+  description?: InputMaybe<SortOrder>;
+  id?: InputMaybe<SortOrder>;
+  lastPublishedAt?: InputMaybe<SortOrder>;
+  name?: InputMaybe<SortOrder>;
+  slug?: InputMaybe<SortOrder>;
+  updatedAt?: InputMaybe<SortOrder>;
+};
+
+export type PageVersion = Node & {
+  __typename?: 'PageVersion';
+  changeDescription?: Maybe<Scalars['String']['output']>;
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  page: Page;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
+  publishedBy?: Maybe<Administrator>;
+  status: PageVersionStatus;
+  theme?: Maybe<Scalars['JSON']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  versionNumber: Scalars['Int']['output'];
+};
+
+export enum PageVersionStatus {
+  ARCHIVED = 'ARCHIVED',
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED'
+}
+
 export type PaginatedList = {
   items: Array<Node>;
   totalItems: Scalars['Int']['output'];
@@ -4618,6 +4747,8 @@ export enum Permission {
   CreateFacet = 'CreateFacet',
   /** Grants permission to create Order */
   CreateOrder = 'CreateOrder',
+  /** Grants permission to create Page */
+  CreatePage = 'CreatePage',
   /** Grants permission to create PaymentMethod */
   CreatePaymentMethod = 'CreatePaymentMethod',
   /** Grants permission to create Product */
@@ -4662,6 +4793,8 @@ export enum Permission {
   DeleteFacet = 'DeleteFacet',
   /** Grants permission to delete Order */
   DeleteOrder = 'DeleteOrder',
+  /** Grants permission to delete Page */
+  DeletePage = 'DeletePage',
   /** Grants permission to delete PaymentMethod */
   DeletePaymentMethod = 'DeletePaymentMethod',
   /** Grants permission to delete Product */
@@ -4711,6 +4844,8 @@ export enum Permission {
   ReadFacet = 'ReadFacet',
   /** Grants permission to read Order */
   ReadOrder = 'ReadOrder',
+  /** Grants permission to read Page */
+  ReadPage = 'ReadPage',
   /** Grants permission to read PaymentMethod */
   ReadPaymentMethod = 'ReadPaymentMethod',
   /** Grants permission to read Product */
@@ -4759,6 +4894,8 @@ export enum Permission {
   UpdateGlobalSettings = 'UpdateGlobalSettings',
   /** Grants permission to update Order */
   UpdateOrder = 'UpdateOrder',
+  /** Grants permission to update Page */
+  UpdatePage = 'UpdatePage',
   /** Grants permission to update PaymentMethod */
   UpdatePaymentMethod = 'UpdatePaymentMethod',
   /** Grants permission to update Product */
@@ -5236,6 +5373,23 @@ export type ProvinceTranslationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PublishPageInput = {
+  pageId: Scalars['ID']['input'];
+  versionId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+/** Public version of Page with only published content */
+export type PublishedPage = {
+  __typename?: 'PublishedPage';
+  content: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  publishedAt: Scalars['DateTime']['output'];
+  slug: Scalars['String']['output'];
+  theme?: Maybe<Scalars['JSON']['output']>;
+};
+
 /** Returned if the specified quantity of an OrderLine is greater than the number of items in that line */
 export type QuantityTooGreatError = ErrorResult & {
   __typename?: 'QuantityTooGreatError';
@@ -5290,6 +5444,18 @@ export type Query = {
   networkStatus: NetworkStatus;
   order?: Maybe<Order>;
   orders: OrderList;
+  /** Get a page by ID (admin only) */
+  page?: Maybe<Page>;
+  /** Get a page by slug (admin only) */
+  pageBySlug?: Maybe<Page>;
+  /** Get the draft version for editing (admin only) */
+  pageDraftVersion?: Maybe<PageVersion>;
+  /** Get a specific page version (admin only) */
+  pageVersion?: Maybe<PageVersion>;
+  /** Get all versions for a page (admin only) */
+  pageVersions: Array<PageVersion>;
+  /** List all pages with filtering and pagination (admin only) */
+  pages: PageList;
   paymentMethod?: Maybe<PaymentMethod>;
   paymentMethodEligibilityCheckers: Array<ConfigurableOperationDefinition>;
   paymentMethodHandlers: Array<ConfigurableOperationDefinition>;
@@ -5313,6 +5479,8 @@ export type Query = {
   promotions: PromotionList;
   province?: Maybe<Province>;
   provinces: ProvinceList;
+  /** Get published page by slug (public access) */
+  publishedPage?: Maybe<PublishedPage>;
   role?: Maybe<Role>;
   roles: RoleList;
   scheduledTasks: Array<ScheduledTask>;
@@ -5482,6 +5650,36 @@ export type QueryOrdersArgs = {
 };
 
 
+export type QueryPageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPageBySlugArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
+export type QueryPageDraftVersionArgs = {
+  pageId: Scalars['ID']['input'];
+};
+
+
+export type QueryPageVersionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPageVersionsArgs = {
+  pageId: Scalars['ID']['input'];
+};
+
+
+export type QueryPagesArgs = {
+  options?: InputMaybe<PageListOptions>;
+};
+
+
 export type QueryPaymentMethodArgs = {
   id: Scalars['ID']['input'];
 };
@@ -5547,6 +5745,11 @@ export type QueryProvinceArgs = {
 
 export type QueryProvincesArgs = {
   options?: InputMaybe<ProvinceListOptions>;
+};
+
+
+export type QueryPublishedPageArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -5848,6 +6051,11 @@ export type RemoveStockLocationsFromChannelInput = {
   stockLocationIds: Array<Scalars['ID']['input']>;
 };
 
+export type RestorePageVersionInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  versionId: Scalars['ID']['input'];
+};
+
 export type Return = Node & StockMovement & {
   __typename?: 'Return';
   createdAt: Scalars['DateTime']['output'];
@@ -5916,6 +6124,13 @@ export type Sale = Node & StockMovement & {
   quantity: Scalars['Int']['output'];
   type: StockMovementType;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type SavePageVersionInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  content: Scalars['String']['input'];
+  pageId: Scalars['ID']['input'];
+  theme?: InputMaybe<Scalars['JSON']['input']>;
 };
 
 export type ScheduledTask = {
@@ -6834,6 +7049,13 @@ export type UpdateOrderNoteInput = {
   isPublic?: InputMaybe<Scalars['Boolean']['input']>;
   note?: InputMaybe<Scalars['String']['input']>;
   noteId: Scalars['ID']['input'];
+};
+
+export type UpdatePageInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdatePaymentMethodInput = {

@@ -27,6 +27,7 @@ import { GlobalSettingsResolver } from './resolvers/admin/global-settings.resolv
 import { ImportResolver } from './resolvers/admin/import.resolver';
 import { JobResolver } from './resolvers/admin/job.resolver';
 import { OrderResolver } from './resolvers/admin/order.resolver';
+import { PageResolver } from './resolvers/admin/page.resolver';
 import { PaymentMethodResolver } from './resolvers/admin/payment-method.resolver';
 import { ProductOptionResolver } from './resolvers/admin/product-option.resolver';
 import { ProductResolver } from './resolvers/admin/product.resolver';
@@ -110,6 +111,7 @@ const adminResolvers = [
     JobResolver,
     SettingsStoreAdminResolver,
     OrderResolver,
+    PageResolver,
     PaymentMethodResolver,
     ProductOptionResolver,
     ProductResolver,

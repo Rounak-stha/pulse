@@ -67,5 +67,75 @@ export const errorResultFragment = graphql(`
     }
 `);
 
+export const pageVersionFragment = graphql(`
+    fragment PageVersion on PageVersion {
+        id
+        createdAt
+        updatedAt
+        versionNumber
+        content
+        theme
+        status
+        publishedAt
+        changeDescription
+    }
+`);
+
+export const pageFragment = graphql(
+    `
+        fragment Page on Page {
+            id
+            createdAt
+            updatedAt
+            name
+            slug
+            description
+            lastPublishedAt
+            publishedVersion {
+                ...PageVersion
+            }
+            draftVersion {
+                ...PageVersion
+            }
+        }
+    `,
+    [pageVersionFragment],
+);
+
+export const pageListFragment = graphql(
+    `
+        fragment PageList on PageList {
+            items {
+                id
+                name
+                slug
+                createdAt
+                updatedAt
+                publishedVersion {
+                    id
+                }
+            }
+            totalItems
+        }
+    `,
+    [pageFragment],
+);
+
+export const publishedPageFragment = graphql(`
+    fragment PublishedPage on PublishedPage {
+        id
+        name
+        slug
+        description
+        content
+        theme
+        publishedAt
+    }
+`);
+
 export type ConfigurableOperationDefFragment = ResultOf<typeof configurableOperationDefFragment>;
 export type ConfigArgDefFragment = ResultOf<typeof configArgDefinitionFragment>;
+export type PageVersionFragment = ResultOf<typeof pageVersionFragment>;
+export type PageFragment = ResultOf<typeof pageFragment>;
+export type PageListFragment = ResultOf<typeof pageListFragment>;
+export type PublishedPageFragment = ResultOf<typeof publishedPageFragment>;

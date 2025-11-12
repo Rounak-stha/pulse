@@ -27,6 +27,8 @@ export * from './order-line-reference/order-modification-line.entity';
 export * from './order-line-reference/refund-line.entity';
 export * from './order-line/order-line.entity';
 export * from './order/order.entity';
+export * from './page/page-version.entity';
+export * from './page/page.entity';
 export * from './payment-method/payment-method.entity';
 export * from './payment/payment.entity';
 export * from './product-option-group/product-option-group-translation.entity';

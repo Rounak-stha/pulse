@@ -1,0 +1,19 @@
+{
+    "extends": ["../../tsconfig.json"],
+    "compilerOptions": {
+        "declaration": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "lib": ["dom"],
+        "types": ["node"],
+        "outDir": "build",
+        "jsx": "react-jsx",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"],
+            "@/common/*": ["./src/common/*"]
+        }
+    },
+    "plugins": [{ "transform": "typescript-transform-paths", "afterDeclarations": true }],
+    "exclude": ["./lib"]
+}

@@ -8,10 +8,10 @@ import {
     DefaultSchedulerPlugin,
     DefaultSearchPlugin,
     dummyPaymentHandler,
+    GoogleAuthPlugin,
     LogLevel,
     SettingsStoreScopes,
     VendureConfig,
-    GoogleAuthPlugin
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { defaultEmailHandlers, EmailPlugin, FileBasedTemplateLoader } from '@vendure/email-plugin';
@@ -55,7 +55,7 @@ export const devConfig: VendureConfig = {
         },
     },
     dbConnectionOptions: {
-        synchronize: false,
+        synchronize: true,
         logging: false,
         migrations: [path.join(__dirname, 'migrations/*.ts')],
         ...getDbConfig(),
@@ -143,7 +143,10 @@ export const devConfig: VendureConfig = {
             route: 'dashboard',
             appDir: path.join(__dirname, './dist'),
         }),
-        GoogleAuthPlugin.init({ googleClientId: process.env.GOOGLE_CLIENT_ID!, googleClientSecret: process.env.GOOGLE_CLIENT_SECRET! })
+        GoogleAuthPlugin.init({
+            googleClientId: process.env.GOOGLE_CLIENT_ID!,
+            googleClientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
     ],
 };
 

@@ -90,7 +90,7 @@ export interface AssetGalleryProps {
      * If set to 'auto', the asset selection will be toggled when the user clicks on an asset.
      * If set to 'manual', multiple selection will occur only if the user holds down the control/cmd key.
      */
-    multiSelect?: 'auto' | 'manual';
+    multiSelect?: 'auto' | 'manual' | 'single';
     /**
      * @description
      * The initial assets that should be selected.
@@ -239,6 +239,21 @@ export function AssetGallery({
 
     // Handle selection
     const handleSelect = (asset: Asset, event: React.MouseEvent) => {
+        if (multiSelect === 'single') {
+            const isSelected = selected.some(a => a.id === asset.id);
+            let newSelected: Asset[];
+
+            if (isSelected) {
+                newSelected = [];
+            } else {
+                newSelected = [asset];
+            }
+
+            setSelected(newSelected);
+            onSelect?.(newSelected);
+            return;
+        }
+
         if (multiSelect === 'auto') {
             const isSelected = selected.some(a => a.id === asset.id);
             let newSelected: Asset[];
@@ -421,22 +436,7 @@ export function AssetGallery({
                                         <div className="absolute top-2 left-2">
                                             <Checkbox
                                                 checked={isSelected(asset as Asset)}
-                                                onClick={e => {
-                                                    e.stopPropagation();
-                                                    const isCurrentlySelected = selected.some(
-                                                        a => a.id === asset.id,
-                                                    );
-                                                    let newSelected: Asset[];
-
-                                                    if (isCurrentlySelected) {
-                                                        newSelected = selected.filter(a => a.id !== asset.id);
-                                                    } else {
-                                                        newSelected = [...selected, asset as Asset];
-                                                    }
-
-                                                    setSelected(newSelected);
-                                                    onSelect?.(newSelected);
-                                                }}
+                                                onClick={e => handleSelect(asset as Asset, e)}
                                             />
                                         </div>
                                     )}
