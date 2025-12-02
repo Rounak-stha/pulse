@@ -6,6 +6,7 @@
         "./atoms": "./build/atoms/index.js",
         "./compounds": "./build/compounds/index.js",
         "./design-system/*": "./build/design-system/*",
+        "./components-map": "./build/components-map.js",
         "./types": "./build/types.d.ts"
     },
     "scripts": {
