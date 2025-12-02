@@ -12,7 +12,7 @@ import { DefaultHeroBannerProps, HeroBanner as HeroBannerPure } from '@/builder-
 import { Badge } from '@/vdb/components/builder/blocks/atoms/badge/index.js';
 import { Button } from '@/vdb/components/builder/blocks/atoms/button/index.js';
 import { Headline } from '@/vdb/components/builder/blocks/atoms/headline/index.js';
-import { SubText } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
+import { Subtext } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
 
 import { HeroBannerSettings } from './settings.js';
 
@@ -34,9 +34,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = props => {
             }}
             selected={selected}
             SlotHeadline={<Element id="headline" is={Headline} {...DefaultHeadlineProps} />}
-            SlotBadge={<Element id="badge" is={Badge} {...DeafultBadgeProps} canvas />}
-            SlotSubtext={<Element id="subtext" is={SubText} {...DefaultSubTextProps} />}
-            SlotButton={<Element id="button" is={Button} {...DefaultButtonProps} />}
+            SlotBadge={<Element id="Badge" is={Badge} {...DeafultBadgeProps} canvas />}
+            SlotSubtext={<Element id="Subtext" is={Subtext} {...DefaultSubTextProps} />}
+            SlotButton={<Element id="Button" is={Button} {...DefaultButtonProps} />}
         />
     );
 };

@@ -1,10 +1,10 @@
 import type { SubtextProps } from '@/builder-blocks/atoms/index.js';
-import { DefaultSubTextProps, Subtext as SubTextPure } from '@/builder-blocks/atoms/index.js';
+import { DefaultSubTextProps, Subtext as SubtextPure } from '@/builder-blocks/atoms/index.js';
 import { cn } from '@/vdb/lib/utils.js';
 import { useNode } from '@craftjs/core';
 import { SubtextSettings } from './settings.js';
 
-export const SubText: React.FC<SubtextProps> = props => {
+export const Subtext: React.FC<SubtextProps> = props => {
     const {
         connectors: { connect, drag },
         selected,
@@ -13,7 +13,7 @@ export const SubText: React.FC<SubtextProps> = props => {
     }));
 
     return (
-        <SubTextPure
+        <SubtextPure
             {...props}
             ref={(ref: HTMLParagraphElement) => {
                 connect(drag(ref));
@@ -26,7 +26,7 @@ export const SubText: React.FC<SubtextProps> = props => {
     );
 };
 
-(SubText as any).craft = {
+(Subtext as any).craft = {
     displayName: 'Subtext',
     props: DefaultSubTextProps,
     related: { settings: SubtextSettings },

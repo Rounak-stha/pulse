@@ -22,6 +22,5 @@ export default async function Home() {
         theme = data?.theme?.value ? JSON.parse(data?.theme?.value) : {};
     } catch {}
 
-    console.log({ tree, theme });
     return <BuilderTreeRenderer tree={tree} theme={theme} />;
 }
