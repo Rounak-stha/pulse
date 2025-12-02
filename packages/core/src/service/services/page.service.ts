@@ -176,27 +176,35 @@ export class PageService {
             throw new UserInputError('error.page-not-found');
         }
 
-        const latestVersion = await this.connection.getRepository(ctx, PageVersion).findOne({
-            where: { page: { id: input.pageId } },
-            order: { versionNumber: 'DESC' },
-        });
-
-        const newVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
-
-        const newVersion = new PageVersion({
+        const draftVersion = new PageVersion({
             page: new Page({ id: input.pageId }),
-            versionNumber: newVersionNumber,
+            /**
+             * A decision was made to only keep 2 versions for a page;
+             * One Draft and One Published
+             * But we already have version number column,
+             * So instead of getting rid of it we're gonna, we're just gonna store 0
+             */
+            versionNumber: 0,
             content: input.content,
             theme: input.theme,
             status: PageVersionStatus.DRAFT,
             changeDescription: input.changeDescription,
         });
 
-        const savedVersion = await this.connection.getRepository(ctx, PageVersion).save(newVersion);
+        if (page.draftVersion) {
+            draftVersion.id = page.draftVersion.id;
+        }
 
-        page.draftVersion = new PageVersion({ id: savedVersion.id });
-        await this.connection.getRepository(ctx, Page).save(page);
+        const savedVersion = await this.connection
+            .getRepository(ctx, PageVersion)
+            .save(draftVersion, { data: {} });
 
+        if (!page.draftVersion) {
+            page.draftVersion = savedVersion;
+            await this.connection.getRepository(ctx, Page).save(page);
+        }
+
+        savedVersion.createdAt = savedVersion.updatedAt = new Date();
         return savedVersion;
     }
 
@@ -206,41 +214,36 @@ export class PageService {
             throw new UserInputError('error.page-not-found');
         }
 
-        const versionId = input.versionId || page.draftVersion?.id;
-        if (!versionId) {
-            throw new UserInputError('error.no-version-to-publish');
-        }
-
-        const version = await this.connection.getRepository(ctx, PageVersion).findOne({
-            where: { id: versionId },
+        const publishedVersion = new PageVersion({
+            page: new Page({ id: input.pageId }),
+            /**
+             * A decision was made to only keep 2 versions for a page;
+             * One Draft and One Published
+             * But we already have version number column,
+             * So instead of getting rid of it we're gonna, we're just gonna store 0
+             */
+            versionNumber: 0,
+            content: input.content,
+            status: PageVersionStatus.PUBLISHED,
+            changeDescription: input.changeDescription,
         });
 
-        if (!version) {
-            throw new UserInputError('error.version-not-found');
-        }
-
-        // Archive old published version
         if (page.publishedVersion) {
-            const oldPublished = await this.connection.getRepository(ctx, PageVersion).findOne({
-                where: { id: page.publishedVersion.id },
-            });
-            if (oldPublished) {
-                oldPublished.status = PageVersionStatus.ARCHIVED;
-                await this.connection.getRepository(ctx, PageVersion).save(oldPublished);
-            }
+            publishedVersion.id = page.publishedVersion.id;
         }
 
-        // Mark version as published
-        version.status = PageVersionStatus.PUBLISHED;
-        version.publishedAt = new Date();
-        await this.connection.getRepository(ctx, PageVersion).save(version);
+        const savedVersion = await this.connection.getRepository(ctx, PageVersion).save(publishedVersion);
+
+        savedVersion.createdAt = savedVersion.updatedAt = new Date();
+
+        if (!page.publishedVersion) {
+            page.publishedVersion = savedVersion;
+        }
 
         // Update page references
-        page.publishedVersion = new PageVersion({ id: version.id });
         page.lastPublishedAt = new Date();
-        page.draftVersion = null;
+        page.draftVersion = await this.saveDraft(ctx, input); // Sync Draft and Published Version when Published
         await this.connection.getRepository(ctx, Page).save(page);
-
         return page;
     }
 
