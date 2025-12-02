@@ -90,6 +90,7 @@ import { ShopAuthResolver } from './resolvers/shop/shop-auth.resolver';
 import { ShopCustomerResolver } from './resolvers/shop/shop-customer.resolver';
 import { ShopEnvironmentResolver } from './resolvers/shop/shop-environment.resolver';
 import { ShopOrderResolver } from './resolvers/shop/shop-order.resolver';
+import { ShopPageResolver } from './resolvers/shop/shop-page.resolver';
 import { ShopPaymentMethodsResolver } from './resolvers/shop/shop-payment-methods.resolver';
 import { ShopProductsResolver } from './resolvers/shop/shop-products.resolver';
 import { ShopShippingMethodsResolver } from './resolvers/shop/shop-shipping-methods.resolver';
@@ -134,6 +135,7 @@ const shopResolvers = [
     ShopOrderResolver,
     ShopProductsResolver,
     ShopEnvironmentResolver,
+    ShopPageResolver,
     ShopPaymentMethodsResolver,
     ShopShippingMethodsResolver,
 ];

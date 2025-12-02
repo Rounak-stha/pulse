@@ -201,6 +201,7 @@
       "Tag",
       "TaxCategory",
       "TaxRate",
+      "Theme",
       "User",
       "Zone"
     ],

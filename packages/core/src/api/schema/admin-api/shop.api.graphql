@@ -1,10 +1,16 @@
 type Query {
     shop(id: ID!): Shop
+    "Get Shop Theme (Builder)"
+    theme: Theme!
 }
 
 type Mutation {
     "Update an existing Shop"
     updateShop(input: UpdateShopInput!): UpdateShopResult!
+    "Update Shop Theme (Builder)"
+    createTheme(input: CreateThemeInput!): Theme!
+    "Update Shop Theme (Builder)"
+    updateTheme(input: UpdateThemeInput!): Theme!
 }
 
 input CreateShopInput {
@@ -18,6 +24,14 @@ input UpdateShopInput {
     name: String
     code: String
     domain: String
+}
+
+input CreateThemeInput {
+    value: JSON!
+}
+input UpdateThemeInput {
+    id: ID!
+    value: JSON!
 }
 
 union UpdateShopResult = Shop

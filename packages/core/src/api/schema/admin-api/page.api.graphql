@@ -78,7 +78,8 @@ input SavePageVersionInput {
 
 input PublishPageInput {
     pageId: ID!
-    versionId: ID
+    content: String!
+    changeDescription: String
 }
 
 input RestorePageVersionInput {

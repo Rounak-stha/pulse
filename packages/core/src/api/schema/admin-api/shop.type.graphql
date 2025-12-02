@@ -6,3 +6,8 @@ type Shop implements Node {
     code: String!
     domain: String
 }
+
+type Theme implements Node {
+    id: ID!
+    value: JSON!
+}

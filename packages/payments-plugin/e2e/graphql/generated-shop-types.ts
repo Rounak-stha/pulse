@@ -2985,12 +2985,16 @@ export type Query = {
    * general anonymous access to Order data.
    */
   orderByCode?: Maybe<Order>;
+  /** Get a page by slug */
+  pageBySlug?: Maybe<ShopPage>;
   /** Get a Product either by id or slug. If neither 'id' nor 'slug' is specified, an error will result. */
   product?: Maybe<Product>;
   /** Get a list of Products */
   products: ProductList;
   /** Search Products based on the criteria set by the `SearchInput` */
   search: SearchResponse;
+  /** Get SHop Theme */
+  theme?: Maybe<Theme>;
 };
 
 
@@ -3027,6 +3031,11 @@ export type QueryOrderArgs = {
 
 export type QueryOrderByCodeArgs = {
   code: Scalars['String']['input'];
+};
+
+
+export type QueryPageBySlugArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -3277,6 +3286,21 @@ export type ShopCodeConflictError = ErrorResult & {
   message: Scalars['String']['output'];
 };
 
+export type ShopPage = Node & {
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  publishedVersion?: Maybe<ShopPageVersion>;
+  slug: Scalars['String']['output'];
+};
+
+export type ShopPageVersion = Node & {
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  theme?: Maybe<Scalars['JSON']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 /** The price value where the result has a single price */
 export type SinglePrice = {
   value: Scalars['Money']['output'];
@@ -3449,6 +3473,11 @@ export type TextStructFieldConfig = StructField & {
   name: Scalars['String']['output'];
   type: Scalars['String']['output'];
   ui?: Maybe<Scalars['JSON']['output']>;
+};
+
+export type Theme = Node & {
+  id: Scalars['ID']['output'];
+  value: Scalars['JSON']['output'];
 };
 
 export type TransitionOrderToStateResult = Order | OrderStateTransitionError;

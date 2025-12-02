@@ -66,5 +66,6 @@ export * from './surcharge/surcharge.entity';
 export * from './tag/tag.entity';
 export * from './tax-category/tax-category.entity';
 export * from './tax-rate/tax-rate.entity';
+export * from './theme/theme.entity';
 export * from './user/user.entity';
 export * from './zone/zone.entity';

@@ -1016,6 +1016,10 @@ export type CreateTaxRateInput = {
   zoneId: Scalars['ID']['input'];
 };
 
+export type CreateThemeInput = {
+  value: Scalars['JSON']['input'];
+};
+
 export type CreateZoneInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   memberIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -2884,6 +2888,8 @@ export type Mutation = {
   createTaxCategory: TaxCategory;
   /** Create a new TaxRate */
   createTaxRate: TaxRate;
+  /** Update Shop Theme (Builder) */
+  createTheme: Theme;
   /** Create a new Zone */
   createZone: Zone;
   /** Delete an Administrator */
@@ -3141,6 +3147,8 @@ export type Mutation = {
   updateTaxCategory: TaxCategory;
   /** Update an existing TaxRate */
   updateTaxRate: TaxRate;
+  /** Update Shop Theme (Builder) */
+  updateTheme: Theme;
   updateUserChannels: UserStatus;
   /** Update an existing Zone */
   updateZone: Zone;
@@ -3404,6 +3412,11 @@ export type MutationCreateTaxCategoryArgs = {
 
 export type MutationCreateTaxRateArgs = {
   input: CreateTaxRateInput;
+};
+
+
+export type MutationCreateThemeArgs = {
+  input: CreateThemeInput;
 };
 
 
@@ -4094,6 +4107,11 @@ export type MutationUpdateTaxCategoryArgs = {
 
 export type MutationUpdateTaxRateArgs = {
   input: UpdateTaxRateInput;
+};
+
+
+export type MutationUpdateThemeArgs = {
+  input: UpdateThemeInput;
 };
 
 
@@ -5374,8 +5392,9 @@ export type ProvinceTranslationInput = {
 };
 
 export type PublishPageInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  content: Scalars['String']['input'];
   pageId: Scalars['ID']['input'];
-  versionId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 /** Public version of Page with only published content */
@@ -5502,6 +5521,8 @@ export type Query = {
   taxRates: TaxRateList;
   testEligibleShippingMethods: Array<ShippingMethodQuote>;
   testShippingMethod: TestShippingMethodResult;
+  /** Get Shop Theme (Builder) */
+  theme: Theme;
   uiState: UiState;
   userStatus: UserStatus;
   zone?: Maybe<Zone>;
@@ -6861,6 +6882,12 @@ export type TextStructFieldConfig = StructField & {
   ui?: Maybe<Scalars['JSON']['output']>;
 };
 
+export type Theme = Node & {
+  __typename?: 'Theme';
+  id: Scalars['ID']['output'];
+  value: Scalars['JSON']['output'];
+};
+
 export type TransitionFulfillmentToStateResult = Fulfillment | FulfillmentStateTransitionError;
 
 export type TransitionOrderToStateResult = Order | OrderStateTransitionError;
@@ -7215,6 +7242,11 @@ export type UpdateTaxRateInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   value?: InputMaybe<Scalars['Float']['input']>;
   zoneId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type UpdateThemeInput = {
+  id: Scalars['ID']['input'];
+  value: Scalars['JSON']['input'];
 };
 
 export type UpdateZoneInput = {

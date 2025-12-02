@@ -71,6 +71,7 @@ import { Surcharge } from './surcharge/surcharge.entity';
 import { Tag } from './tag/tag.entity';
 import { TaxCategory } from './tax-category/tax-category.entity';
 import { TaxRate } from './tax-rate/tax-rate.entity';
+import { Theme } from './theme/theme.entity';
 import { User } from './user/user.entity';
 import { Zone } from './zone/zone.entity';
 
@@ -150,6 +151,7 @@ export const coreEntitiesMap = {
     Tag,
     TaxCategory,
     TaxRate,
+    Theme,
     User,
     Seller,
     Zone,

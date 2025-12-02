@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateShopInput, Permission } from '@vendure/common/lib/generated-types';
+import {
+    CreateShopInput,
+    CreateThemeInput,
+    Permission,
+    UpdateThemeInput,
+} from '@vendure/common/lib/generated-types';
 import { ID, Type } from '@vendure/common/lib/shared-types';
 
 import { RequestContext } from '../../api/common/request-context';
@@ -9,9 +14,11 @@ import { Instrument } from '../../common/instrument-decorator';
 import { createSelfRefreshingCache, SelfRefreshingCache } from '../../common/self-refreshing-cache';
 import { ConfigService } from '../../config';
 import { TransactionalConnection } from '../../connection/transactional-connection';
+import { Theme } from '../../entity';
 import { VendureEntity } from '../../entity/base/base.entity';
 import { Channel } from '../../entity/channel/channel.entity';
 import { Shop } from '../../entity/shop/shop.entity';
+import defaultTheme from '../../entity/theme/default-theme.json';
 import { EventBus } from '../../event-bus';
 import { CustomFieldRelationService } from '../helpers/custom-field-relation/custom-field-relation.service';
 
@@ -182,6 +189,38 @@ export class ShopService {
         const shop = new Shop(input);
         const createdShop = await this.connection.getRepository(ctx, Shop).save(shop);
         return createdShop;
+    }
+
+    async createTheme(ctx: RequestContext, input: CreateThemeInput): Promise<Theme> {
+        const theme = new Theme({
+            shop: { id: ctx.shopId },
+            value: input.value,
+        });
+        return this.connection.getRepository(ctx, Theme).save(theme);
+    }
+
+    async getShopTheme(ctx: RequestContext): Promise<Theme> {
+        const theme = await this.connection.getRepository(ctx, Theme).findOne({
+            where: { shop: { id: ctx.shopId } },
+        });
+        if (!theme) {
+            return this.createTheme(ctx, { value: defaultTheme });
+        }
+
+        return theme;
+    }
+
+    async updateTheme(ctx: RequestContext, input: UpdateThemeInput): Promise<Theme> {
+        let theme = await this.connection.getRepository(ctx, Theme).findOne({
+            where: { shop: { id: ctx.shopId } },
+        });
+        if (!theme) {
+            theme = new Theme({
+                shop: { id: ctx.shopId },
+            });
+        }
+        theme.value = input.value;
+        return this.connection.getRepository(ctx, Theme).save(theme);
     }
 
     /**
