@@ -7,7 +7,7 @@ import ms from 'ms';
 
 import { ApiType, getApiType } from '../../../api/common/get-api-type';
 import { RequestContext } from '../../../api/common/request-context';
-import { ForbiddenError, ShopNotFoundError, UserInputError } from '../../../common/error/errors';
+import { ForbiddenError, UserInputError } from '../../../common/error/errors';
 import { idsAreEqual } from '../../../common/utils';
 import { ConfigService } from '../../../config/config.service';
 import { CachedSession, CachedSessionUser } from '../../../config/session-cache/session-cache-strategy';
@@ -153,12 +153,9 @@ export class RequestContextService {
      * To be used for Shop API
      */
     private async getShopFromRequest(req: Request): Promise<Shop> {
-        const hostname = req.hostname.split(':')[0].toLowerCase();
-        const parts = hostname.split('.');
-        if (parts.length >= 3) {
-            const shopCode = parts[0];
-            if (shopCode === 'www') throw new ShopNotFoundError(shopCode);
-            return this.shopService.getShop(shopCode);
+        const shopcode = req.header('shopcode');
+        if (shopcode) {
+            return this.shopService.getShop(shopcode);
         } else {
             throw new ForbiddenError();
         }
