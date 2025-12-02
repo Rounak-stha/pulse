@@ -22,6 +22,11 @@ export default ({ mode }: { mode: string }) => {
           './sample-vendure-config.ts';
 
     return defineConfig({
+        base: '/dashboard/',
+        build: {
+            outDir: 'build',
+            emptyOutDir: true,
+        },
         test: {
             globals: true,
             environment: 'jsdom',
