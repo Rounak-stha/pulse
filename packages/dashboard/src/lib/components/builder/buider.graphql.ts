@@ -25,6 +25,10 @@ export const getPageQuery = graphql(
             page(id: $id) {
                 ...Page
             }
+            theme {
+                id
+                value
+            }
         }
     `,
     [pageFragment],
@@ -155,6 +159,15 @@ export const deletePageVersionMutation = graphql(`
         deletePageVersion(id: $id) {
             result
             message
+        }
+    }
+`);
+
+export const updateThemeMutation = graphql(`
+    mutation updateTheme($input: UpdateThemeInput!) {
+        updateTheme(input: $input) {
+            id
+            value
         }
     }
 `);

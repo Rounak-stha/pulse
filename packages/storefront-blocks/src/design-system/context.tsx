@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { getDesignSystemById } from './presets/index.js';
 import { DEFAULT_SEMANTIC_MAP, DesignSystemConfig, SemanticSizeMap } from './types.js';

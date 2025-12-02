@@ -1,30 +1,32 @@
-import { useBuilderPage } from '@/vdb/framework/page/use-builder-page.js';
+import { useBuilder } from '@/vdb/providers/builder.js';
 import { useEditor } from '@craftjs/core';
 import {
     EyeIcon,
     MonitorIcon,
     Redo2Icon,
     SaveIcon,
+    SendIcon,
     SmartphoneIcon,
     TabletIcon,
     Undo2Icon,
 } from 'lucide-react';
 import { useCallback } from 'react';
+import { Button } from '../../ui/button.js';
 import { DeviceType } from '../types.js';
 import { PageSwitcher } from './page-switcher.js';
 
 interface ToolbarInnerProps {
     device: DeviceType;
     setDevice: (device: DeviceType) => void;
-    context: ReturnType<typeof useBuilderPage>;
 }
 
-export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice, context }) => {
+export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
+    const builderContext = useBuilder();
     const { actions, enabled } = useEditor(state => ({
         enabled: state.options.enabled,
     }));
 
-    const { createPage, save, page, changePage } = context;
+    const { createPage, save, page, changePage, mode, changeMode, publish } = builderContext;
 
     const handleUndo = useCallback(() => {
         if (actions?.history?.undo) {
@@ -39,6 +41,8 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice, contex
     }, [actions]);
 
     const togglePreview = useCallback(() => {
+        if (mode == 'edit') changeMode('preview');
+        else changeMode('edit');
         actions.setOptions((opts: any) => {
             opts.enabled = !opts.enabled;
         });
@@ -86,16 +90,17 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice, contex
                     className="px-3 py-2 hover:bg-muted rounded flex items-center gap-2"
                 >
                     <EyeIcon className="w-4 h-4" />
-                    <span className="text-sm">{enabled ? 'Preview' : 'Edit'}</span>
+                    <span className="text-sm">{mode == 'edit' ? 'Preview' : 'Edit'}</span>
                 </button>
 
-                <button
-                    onClick={() => save()}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
-                >
-                    <SaveIcon className="w-4 h-4 inline mr-2" />
+                <Button onClick={() => save()} size="sm" variant="outline">
+                    <SaveIcon className="w-4 h-4 inline" />
                     Save
-                </button>
+                </Button>
+                <Button onClick={() => publish()} size="sm">
+                    <SendIcon className="w-4 h-4 inline" />
+                    Publish
+                </Button>
             </div>
         </div>
     );

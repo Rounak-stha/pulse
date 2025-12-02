@@ -1,8 +1,8 @@
 import { RootContainerProps } from './types.js';
 
-export function RootContainer({ children, ref }: RootContainerProps) {
+export function RootContainer({ children, ref, theme }: RootContainerProps) {
     return (
-        <div ref={ref} className="w-full h-full min-h-screen" data-text={true}>
+        <div ref={ref} style={theme ? theme : {}} className="w-full h-full min-h-screen" data-text={true}>
             {children}
 
             {/* Empty state placeholder */}

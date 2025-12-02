@@ -1,20 +1,19 @@
 import { Editor } from '@craftjs/core';
 import React, { useState } from 'react';
 
-// import { RootContainer } from '@/vdb/components/builder/atoms/root-container.js';
 import { DesignSystemProvider } from '@/builder-blocks/design-system/context.js';
 import { Badge } from '@/vdb/components/builder/blocks/atoms/badge/index.js';
 import { Button } from '@/vdb/components/builder/blocks/atoms/button/index.js';
 import { Headline } from '@/vdb/components/builder/blocks/atoms/headline/index.js';
 import { RootContainer } from '@/vdb/components/builder/blocks/atoms/root-container/index.js';
-import { SubText } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
+import { Subtext } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
 import { Canvas } from '@/vdb/components/builder/cavnas/index.js';
 import { LeftSidebar } from '@/vdb/components/builder/sidebar/left.js';
 import { RightSidebar } from '@/vdb/components/builder/sidebar/right.js';
 import { Toolbar } from '@/vdb/components/builder/toolbar/index.js';
 import { DeviceType } from '@/vdb/components/builder/types.js';
-import { useBuilderPage } from '@/vdb/framework/page/use-builder-page.js';
+import { BuilderProvider, useBuilder } from '@/vdb/providers/builder.js';
 
 interface BuilderEditorProps {
     pageId: string;
@@ -29,7 +28,7 @@ export const BuilderEditor: React.FC<BuilderEditorProps> = ({ pageId }) => {
                     HeroBanner,
                     Badge,
                     Headline,
-                    SubText,
+                    Subtext,
                     Button,
                 }}
                 onRender={({ render }) => render}
@@ -41,17 +40,27 @@ export const BuilderEditor: React.FC<BuilderEditorProps> = ({ pageId }) => {
 };
 
 function WrappedEditor({ pageId }: BuilderEditorProps) {
+    return (
+        <BuilderProvider pageId={pageId}>
+            <DesignSystemProvider initialPresetId="default">
+                <InnerBuilderWrapper />
+            </DesignSystemProvider>
+        </BuilderProvider>
+    );
+}
+
+function InnerBuilderWrapper() {
     const [device, setDevice] = useState<DeviceType>('desktop');
-    const pageBuilderContext = useBuilderPage(pageId);
+    const { mode } = useBuilder();
 
     return (
-        <DesignSystemProvider initialPresetId="default">
-            <Toolbar device={device} setDevice={setDevice} context={pageBuilderContext} />
+        <>
+            <Toolbar device={device} setDevice={setDevice} />
             <div className="flex flex-1 overflow-hidden">
-                <LeftSidebar />
+                {mode == 'edit' && <LeftSidebar />}
                 <Canvas device={device} />
-                <RightSidebar />
+                {mode == 'edit' && <RightSidebar />}
             </div>
-        </DesignSystemProvider>
+        </>
     );
 }

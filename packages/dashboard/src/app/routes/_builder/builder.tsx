@@ -18,5 +18,5 @@ export const Route = createFileRoute('/_builder/builder')({
 });
 
 function BuilderPage() {
-    return <BuilderEditor />;
+    return <BuilderEditor pageId="" />;
 }

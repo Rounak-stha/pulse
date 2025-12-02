@@ -1,5 +1,5 @@
 import { ErrorPage } from '@/vdb/components/shared/error-page.js';
-import { getBuilderPageQueryOptions } from '@/vdb/framework/page/use-builder-page.js';
+import { getBuilderPageQueryOptions } from '@/vdb/providers/builder.js';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { BuilderEditor } from './components/CraftBuilder.js';
 

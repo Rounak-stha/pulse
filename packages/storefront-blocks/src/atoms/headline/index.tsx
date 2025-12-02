@@ -1,5 +1,6 @@
+'use client';
 import React from 'react';
-import { useDesignSystem } from '../../design-system/context.jsx';
+import { useDesignSystem } from '../../design-system/context.js';
 import { cn } from '../../lib/utils.js';
 import { HeadlineProps, HeadlinePurpose, HeadlineTag, SizeOption } from './types.js';
 import { headlineVariants } from './variant.js';
@@ -31,9 +32,9 @@ export const Headline: React.FC<HeadlineProps> = ({
     gradient,
     gradientFrom,
     gradientTo,
-    gradientDirection,
+    gradientDirection = 'to-right',
     shadow,
-    shadowIntensity,
+    shadowIntensity = 'medium',
     shadowColor,
     maxWidth,
     animateOnView,
@@ -132,32 +133,3 @@ export const Headline: React.FC<HeadlineProps> = ({
         </Tag>
     );
 };
-
-/* (Headline as any).craft = {
-    displayName: 'Headline',
-    props: {
-        text: 'We are digital meets fashion',
-        purpose: 'page-title',
-        size: 'large',
-        autoSize: true,
-        weight: 'bold',
-        align: 'left',
-        transform: 'none',
-        decoration: 'none',
-        spacing: 'normal',
-        lineHeight: 'tight',
-        colorMode: 'custom',
-        themeColor: 'foreground',
-        customColor: '#000000',
-        gradient: false,
-        gradientFrom: '#000000',
-        gradientTo: '#666666',
-        gradientDirection: 'to-right',
-        shadow: false,
-        shadowIntensity: 'medium',
-        shadowColor: '#00000040',
-        maxWidth: false,
-        animateOnView: false,
-    },
-    related: { settings: HeadlineSettings },
-}; */
