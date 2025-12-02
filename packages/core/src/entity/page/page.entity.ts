@@ -39,6 +39,6 @@ export class Page extends VendureEntity implements ShopAware {
     @OneToMany(() => PageVersion, version => version.page)
     versions: PageVersion[];
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: process.env.DB === 'postgres' ? 'timestamp' : 'datetime', nullable: true })
     lastPublishedAt: Date | null;
 }

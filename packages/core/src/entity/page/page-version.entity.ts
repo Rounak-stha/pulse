@@ -41,7 +41,7 @@ export class PageVersion extends VendureEntity {
     @OneToOne(() => Administrator)
     publishedBy: Administrator;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: process.env.DB === 'postgres' ? 'timestamp' : 'datetime', nullable: true })
     publishedAt: Date | null;
 
     @Column({ nullable: true })
