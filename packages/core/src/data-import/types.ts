@@ -58,3 +58,16 @@ export interface InitialData {
         collections?: CollectionDefinition[];
     };
 }
+
+/**
+ * @description
+ * An object defining initial settings for a new Prod Vendure installation.
+ *
+ * @docsCategory import-export
+ */
+export interface InitialDataProd {
+    defaultLanguage: LanguageCode;
+    defaultZone: string;
+    countries: CountryDefinition[];
+    taxRates: Array<{ name: string; percentage: number }>;
+}
