@@ -41,12 +41,11 @@ COPY . .
 # -------------------------------
 # Build packages in correct order
 # -------------------------------
-RUN cd packages/dashboard && npm run build              # Build dashboard plugins
-RUN cd packages/common && npm run build                 # Build common package
-RUN cd packages/core && npm run build                   # Build core
-RUN cd packages/asset-server-plugin && npm run build    # Build asset-server-plugin
-RUN cd packages/dashboard && npm run build:standalone   # Build standalone dashboard
-RUN cd packages/prod-server && npm run build            # Build prod-server
+RUN cd packages/common && npm run build                                     # Build common package
+RUN cd packages/core && npm run build                                       # Build core
+RUN cd packages/asset-server-plugin && npm run build                        # Build asset-server-plugin
+RUN cd packages/dashboard && npm run build && npm run build:standalone      # Build dashboard
+RUN cd packages/prod-server && npm run build                                # Build prod-server
 
 # -------------------------------
 # Stage 2: Production image
