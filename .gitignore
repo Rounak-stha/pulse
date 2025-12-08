@@ -391,3 +391,7 @@ Temporary Items
 __admin-ui/
 
 build
+
+# allow core build config folder
+!packages/core/build/
+!packages/core/build/**
