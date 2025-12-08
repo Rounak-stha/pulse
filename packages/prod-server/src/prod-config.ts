@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { AssetServerPlugin, configureS3AssetStorage } from '@vendure/asset-server-plugin';
 import { ADMIN_API_PATH, API_PORT, SHOP_API_PATH } from '@vendure/common/lib/shared-constants';
+import type { DataSourceOptions } from '@vendure/core';
 import {
     DefaultLogger,
     DefaultSearchPlugin,
@@ -11,10 +12,8 @@ import {
     VendureConfig,
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
-import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 import 'dotenv/config';
 import path from 'path';
-import { DataSourceOptions } from 'typeorm';
 
 function getRequiredEnv(key: string): string {
     const value = process.env[key];
@@ -79,7 +78,6 @@ export const config: VendureConfig = {
         importAssetsDir: path.join(__dirname, 'import-assets'),
     },
     plugins: [
-        GraphiqlPlugin.init(),
         AssetServerPlugin.init({
             route: 'assets',
             assetUploadDir: path.join(__dirname, 'assets'),

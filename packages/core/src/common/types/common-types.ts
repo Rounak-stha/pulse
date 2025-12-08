@@ -1,5 +1,6 @@
 import { LogicalOperator } from '@vendure/common/lib/generated-types';
 import { Type } from '@vendure/common/lib/shared-types';
+import type { DataSourceOptions } from 'typeorm'
 
 import { Administrator } from '../../entity';
 import { VendureEntity } from '../../entity/base/base.entity';
@@ -13,6 +14,12 @@ import {
 } from '../error/generated-graphql-shop-errors';
 
 import { LocaleString } from './locale-types';
+
+/**
+ * @description Reexport of the DataSource option from TypeOrm
+ */
+export { DataSourceOptions }
+
 
 /**
  * @description
