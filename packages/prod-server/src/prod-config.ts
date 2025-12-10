@@ -116,5 +116,8 @@ function getDbConfig(): DataSourceOptions {
         password: getRequiredEnv('DB_PASSWORD'),
         database: getRequiredEnv('DB_NAME'),
         schema: getRequiredEnv('DB_SCHEMA'),
+        extra: {
+            socketPath: getRequiredEnv('DB_HOST'),
+        },
     };
 }
