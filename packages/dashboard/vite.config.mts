@@ -5,16 +5,28 @@ import { defineConfig } from 'vitest/config';
 import { vendureDashboardPlugin } from './vite/vite-plugin-vendure-dashboard.js';
 
 function runtimeEnvScriptPlugin(): Plugin {
-    const scriptTag = '<script src="/env-config.js"></script>';
+    // The script tag to inject
+    const scriptTag = '<script src="/env-config.js"></script>\n';
 
     return {
         name: 'runtime-env-script-injector',
 
-        // This hook runs just before the final index.html is written to disk
         transformIndexHtml(html: string) {
-            // Find the closing </head> tag and insert the script before it.
-            // This ensures the script runs before any other bundled scripts.
-            return html.replace('<head>', `</head>\n\t${scriptTag}`);
+            // Target: Find the base tag, e.g., <base href="/dashboard/">
+            const baseTagRegex = /<base\s[^>]*>/i;
+
+            // Find the index of the base tag match
+            const match = html.match(baseTagRegex);
+
+            if (match) {
+                const baseTag = match[0];
+
+                // Replace the <base> tag with <base> + our script, ensuring the script runs immediately after the base URL is set.
+                return html.replace(baseTag, `${baseTag}\n\t${scriptTag}`);
+            }
+
+            // Fallback: If no base tag is present (less likely for your app), place it right after the opening <head>
+            return html.replace('<head>', `<head>\n${scriptTag}`);
         },
     };
 }
