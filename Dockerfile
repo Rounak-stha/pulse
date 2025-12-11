@@ -52,12 +52,21 @@ RUN cd packages/prod-server && npm run build                                # Bu
 # -------------------------------
 FROM node:22.15.0-alpine
 
+# Install gettext for envsubst utility
+RUN apk add --no-cache gettext
+
 WORKDIR /app
 
 # -------------------------------
 # Copy root package files
 # -------------------------------
 COPY package*.json lerna.json ./
+
+# -------------------------------
+# Copy the entrypoint script from host root to container /app/
+# -------------------------------
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 # -------------------------------
 # Copy package.json of workspaces
@@ -92,6 +101,12 @@ COPY --from=build /app/packages/prod-server/dist ./packages/prod-server/dist
 # Set working directory for prod-server
 # -------------------------------
 WORKDIR /app/packages/prod-server
+
+# -------------------------------
+# Container entrypoint and command
+# -------------------------------
+# ENTRYPOINT runs the script first (performs substitution)
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # -------------------------------
 # Container entrypoint

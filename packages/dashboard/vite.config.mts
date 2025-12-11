@@ -1,8 +1,23 @@
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { loadEnv } from 'vite';
+import { loadEnv, Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import { vendureDashboardPlugin } from './vite/vite-plugin-vendure-dashboard.js';
+
+function runtimeEnvScriptPlugin(): Plugin {
+    const scriptTag = '<script src="/env-config.js"></script>';
+
+    return {
+        name: 'runtime-env-script-injector',
+
+        // This hook runs just before the final index.html is written to disk
+        transformIndexHtml(html: string) {
+            // Find the closing </head> tag and insert the script before it.
+            // This ensures the script runs before any other bundled scripts.
+            return html.replace('<head>', `</head>\n\t${scriptTag}`);
+        },
+    };
+}
 
 /**
  * This config is used for local development
@@ -39,6 +54,8 @@ export default ({ mode }: { mode: string }) => {
                 gqlOutputPath: path.resolve(__dirname, './src/lib/graphql/'),
                 tempCompilationDir: path.resolve(__dirname, './.temp'),
             }) as any,
+
+            runtimeEnvScriptPlugin(),
         ],
     });
 };

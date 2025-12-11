@@ -395,3 +395,5 @@ build
 # allow core build config folder
 !packages/core/build/
 !packages/core/build/**
+
+journal
