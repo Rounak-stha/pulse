@@ -6,7 +6,7 @@ import { vendureDashboardPlugin } from './vite/vite-plugin-vendure-dashboard.js'
 
 function runtimeEnvScriptPlugin(): Plugin {
     // The script tag to inject
-    const scriptTag = '<script src="/env-config.js"></script>\n';
+    const scriptTag = '<script src="env-config.js"></script>\n';
 
     return {
         name: 'runtime-env-script-injector',
