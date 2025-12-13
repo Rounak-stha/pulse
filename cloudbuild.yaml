@@ -1,0 +1,27 @@
+# cloudbuild.yaml
+steps:
+    # STEP 1: Build the Docker image, passing your VITE environment variables.
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+          - 'build'
+          - '-t'
+          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+          - '.'
+          # Pass VITE_ADMIN_API_HOST as a build argument
+          - '--build-arg'
+          - 'VITE_ADMIN_API_HOST=${_VITE_ADMIN_API_HOST}'
+          # Pass VITE_ADMIN_API_PORT as a build argument
+          - '--build-arg'
+          - 'VITE_ADMIN_API_PORT=${_VITE_ADMIN_API_PORT}'
+
+# This section automatically pushes the tagged image to Artifact Registry.
+images:
+    - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+
+# Define available substitution variables and their defaults (optional, but helpful)
+substitutions:
+    # Default tag for the image, can be overridden on the command line
+    _TAG: 'prod-server'
+    # Default values for your API configuration (can also be overridden)
+    _VITE_ADMIN_API_HOST: 'auto'
+    _VITE_ADMIN_API_PORT: 'auto'

@@ -3,6 +3,18 @@
 # -------------------------------
 FROM node:22.15.0-alpine AS build
 
+# -------------------------------
+# Receive the arguments passed via gcloud builds submit
+# -------------------------------
+ARG VITE_ADMIN_API_HOST
+ARG VITE_ADMIN_API_PORT
+
+# -------------------------------
+# Set them as environment variables in the final container (optional, but usually desired)
+# -------------------------------
+ENV VITE_ADMIN_API_HOST=$VITE_ADMIN_API_HOST
+ENV VITE_ADMIN_API_PORT=$VITE_ADMIN_API_PORT
+
 WORKDIR /app
 
 # -------------------------------
