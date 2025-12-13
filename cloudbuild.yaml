@@ -21,6 +21,7 @@ steps:
     # This step sets all necessary runtime configurations and securely links secrets.
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
       id: 'Deploy to Cloud Run'
+      entrypoint: 'gcloud'
       args:
           - 'run'
           - 'deploy'
