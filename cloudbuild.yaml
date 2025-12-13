@@ -80,3 +80,6 @@ steps:
 # This block ensures the built image is pushed to Artifact Registry after Step 1.
 images:
     - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+
+options:
+    logging: CLOUD_LOGGING_ONLY # This sends the logs directly to Cloud Logging
