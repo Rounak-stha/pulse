@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { loadGoogleScript } from '../lib/utils.js';
 
-const GOOGLE_CLIENT_ID = import.meta.env.DEVELOPMENT
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_DEVELOPMENT
     ? import.meta.env.VITE_GOOGLE_CLIENT_ID
     : window.env.VITE_GOOGLE_CLIENT_ID;
 
