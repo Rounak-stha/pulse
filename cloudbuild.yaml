@@ -85,7 +85,7 @@ steps:
           # 3. Health Checks (Startup Probe)
           # tcp 3000 every 240s, Initial delay 0s, Timeout 240s, Failure threshold 1
           - '--startup-probe'
-          - 'tcpSocket.port=3000,initialDelaySeconds=0,failureThreshold=1,timeoutSeconds=240,periodSeconds=241'
+          - 'tcpSocket.port=3000,initialDelaySeconds=0,failureThreshold=1,timeoutSeconds=240,periodSeconds=240'
 
           # 4. Cloud SQL Connection
           # This is an infrastructure identifier, not a secret, so it is set directly.
