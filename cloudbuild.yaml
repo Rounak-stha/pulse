@@ -38,36 +38,48 @@ steps:
           # A. SECRETS: Use --update-secrets to reference Secret Manager (ENV_VAR_NAME=SECRET_NAME:VERSION)
           # NOTE: Cloud Run Service Account must have Secret Manager Secret Accessor role.
           - '--update-secrets'
-          - >
-              BUCKET_NAME=BUCKET_NAME:latest,
-              BUCKET_S3_URL=BUCKET_S3_URL:latest,
-              BUCKET_ACCESS_KEY_ID=BUCKET_ACCESS_KEY_ID:latest,
-              BUCKET_SECRET_ACCESS_KEY=BUCKET_SECRET_ACCESS_KEY:latest,
-              BUCKET_TOKEN_VALUE=BUCKET_TOKEN_VALUE:latest,
-              DB=DB:latest,
-              DB_HOST=DB_HOST:latest,
-              DB_PORT=DB_PORT:latest,
-              DB_USERNAME=DB_USERNAME:latest,
-              DB_PASSWORD=DB_PASSWORD:latest,
-              DB_NAME=DB_NAME:latest,
-              DB_SCHEMA=DB_SCHEMA:latest,
-              GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,
-              GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,
-              VITE_GOOGLE_CLIENT_ID=VITE_GOOGLE_CLIENT_ID:latest
+          - 'BUCKET_NAME=BUCKET_NAME:latest'
+          - '--update-secrets'
+          - 'BUCKET_S3_URL=BUCKET_S3_URL:latest'
+          - '--update-secrets'
+          - 'BUCKET_ACCESS_KEY_ID=BUCKET_ACCESS_KEY_ID:latest'
+          - '--update-secrets'
+          - 'BUCKET_SECRET_ACCESS_KEY=BUCKET_SECRET_ACCESS_KEY:latest'
+          - '--update-secrets'
+          - 'BUCKET_TOKEN_VALUE=BUCKET_TOKEN_VALUE:latest'
+          - '--update-secrets'
+          - 'DB=DB:latest'
+          - '--update-secrets'
+          - 'DB_HOST=DB_HOST:latest'
+          - '--update-secrets'
+          - 'DB_PORT=DB_PORT:latest'
+          - '--update-secrets'
+          - 'DB_USERNAME=DB_USERNAME:latest'
+          - 'DB_PASSWORD=DB_PASSWORD:latest'
+          - '--update-secrets'
+          - 'DB_NAME=DB_NAME:latest'
+          - '--update-secrets'
+          - 'DB_SCHEMA=DB_SCHEMA:latest'
+          - '--update-secrets'
+          - 'GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest'
+          - '--update-secrets'
+          - 'GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest'
+          - '--update-secrets'
+          - 'VITE_GOOGLE_CLIENT_ID=VITE_GOOGLE_CLIENT_ID:latest'
 
           # -------------------------------------------------------------------
           # B. CLOUD RUN CONFIGURATION FLAGS
 
           # 1. Container & Resources
           - '--port=3000' # Container port (Requests will be sent to the container on this port)
-          - '--memory=512Mi' # Memory to allocate (Matching your 512 MiB)
-          - '--cpu=1' # CPU allocation (Matching your 1)
+          - '--memory=512Mi' # Memory to allocate
+          - '--cpu=1' # CPU allocation
 
           # 2. Scaling & Requests
-          - '--min-instances=0' # Minimum number of instances (Matching your setting: Scale to zero)
-          - '--max-instances=1' # Maximum number of instances (Matching your setting: 1)
+          - '--min-instances=0' # Minimum number of instances
+          - '--max-instances=1' # Maximum number of instances
           - '--concurrency=80' # Maximum concurrent requests per instance (Cloud Run default)
-          - '--timeout=300' # Request timeout (Default 300s, update if needed)
+          - '--timeout=300' # Request timeout (Default 300s)
 
           # 3. Health Checks (Startup Probe)
           # tcp 3000 every 240s, Initial delay 0s, Timeout 240s, Failure threshold 1
