@@ -32,6 +32,19 @@ export class AlreadyRefundedError extends ErrorResult {
   }
 }
 
+export class AuthenticationError extends ErrorResult {
+  readonly __typename = 'AuthenticationError';
+  readonly errorCode = 'AUTHENTICATION_ERROR' as any;
+  readonly message = 'AUTHENTICATION_ERROR';
+  readonly additionalMessage: Scalars['String'];
+  constructor(
+    input: { additionalMessage: Scalars['String'] }
+  ) {
+    super();
+    this.additionalMessage = input.additionalMessage
+  }
+}
+
 export class CancelActiveOrderError extends ErrorResult {
   readonly __typename = 'CancelActiveOrderError';
   readonly errorCode = 'CANCEL_ACTIVE_ORDER_ERROR' as any;
@@ -600,8 +613,19 @@ export class SettlePaymentError extends ErrorResult {
   }
 }
 
+export class ShopCodeConflictError extends ErrorResult {
+  readonly __typename = 'ShopCodeConflictError';
+  readonly errorCode = 'SHOP_CODE_CONFLICT_ERROR' as any;
+  readonly message = 'SHOP_CODE_CONFLICT_ERROR';
+  constructor(
 
-const errorTypeNames = new Set<string>(['AlreadyRefundedError', 'CancelActiveOrderError', 'CancelPaymentError', 'ChannelDefaultLanguageError', 'CouponCodeExpiredError', 'CouponCodeInvalidError', 'CouponCodeLimitError', 'CreateFulfillmentError', 'DuplicateEntityError', 'EmailAddressConflictError', 'EmptyOrderLineSelectionError', 'FacetInUseError', 'FulfillmentStateTransitionError', 'GuestCheckoutError', 'IneligibleShippingMethodError', 'InsufficientStockError', 'InsufficientStockOnHandError', 'InvalidCredentialsError', 'InvalidFulfillmentHandlerError', 'ItemsAlreadyFulfilledError', 'LanguageNotAvailableError', 'ManualPaymentStateError', 'MimeTypeError', 'MissingConditionsError', 'MultipleOrderError', 'NativeAuthStrategyError', 'NegativeQuantityError', 'NoActiveOrderError', 'NoChangesSpecifiedError', 'NothingToRefundError', 'OrderInterceptorError', 'OrderLimitError', 'OrderModificationError', 'OrderModificationStateError', 'OrderStateTransitionError', 'PaymentMethodMissingError', 'PaymentOrderMismatchError', 'PaymentStateTransitionError', 'ProductOptionInUseError', 'QuantityTooGreatError', 'RefundAmountError', 'RefundOrderStateError', 'RefundPaymentIdMissingError', 'RefundStateTransitionError', 'SettlePaymentError']);
+  ) {
+    super();
+  }
+}
+
+
+const errorTypeNames = new Set<string>(['AlreadyRefundedError', 'AuthenticationError', 'CancelActiveOrderError', 'CancelPaymentError', 'ChannelDefaultLanguageError', 'CouponCodeExpiredError', 'CouponCodeInvalidError', 'CouponCodeLimitError', 'CreateFulfillmentError', 'DuplicateEntityError', 'EmailAddressConflictError', 'EmptyOrderLineSelectionError', 'FacetInUseError', 'FulfillmentStateTransitionError', 'GuestCheckoutError', 'IneligibleShippingMethodError', 'InsufficientStockError', 'InsufficientStockOnHandError', 'InvalidCredentialsError', 'InvalidFulfillmentHandlerError', 'ItemsAlreadyFulfilledError', 'LanguageNotAvailableError', 'ManualPaymentStateError', 'MimeTypeError', 'MissingConditionsError', 'MultipleOrderError', 'NativeAuthStrategyError', 'NegativeQuantityError', 'NoActiveOrderError', 'NoChangesSpecifiedError', 'NothingToRefundError', 'OrderInterceptorError', 'OrderLimitError', 'OrderModificationError', 'OrderModificationStateError', 'OrderStateTransitionError', 'PaymentMethodMissingError', 'PaymentOrderMismatchError', 'PaymentStateTransitionError', 'ProductOptionInUseError', 'QuantityTooGreatError', 'RefundAmountError', 'RefundOrderStateError', 'RefundPaymentIdMissingError', 'RefundStateTransitionError', 'SettlePaymentError', 'ShopCodeConflictError']);
 function isGraphQLError(input: any): input is import('@vendure/common/lib/generated-types').ErrorResult {
   return input instanceof ErrorResult || errorTypeNames.has(input.__typename);
 }
@@ -682,6 +706,11 @@ export const adminErrorOperationTypeResolvers = {
       return isGraphQLError(value) ? (value as any).__typename : 'Refund';
     },
   },
+  RegisterShopResult: {
+    __resolveType(value: any) {
+      return isGraphQLError(value) ? (value as any).__typename : 'RegisterShopSuccess';
+    },
+  },
   RemoveOrderItemsResult: {
     __resolveType(value: any) {
       return isGraphQLError(value) ? (value as any).__typename : 'Order';
@@ -750,6 +779,11 @@ export const adminErrorOperationTypeResolvers = {
   UpdatePromotionResult: {
     __resolveType(value: any) {
       return isGraphQLError(value) ? (value as any).__typename : 'Promotion';
+    },
+  },
+  UpdateShopResult: {
+    __resolveType(value: any) {
+      return isGraphQLError(value) ? (value as any).__typename : 'Shop';
     },
   },
 };

@@ -28,7 +28,8 @@
     ],
     "AuthenticationResult": [
       "CurrentUser",
-      "InvalidCredentialsError"
+      "InvalidCredentialsError",
+      "ShopCodeConflictError"
     ],
     "CancelOrderResult": [
       "CancelActiveOrderError",
@@ -89,6 +90,7 @@
     ],
     "ErrorResult": [
       "AlreadyRefundedError",
+      "AuthenticationError",
       "CancelActiveOrderError",
       "CancelPaymentError",
       "ChannelDefaultLanguageError",
@@ -132,7 +134,8 @@
       "RefundOrderStateError",
       "RefundPaymentIdMissingError",
       "RefundStateTransitionError",
-      "SettlePaymentError"
+      "SettlePaymentError",
+      "ShopCodeConflictError"
     ],
     "ModifyOrderResult": [
       "CouponCodeExpiredError",
@@ -173,6 +176,8 @@
       "Order",
       "OrderLine",
       "OrderModification",
+      "Page",
+      "PageVersion",
       "Payment",
       "PaymentMethod",
       "Product",
@@ -188,6 +193,7 @@
       "Sale",
       "Seller",
       "ShippingMethod",
+      "Shop",
       "StockAdjustment",
       "StockLevel",
       "StockLocation",
@@ -195,6 +201,7 @@
       "Tag",
       "TaxCategory",
       "TaxRate",
+      "Theme",
       "User",
       "Zone"
     ],
@@ -211,6 +218,7 @@
       "HistoryEntryList",
       "JobList",
       "OrderList",
+      "PageList",
       "PaymentMethodList",
       "ProductList",
       "ProductVariantList",
@@ -240,6 +248,12 @@
     "Region": [
       "Country",
       "Province"
+    ],
+    "RegisterShopResult": [
+      "EmailAddressConflictError",
+      "NativeAuthStrategyError",
+      "RegisterShopSuccess",
+      "ShopCodeConflictError"
     ],
     "RemoveFacetFromChannelResult": [
       "Facet",
@@ -352,6 +366,9 @@
     "UpdatePromotionResult": [
       "MissingConditionsError",
       "Promotion"
+    ],
+    "UpdateShopResult": [
+      "Shop"
     ]
   }
 };

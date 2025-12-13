@@ -49,6 +49,7 @@ import { GlobalSettingsService } from './services/global-settings.service';
 import { HistoryService } from './services/history.service';
 import { OrderTestingService } from './services/order-testing.service';
 import { OrderService } from './services/order.service';
+import { PageService } from './services/page.service';
 import { PaymentMethodService } from './services/payment-method.service';
 import { PaymentService } from './services/payment.service';
 import { ProductOptionGroupService } from './services/product-option-group.service';
@@ -61,6 +62,7 @@ import { SearchService } from './services/search.service';
 import { SellerService } from './services/seller.service';
 import { SessionService } from './services/session.service';
 import { ShippingMethodService } from './services/shipping-method.service';
+import { ShopService } from './services/shop.service';
 import { StockLevelService } from './services/stock-level.service';
 import { StockLocationService } from './services/stock-location.service';
 import { StockMovementService } from './services/stock-movement.service';
@@ -86,6 +88,7 @@ const services = [
     HistoryService,
     OrderService,
     OrderTestingService,
+    PageService,
     PaymentService,
     PaymentMethodService,
     ProductOptionGroupService,
@@ -98,6 +101,7 @@ const services = [
     SellerService,
     SessionService,
     ShippingMethodService,
+    ShopService,
     StockLevelService,
     StockLocationService,
     StockMovementService,

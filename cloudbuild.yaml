@@ -1,0 +1,82 @@
+# cloudbuild.yaml
+# This file defines a two-step pipeline: 1) Build the image, 2) Deploy to Cloud Run.
+
+steps:
+    # STEP 1: Build the Docker image
+    # This step uses build arguments passed via the Cloud Build Trigger substitutions.
+    - name: 'gcr.io/cloud-builders/docker'
+      id: 'Build Image'
+      args:
+          - 'build'
+          - '-t'
+          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+          - '.'
+          # Pass VITE variables required at BUILD TIME (must be defined in Dockerfile as ARG)
+          - '--build-arg'
+          - 'VITE_ADMIN_API_HOST=${_VITE_ADMIN_API_HOST}'
+          - '--build-arg'
+          - 'VITE_ADMIN_API_PORT=${_VITE_ADMIN_API_PORT}'
+
+    # STEP 2: Deploy to Cloud Run
+    # This step sets all necessary runtime configurations and securely links secrets.
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+      id: 'Deploy to Cloud Run'
+      args:
+          - 'run'
+          - 'deploy'
+          - 'bazaar-server'
+          - '--image'
+          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+          - '--region'
+          - 'asia-south1'
+          - '--platform'
+          - 'managed'
+          - '--allow-unauthenticated'
+
+          # -------------------------------------------------------------------
+          # A. SECRETS: Use --update-secrets to reference Secret Manager (ENV_VAR_NAME=SECRET_NAME:VERSION)
+          # NOTE: Cloud Run Service Account must have Secret Manager Secret Accessor role.
+          - '--update-secrets'
+          - >
+              BUCKET_NAME=BUCKET_NAME:latest,
+              BUCKET_S3_URL=BUCKET_S3_URL:latest,
+              BUCKET_ACCESS_KEY_ID=BUCKET_ACCESS_KEY_ID:latest,
+              BUCKET_SECRET_ACCESS_KEY=BUCKET_SECRET_ACCESS_KEY:latest,
+              BUCKET_TOKEN_VALUE=BUCKET_TOKEN_VALUE:latest,
+              DB=DB:latest,
+              DB_HOST=DB_HOST:latest,
+              DB_PORT=DB_PORT:latest,
+              DB_USERNAME=DB_USERNAME:latest,
+              DB_PASSWORD=DB_PASSWORD:latest,
+              DB_NAME=DB_NAME:latest,
+              DB_SCHEMA=DB_SCHEMA:latest,
+              GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,
+              GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,
+              VITE_GOOGLE_CLIENT_ID=VITE_GOOGLE_CLIENT_ID:latest
+
+          # -------------------------------------------------------------------
+          # B. CLOUD RUN CONFIGURATION FLAGS
+
+          # 1. Container & Resources
+          - '--port=3000' # Container port (Requests will be sent to the container on this port)
+          - '--memory=512Mi' # Memory to allocate (Matching your 512 MiB)
+          - '--cpu=1' # CPU allocation (Matching your 1)
+
+          # 2. Scaling & Requests
+          - '--min-instances=0' # Minimum number of instances (Matching your setting: Scale to zero)
+          - '--max-instances=1' # Maximum number of instances (Matching your setting: 1)
+          - '--concurrency=80' # Maximum concurrent requests per instance (Cloud Run default)
+          - '--timeout=300' # Request timeout (Default 300s, update if needed)
+
+          # 3. Health Checks (Startup Probe)
+          # tcp 3000 every 240s, Initial delay 0s, Timeout 240s, Failure threshold 1
+          - '--startup-probe'
+          - 'tcpSocket.port=3000,initialDelaySeconds=0,failureThreshold=1,timeoutSeconds=240,periodSeconds=60'
+
+          # 4. Cloud SQL Connection
+          # This is an infrastructure identifier, not a secret, so it is set directly.
+          - '--set-cloudsql-instances=bazaar-480217:asia-south1:bazaar-prod'
+
+# This block ensures the built image is pushed to Artifact Registry after Step 1.
+images:
+    - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'

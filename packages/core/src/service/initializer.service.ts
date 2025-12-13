@@ -44,18 +44,6 @@ export class InitializerService {
         // IMPORTANT - why manually invoke these init methods rather than just relying on
         // Nest's "onModuleInit" lifecycle hook within each individual service class?
         // The reason is that the order of invocation matters. By explicitly invoking the
-        // methods below, we can e.g. guarantee that the default channel exists
-        // (channelService.initChannels()) before we try to create any roles (which assume that
-        // there is a default Channel to work with.
-        await this.zoneService.initZones();
-        await this.globalSettingsService.initGlobalSettings();
-        await this.sellerService.initSellers();
-        await this.channelService.initChannels();
-        await this.roleService.initRoles();
-        await this.administratorService.initAdministrators();
-        await this.shippingMethodService.initShippingMethods();
-        await this.taxRateService.initTaxRates();
-        await this.stockLocationService.initStockLocations();
         await this.eventBus.publish(new InitializerEvent());
     }
 

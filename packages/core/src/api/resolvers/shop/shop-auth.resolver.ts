@@ -152,6 +152,13 @@ export class ShopAuthResolver extends BaseAuthResolver {
         }
         const session = await this.authService.createAuthenticatedSessionForUser(
             ctx,
+            // UpdateThis
+            /**
+             * We need to find a way to scope customer accounts to a specific shop.
+             * Currently, I am focused on the Admin API
+             * The problem right now with Shop API is that, multiple shop can have the same customer
+             * And we don't want the same credential to work with all Shops
+             */
             // We know that there is a user, since the Customer
             // was found with the .getCustomerByUserId() method.
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

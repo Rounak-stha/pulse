@@ -33,6 +33,7 @@ export interface CollectionDefinition {
 }
 
 export interface RoleDefinition {
+    shopId: string;
     code: string;
     description: string;
     permissions: Permission[];
@@ -47,10 +48,26 @@ export interface RoleDefinition {
 export interface InitialData {
     defaultLanguage: LanguageCode;
     defaultZone: string;
-    roles?: RoleDefinition[];
+    beforeShop: {
+        countries: CountryDefinition[];
+        taxRates: Array<{ name: string; percentage: number }>;
+    };
+    afterShop: {
+        shippingMethods?: Array<{ name: string; price: number; taxRate?: number }>;
+        paymentMethods?: Array<{ name: string; handler: ConfigurableOperationInput }>;
+        collections?: CollectionDefinition[];
+    };
+}
+
+/**
+ * @description
+ * An object defining initial settings for a new Prod Vendure installation.
+ *
+ * @docsCategory import-export
+ */
+export interface InitialDataProd {
+    defaultLanguage: LanguageCode;
+    defaultZone: string;
     countries: CountryDefinition[];
     taxRates: Array<{ name: string; percentage: number }>;
-    shippingMethods: Array<{ name: string; price: number; taxRate?: number }>;
-    paymentMethods: Array<{ name: string; handler: ConfigurableOperationInput }>;
-    collections: CollectionDefinition[];
 }

@@ -36,6 +36,7 @@ import { ProductVariantPrice } from '../../entity/product-variant/product-varian
 import { ProductVariant } from '../../entity/product-variant/product-variant.entity';
 import { Seller } from '../../entity/seller/seller.entity';
 import { Session } from '../../entity/session/session.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 import { Zone } from '../../entity/zone/zone.entity';
 import { EventBus } from '../../event-bus';
 import { ChangeChannelEvent } from '../../event-bus/events/change-channel-event';
@@ -45,6 +46,7 @@ import { ListQueryBuilder } from '../helpers/list-query-builder/list-query-build
 import { patchEntity } from '../helpers/utils/patch-entity';
 
 import { GlobalSettingsService } from './global-settings.service';
+import { ZoneService } from './zone.service';
 /**
  * @description
  * Contains methods relating to {@link Channel} entities.
@@ -54,7 +56,7 @@ import { GlobalSettingsService } from './global-settings.service';
 @Injectable()
 @Instrument()
 export class ChannelService {
-    private allChannels: SelfRefreshingCache<Channel[], [RequestContext]>;
+    private allChannels: Map<ID, SelfRefreshingCache<Channel[], [RequestContext]>> = new Map();
 
     constructor(
         private connection: TransactionalConnection,
@@ -63,17 +65,21 @@ export class ChannelService {
         private customFieldRelationService: CustomFieldRelationService,
         private eventBus: EventBus,
         private listQueryBuilder: ListQueryBuilder,
+        private zoneService: ZoneService,
     ) {}
 
     /**
      * When the app is bootstrapped, ensure a default Channel exists and populate the
      * channel lookup array.
      *
+     * NOTE: We might not need to initialize this channel service
+     * Prev when multi-tenancy thorugh Shop was not added, a default channel would be created
+     * But now since a everything must be scoped in a Shop, first we need a Shop and that would have a default Channel
      * @internal
      */
-    async initChannels() {
-        await this.ensureDefaultChannelExists();
-        await this.ensureCacheExists();
+    async initChannels(shop: Shop) {
+        await this.ensureDefaultChannelExists(shop);
+        await this.ensureCacheExists(shop);
     }
 
     /**
@@ -81,8 +87,8 @@ export class ChannelService {
      *
      * @internal
      */
-    async createCache(): Promise<SelfRefreshingCache<Channel[], [RequestContext]>> {
-        return createSelfRefreshingCache({
+    private async createCache(shopId: ID): Promise<SelfRefreshingCache<Channel[], [RequestContext]>> {
+        const cache = await createSelfRefreshingCache({
             name: 'ChannelService.allChannels',
             ttl: this.configService.entityOptions.channelCacheTtl,
             refresh: {
@@ -95,6 +101,9 @@ export class ChannelService {
                                 ctx,
                                 relations: ['defaultShippingZone', 'defaultTaxZone'],
                                 ignoreQueryLimits: true,
+                                where: {
+                                    shop: { id: shopId },
+                                },
                             },
                         )
                         .getManyAndCount()
@@ -107,6 +116,30 @@ export class ChannelService {
                 defaultArgs: [RequestContext.empty()],
             },
         });
+
+        this.allChannels.set(shopId, cache);
+        return cache;
+    }
+
+    /**
+     * Gets the cache entry for the shop
+     * Creates a new cache entry if does not exist
+     * @internal
+     */
+    private async getCache(shopId: ID): Promise<SelfRefreshingCache<Channel[], [RequestContext]>> {
+        if (!this.allChannels.has(shopId)) return await this.createCache(shopId);
+        // eslint-disable-next-line
+        return this.allChannels.get(shopId)!;
+    }
+
+    /**
+     * Refreshes the cache for the Shop
+     * Optional parameter Shop is used when Registering a new Administrator
+     * @internal
+     */
+    private async refreshCache(ctx: RequestContext, shop?: Shop): Promise<Channel[]> {
+        const cache = await this.createCache(shop?.id || ctx.shop.id);
+        return await cache.refresh(ctx);
     }
 
     /**
@@ -119,7 +152,7 @@ export class ChannelService {
         entity: T,
         ctx: RequestContext,
     ): Promise<T> {
-        const defaultChannel = await this.getDefaultChannel(ctx);
+        const defaultChannel = await this.getDefaultChannel(ctx.shop);
         const channelIds = unique([ctx.channelId, defaultChannel.id]);
         entity.channels = channelIds.map(id => ({ id })) as any;
         await this.eventBus.publish(new ChangeChannelEvent(ctx, entity, [ctx.channelId], 'assigned'));
@@ -187,7 +220,7 @@ export class ChannelService {
         // so that this join could be done prior to invoking this method.
         // TODO: overload the assignToChannels method to allow it to take an entity instance
         if (entityType === (Order as any)) {
-            relations.push('lines', 'shippingLines', 'surcharges');
+            relations.push('lines', 'shippingLines');
         }
         const entity = await this.connection.getEntityOrThrow(ctx, entityType, entityId, {
             loadEagerRelations: false,
@@ -258,22 +291,12 @@ export class ChannelService {
      * Given a channel token, returns the corresponding Channel if it exists, else will throw
      * a {@link ChannelNotFoundError}.
      */
-    async getChannelFromToken(token: string): Promise<Channel>;
-    async getChannelFromToken(ctx: RequestContext, token: string): Promise<Channel>;
-    async getChannelFromToken(ctxOrToken: RequestContext | string, token?: string): Promise<Channel> {
-        const [ctx, channelToken] =
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            ctxOrToken instanceof RequestContext ? [ctxOrToken, token!] : [undefined, ctxOrToken];
-
-        const allChannels = await this.allChannels.value(ctx);
-
-        if (allChannels.length === 1 || channelToken === '') {
-            // there is only the default channel, so return it
-            return this.getDefaultChannel(ctx);
-        }
-        const channel = allChannels.find(c => c.token === channelToken);
+    async getChannelFromToken(shopId: ID, token: string): Promise<Channel> {
+        const cacheEntryForShop = await this.getCache(shopId);
+        const allChannels = await cacheEntryForShop.value();
+        const channel = allChannels.find(c => c.token === token);
         if (!channel) {
-            throw new ChannelNotFoundError(channelToken);
+            throw new ChannelNotFoundError(token);
         }
         return channel;
     }
@@ -281,10 +304,19 @@ export class ChannelService {
     /**
      * @description
      * Returns the default Channel.
+     * NOTE: Default Channel must be scoped per shop
      */
-    async getDefaultChannel(ctx?: RequestContext): Promise<Channel> {
-        const allChannels = await this.allChannels.value(ctx);
-        const defaultChannel = allChannels.find(channel => channel.code === DEFAULT_CHANNEL_CODE);
+    async getDefaultChannel(shop: Shop): Promise<Channel> {
+        const shopId = shop.id;
+        let cache = this.allChannels.get(shopId);
+
+        // Should be aleady initialized
+        if (!cache) {
+            cache = await this.createCache(shop.id);
+        }
+
+        const shopChannels = await cache.value();
+        const defaultChannel = shopChannels.find(channel => channel.code === DEFAULT_CHANNEL_CODE);
 
         if (!defaultChannel) {
             throw new InternalServerError('error.default-channel-not-found');
@@ -301,6 +333,7 @@ export class ChannelService {
             .build(Channel, options, {
                 relations: relations ?? ['defaultShippingZone', 'defaultTaxZone'],
                 ctx,
+                where: { shop: { id: ctx.shopId } },
             })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
@@ -309,11 +342,48 @@ export class ChannelService {
             }));
     }
 
-    findOne(ctx: RequestContext, id: ID): Promise<Channel | undefined> {
+    async findOne(ctx: RequestContext, id: ID): Promise<Channel | undefined> {
         return this.connection
             .getRepository(ctx, Channel)
-            .findOne({ where: { id }, relations: ['defaultShippingZone', 'defaultTaxZone'] })
+            .findOne({
+                where: { id, shop: { id: ctx.shopId } },
+                relations: ['defaultShippingZone', 'defaultTaxZone'],
+            })
             .then(result => result ?? undefined);
+    }
+
+    async createDefaultChannelAfterRegistration(
+        ctx: RequestContext,
+        shop: Shop,
+        zone: Zone,
+    ): Promise<Channel> {
+        const defaultCurrencyCode = CurrencyCode.NPR;
+        const defaultLanguageCode = ctx.languageCode;
+        const code = DEFAULT_CHANNEL_CODE;
+        const token = shop.code + code;
+        const defaultShippingZone = zone;
+
+        if (!defaultShippingZone) {
+            throw new InternalServerError('error.default-shipping-zone-not-found');
+        }
+
+        const channel = new Channel({
+            shop,
+            code,
+            token,
+            pricesIncludeTax: true,
+            defaultLanguageCode,
+            defaultCurrencyCode,
+            defaultShippingZone,
+            defaultTaxZone: defaultShippingZone,
+            availableCurrencyCodes: [defaultCurrencyCode],
+            availableLanguageCodes: [defaultLanguageCode],
+        });
+
+        const newChannel = await this.connection.getRepository(ctx, Channel).save(channel);
+        await this.refreshCache(ctx, shop);
+        await this.eventBus.publish(new ChannelEvent(ctx, newChannel, 'created'));
+        return newChannel;
     }
 
     async create(
@@ -321,11 +391,13 @@ export class ChannelService {
         input: CreateChannelInput,
     ): Promise<ErrorResultUnion<CreateChannelResult, Channel>> {
         const defaultCurrencyCode = input.defaultCurrencyCode || input.currencyCode;
+        const shop = ctx.shop;
         if (!defaultCurrencyCode) {
             throw new UserInputError('Either a defaultCurrencyCode or currencyCode must be provided');
         }
         const channel = new Channel({
             ...input,
+            shop,
             defaultCurrencyCode,
             availableCurrencyCodes:
                 input.availableCurrencyCodes ?? (defaultCurrencyCode ? [defaultCurrencyCode] : []),
@@ -356,7 +428,7 @@ export class ChannelService {
             await this.connection.getRepository(ctx, Channel).save(newChannel);
         }
         await this.customFieldRelationService.updateRelations(ctx, Channel, input, newChannel);
-        await this.allChannels.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ChannelEvent(ctx, newChannel, 'created', input));
         return newChannel;
     }
@@ -369,6 +441,7 @@ export class ChannelService {
         if (!channel) {
             throw new EntityNotFoundError('Channel', input.id);
         }
+        const shop = ctx.shop;
         const originalDefaultCurrencyCode = channel.defaultCurrencyCode;
         const defaultLanguageValidationResult = await this.validateDefaultLanguageCode(ctx, input);
         if (isGraphQlErrorResult(defaultLanguageValidationResult)) {
@@ -452,7 +525,7 @@ export class ChannelService {
         }
         await this.connection.getRepository(ctx, Channel).save(updatedChannel, { reload: false });
         await this.customFieldRelationService.updateRelations(ctx, Channel, input, updatedChannel);
-        await this.allChannels.refresh(ctx);
+        await this.refreshCache(ctx);
         await this.eventBus.publish(new ChannelEvent(ctx, channel, 'updated', input));
         return assertFound(this.findOne(ctx, channel.id));
     }
@@ -493,22 +566,23 @@ export class ChannelService {
     /**
      * Ensures channel cache exists. If not, this method creates one.
      */
-    private async ensureCacheExists() {
-        if (this.allChannels) {
+    private async ensureCacheExists(shop: Shop) {
+        if (this.allChannels.has(shop.id)) {
             return;
         }
 
-        this.allChannels = await this.createCache();
+        this.allChannels.set(shop.id, await this.createCache(shop.id));
     }
 
     /**
      * There must always be a default Channel. If none yet exists, this method creates one.
      * Also ensures the default Channel token matches the defaultChannelToken config setting.
      */
-    private async ensureDefaultChannelExists() {
+    private async ensureDefaultChannelExists(shop: Shop) {
         const { defaultChannelToken } = this.configService;
         let defaultChannel = await this.connection.rawConnection.getRepository(Channel).findOne({
             where: {
+                shop,
                 code: DEFAULT_CHANNEL_CODE,
             },
             relations: ['seller'],
@@ -516,6 +590,7 @@ export class ChannelService {
 
         if (!defaultChannel) {
             defaultChannel = new Channel({
+                shop,
                 code: DEFAULT_CHANNEL_CODE,
                 defaultLanguageCode: this.configService.defaultLanguageCode,
                 availableLanguageCodes: [this.configService.defaultLanguageCode],

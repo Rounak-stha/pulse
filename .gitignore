@@ -389,3 +389,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 __admin-ui/
+
+build
+
+# allow core build config folder
+!packages/core/build/
+!packages/core/build/**
+
+journal

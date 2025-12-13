@@ -1,6 +1,6 @@
 import {
-    AuthenticationResult as ShopAuthenticationResult,
     PasswordValidationError,
+    AuthenticationResult as ShopAuthenticationResult,
 } from '@vendure/common/lib/generated-shop-types';
 import {
     AuthenticationResult as AdminAuthenticationResult,

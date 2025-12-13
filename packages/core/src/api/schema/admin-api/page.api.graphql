@@ -1,0 +1,186 @@
+# src/plugins/page-builder/api/schema.graphql
+
+type Page implements Node {
+    id: ID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    shop: Shop!
+    name: String!
+    slug: String!
+    description: String
+    publishedVersion: PageVersion
+    draftVersion: PageVersion
+    versions: [PageVersion!]!
+    lastPublishedAt: DateTime
+}
+
+type PageVersion implements Node {
+    id: ID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    page: Page!
+    versionNumber: Int!
+    content: String!
+    theme: JSON
+    status: PageVersionStatus!
+    publishedBy: Administrator
+    publishedAt: DateTime
+    changeDescription: String
+}
+
+enum PageVersionStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+}
+
+type PageList implements PaginatedList {
+    items: [Page!]!
+    totalItems: Int!
+}
+
+input PageFilterParameter {
+    name: StringOperators
+    slug: StringOperators
+    description: StringOperators
+    createdAt: DateOperators
+    updatedAt: DateOperators
+}
+
+input PageSortParameter {
+    id: SortOrder
+    createdAt: SortOrder
+    updatedAt: SortOrder
+    name: SortOrder
+    slug: SortOrder
+    lastPublishedAt: SortOrder
+}
+
+input CreatePageInput {
+    name: String!
+    slug: String!
+    description: String
+}
+
+input UpdatePageInput {
+    id: ID!
+    name: String
+    slug: String
+    description: String
+}
+
+input SavePageVersionInput {
+    pageId: ID!
+    content: String!
+    theme: JSON
+    changeDescription: String
+}
+
+input PublishPageInput {
+    pageId: ID!
+    content: String!
+    changeDescription: String
+}
+
+input RestorePageVersionInput {
+    versionId: ID!
+    changeDescription: String
+}
+
+# Admin API
+extend type Query {
+    """
+    Get a page by ID (admin only)
+    """
+    page(id: ID!): Page
+
+    """
+    Get a page by slug (admin only)
+    """
+    pageBySlug(slug: String!): Page
+
+    """
+    List all pages with filtering and pagination (admin only)
+    """
+    pages(options: PageListOptions): PageList!
+
+    """
+    Get a specific page version (admin only)
+    """
+    pageVersion(id: ID!): PageVersion
+
+    """
+    Get all versions for a page (admin only)
+    """
+    pageVersions(pageId: ID!): [PageVersion!]!
+
+    """
+    Get the draft version for editing (admin only)
+    """
+    pageDraftVersion(pageId: ID!): PageVersion
+}
+
+extend type Mutation {
+    """
+    Create a new page with an initial draft version (admin only)
+    """
+    createPage(input: CreatePageInput!): Page!
+
+    """
+    Update page metadata (admin only)
+    """
+    updatePage(id: ID!, input: UpdatePageInput!): Page!
+
+    """
+    Delete a page and all its versions (admin only)
+    """
+    deletePage(id: ID!): DeletionResponse!
+
+    """
+    Save a new draft version (admin only)
+    """
+    savePageDraft(input: SavePageVersionInput!): PageVersion!
+
+    """
+    Publish a draft version (admin only)
+    """
+    publishPage(input: PublishPageInput!): Page!
+
+    """
+    Restore an archived version as a new draft (admin only)
+    """
+    restorePageVersion(input: RestorePageVersionInput!): PageVersion!
+
+    """
+    Delete a specific version (admin only)
+    """
+    deletePageVersion(id: ID!): DeletionResponse!
+}
+
+input PageListOptions {
+    skip: Int
+    take: Int
+    sort: PageSortParameter
+    filter: PageFilterParameter
+}
+
+# Shop API (for public access)
+extend type Query {
+    """
+    Get published page by slug (public access)
+    """
+    publishedPage(slug: String!): PublishedPage
+}
+
+"""
+Public version of Page with only published content
+"""
+type PublishedPage {
+    id: ID!
+    name: String!
+    slug: String!
+    description: String
+    content: String!
+    theme: JSON
+    publishedAt: DateTime!
+}

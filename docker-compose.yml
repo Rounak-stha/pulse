@@ -65,6 +65,46 @@ services:
         ports:
             - '5432:5432'
         command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=100000 -c max_connections=200
+    postgres_16_local_prod:
+        image: postgres:16
+        container_name: postgres_16_local_prod
+        environment:
+            POSTGRES_DB: vendure-local_prod
+            POSTGRES_USER: vendure
+            POSTGRES_PASSWORD: password
+            PGDATA: /var/lib/postgresql/data
+        volumes:
+            - postgres_16_local_prod_data:/var/lib/postgresql/data
+        ports:
+            - '6543:5432'
+        command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=100000 -c max_connections=200
+
+    local_prod_server:
+        image: prod-server
+        depends_on:
+            - postgres_16_local_prod
+        ports:
+            - '3000:3000'
+        environment:
+            # DB settings
+            DB: ${DB}
+            DB_HOST: ${DB_HOST} # DB Container Name: postgres_16_local_prod
+            DB_PORT: ${DB_PORT}
+            DB_USERNAME: ${DB_USERNAME}
+            DB_PASSWORD: ${DB_PASSWORD}
+            DB_NAME: ${DB_NAME}
+            DB_SCHEMA: ${DB_SCHEMA}
+
+            # Bucket / S3 settings
+            BUCKET_NAME: ${BUCKET_NAME}
+            BUCKET_S3_URL: ${BUCKET_S3_URL}
+            BUCKET_ACCESS_KEY_ID: ${BUCKET_ACCESS_KEY_ID}
+            BUCKET_SECRET_ACCESS_KEY: ${BUCKET_SECRET_ACCESS_KEY}
+            BUCKET_TOKEN_VALUE: ${BUCKET_TOKEN_VALUE}
+
+            # Google OAuth
+            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     # This is the Keycloak service which is used
     # to test the Keycloak auth strategy
     keycloak:
@@ -129,7 +169,7 @@ services:
         ports:
             - '3200:3000'
         volumes:
-          - grafana-storage:/var/lib/grafana
+            - grafana-storage:/var/lib/grafana
         networks:
             - loki
 
@@ -139,6 +179,8 @@ networks:
 
 volumes:
     postgres_16_data:
+        driver: local
+    postgres_16_local_prod_data:
         driver: local
     postgres_12_data:
         driver: local

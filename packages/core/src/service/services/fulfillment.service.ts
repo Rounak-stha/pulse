@@ -87,6 +87,7 @@ export class FulfillmentService {
                 lines: [],
                 state: this.fulfillmentStateMachine.getInitialState(),
                 handlerCode: fulfillmentHandler.code,
+                shop: ctx.shop,
             }),
         );
         const fulfillmentLines: FulfillmentLine[] = [];
@@ -139,6 +140,7 @@ export class FulfillmentService {
             relations: Array.from(new Set([...defaultRelations, ...relations])),
             where: {
                 fulfillment: {
+                    shop: { id: ctx.shopId },
                     state: Not('Cancelled'),
                 },
                 orderLineId,
@@ -166,6 +168,7 @@ export class FulfillmentService {
     > {
         const fulfillment = await this.connection.getEntityOrThrow(ctx, Fulfillment, fulfillmentId, {
             relations: ['lines'],
+            where: { shop: { id: ctx.shopId } },
         });
         const orderLinesIds = unique(fulfillment.lines.map(lines => lines.orderLineId));
         const orders = await this.connection

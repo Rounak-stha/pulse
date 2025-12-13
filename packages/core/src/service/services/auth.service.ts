@@ -1,12 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { MutationRegisterShopArgs, RegisterShopResult } from '@vendure/common/lib/generated-types';
 import { ID } from '@vendure/common/lib/shared-types';
+import { Request, Response } from 'express';
 
+import { setSessionToken } from '../../api';
 import { ApiType } from '../../api/common/get-api-type';
 import { RequestContext } from '../../api/common/request-context';
+import { RegisterShopIntemediateResult } from '../../common';
 import { InternalServerError } from '../../common/error/errors';
 import { InvalidCredentialsError } from '../../common/error/generated-graphql-admin-errors';
 import {
+    EmailAddressConflictError,
+    ErrorResult,
     NotVerifiedError,
+    ShopCodeConflictError,
     InvalidCredentialsError as ShopInvalidCredentialsError,
 } from '../../common/error/generated-graphql-shop-errors';
 import { Instrument } from '../../common/instrument-decorator';
@@ -25,8 +32,12 @@ import { EventBus } from '../../event-bus/event-bus';
 import { AttemptedLoginEvent } from '../../event-bus/events/attempted-login-event';
 import { LoginEvent } from '../../event-bus/events/login-event';
 import { LogoutEvent } from '../../event-bus/events/logout-event';
+import { getUserChannelsPermissions } from '../helpers/utils/get-user-channels-permissions';
 
+import { AdministratorService } from './administrator.service';
+import { ChannelService } from './channel.service';
 import { SessionService } from './session.service';
+import { ShopService } from './shop.service';
 
 /**
  * @description
@@ -40,7 +51,10 @@ export class AuthService {
     constructor(
         private connection: TransactionalConnection,
         private configService: ConfigService,
+        private shopService: ShopService,
         private sessionService: SessionService,
+        private administratorService: AdministratorService,
+        private channelService: ChannelService,
         private eventBus: EventBus,
     ) {}
 
@@ -53,7 +67,7 @@ export class AuthService {
         apiType: ApiType,
         authenticationMethod: string,
         authenticationData: any,
-    ): Promise<AuthenticatedSession | InvalidCredentialsError | NotVerifiedError> {
+    ): Promise<AuthenticatedSession | InvalidCredentialsError | NotVerifiedError | ShopCodeConflictError> {
         await this.eventBus.publish(
             new AttemptedLoginEvent(
                 ctx,
@@ -66,10 +80,24 @@ export class AuthService {
         const authenticationStrategy = this.getAuthenticationStrategy(apiType, authenticationMethod);
         const authenticateResult = await authenticationStrategy.authenticate(ctx, authenticationData);
         if (typeof authenticateResult === 'string') {
-            return new InvalidCredentialsError({ authenticationError: authenticateResult });
+            return new ShopCodeConflictError();
         }
         if (!authenticateResult) {
             return new InvalidCredentialsError({ authenticationError: '' });
+        }
+
+        if (ctx.apiType === 'admin') {
+            const administrator = await this.administratorService.findOneByUserId(
+                ctx,
+                authenticateResult.id,
+                ['shop'],
+            );
+            if (!administrator) {
+                return new InvalidCredentialsError({ authenticationError: '' });
+            }
+            const shop = administrator.shop;
+            const channel = await this.channelService.getDefaultChannel(shop);
+            ctx = ctx.withShopAndChannel(shop, channel);
         }
         return this.createAuthenticatedSessionForUser(ctx, authenticateResult, authenticationStrategy.name);
     }
@@ -103,6 +131,7 @@ export class AuthService {
         await this.connection.getRepository(ctx, User).save(user, { reload: false });
         const session = await this.sessionService.createNewAuthenticatedSession(
             ctx,
+            ctx.shop,
             user,
             authenticationStrategyName,
         );
@@ -129,6 +158,90 @@ export class AuthService {
             return new InvalidCredentialsError({ authenticationError: '' });
         }
         return true;
+    }
+
+    /**
+     * @description
+     * Creates a new {@link Shop} and {@link Administrator}.
+     */
+    async createShopAnAdminUser(
+        ctx: RequestContext,
+        args: MutationRegisterShopArgs,
+    ): Promise<RegisterShopIntemediateResult> {
+        const existingShop = await this.shopService.findByCode(ctx, args.input.shop.code);
+        const existingAdministratir = await this.administratorService.findOneByEmail(
+            ctx,
+            args.input.administrator.email,
+        );
+
+        if (existingShop) {
+            return new ShopCodeConflictError();
+        }
+
+        if (existingAdministratir) {
+            return new EmailAddressConflictError();
+        }
+
+        ctx = await this.shopService.registerShop(ctx, args.input.shop);
+        const administrator = await this.administratorService.registerAdministrator(
+            ctx,
+            args.input.administrator,
+        );
+
+        return {
+            shop: ctx.shop,
+            administrator,
+        };
+    }
+
+    /**
+     * @description
+     * Creates a new {@link Shop} and {@link Administrator}. and sets Session
+     */
+    async registerShopAndAdminUser(
+        args: MutationRegisterShopArgs,
+        ctx: RequestContext,
+        req: Request,
+        res: Response,
+    ): Promise<RegisterShopResult> {
+        const registerShopResult = await this.createShopAnAdminUser(ctx, args);
+
+        if (registerShopResult instanceof ErrorResult) {
+            return registerShopResult as RegisterShopResult;
+        }
+
+        const { shop, administrator } = registerShopResult;
+
+        const channel = await this.channelService.getDefaultChannel(shop);
+        ctx = ctx.withShopAndChannel(shop, channel);
+
+        const session = await this.createAuthenticatedSessionForUser(
+            ctx,
+            administrator.user,
+            NativeAuthenticationStrategy.name,
+        );
+
+        // Administrators are verified by default
+        if (session instanceof NotVerifiedError) {
+            throw new InternalServerError('An Error Occured');
+        }
+
+        setSessionToken({
+            req,
+            res,
+            authOptions: this.configService.authOptions,
+            rememberMe: true,
+            sessionToken: session.token,
+        });
+
+        return {
+            shop,
+            currentUser: {
+                id: administrator.user.id,
+                identifier: administrator.user.identifier,
+                channels: getUserChannelsPermissions(administrator.user),
+            },
+        };
     }
 
     /**

@@ -10,13 +10,14 @@ import { ImportParser } from './providers/import-parser/import-parser';
 import { FastImporterService } from './providers/importer/fast-importer.service';
 import { Importer } from './providers/importer/importer';
 import { Populator } from './providers/populator/populator';
+import { PopulatorProd } from './providers/populator/populator-prod';
 
 @Module({
     // Important! PluginModule must be defined before ServiceModule
     // in order that overrides of Services (e.g. SearchService) are correctly
     // registered with the injector.
     imports: [PluginModule.forRoot(), ServiceModule, ConnectionModule.forPlugin(), ConfigModule],
-    exports: [ImportParser, Importer, Populator, FastImporterService, AssetImporter],
-    providers: [ImportParser, Importer, Populator, FastImporterService, AssetImporter],
+    exports: [ImportParser, Importer, Populator, PopulatorProd, FastImporterService, AssetImporter],
+    providers: [ImportParser, Importer, Populator, PopulatorProd, FastImporterService, AssetImporter],
 })
 export class DataImportModule {}

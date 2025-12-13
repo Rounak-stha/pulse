@@ -1,0 +1,26 @@
+{
+    "name": "@vendure/prod-server",
+    "version": "3.4.2",
+    "main": "index.js",
+    "private": true,
+    "scripts": {
+        "populate": "node -r ts-node/register -r dotenv/config populate-dev-server.ts",
+        "dev:server": "node -r ts-node/register -r dotenv/config -r tsconfig-paths/register ./src/index.ts",
+        "build": "tsc",
+        "start": "node ./dist/index.js"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.946.0",
+        "@aws-sdk/lib-storage": "^3.946.0",
+        "@vendure/asset-server-plugin": "3.4.2",
+        "@vendure/common": "3.4.2",
+        "@vendure/core": "3.4.2",
+        "dotenv": "^17.2.3"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.19.0",
+        "eslint": "^9.19.0",
+        "tsconfig-paths": "^4.2.0",
+        "typescript": "5.8.2"
+    }
+}

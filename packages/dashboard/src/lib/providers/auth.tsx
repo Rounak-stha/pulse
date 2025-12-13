@@ -3,6 +3,13 @@ import { graphql, ResultOf } from '@/vdb/graphql/graphql.js';
 import { useUserSettings } from '@/vdb/hooks/use-user-settings.js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
+import { loadGoogleScript } from '../lib/utils.js';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_DEVELOPMENT
+    ? import.meta.env.VITE_GOOGLE_CLIENT_ID
+    : window.env.VITE_GOOGLE_CLIENT_ID;
+
+if (!GOOGLE_CLIENT_ID) throw new Error('Auth Error Initialization Error');
 
 /**
  * @description
@@ -31,6 +38,11 @@ export interface AuthContext {
     isAuthenticated: boolean;
     /**
      * @description
+     * The function to authenticate the user.
+     */
+    authenticate: (token: string, shopname?: string, shopcode?: string) => void;
+    /**
+     * @description
      * The function to login the user.
      */
     login: (username: string, password: string, onSuccess?: () => void) => void;
@@ -54,11 +66,49 @@ export interface AuthContext {
      * The function to refresh the current user.
      */
     refreshCurrentUser: () => void;
+
+    /**
+     * @description
+     * Method to initialize google script
+     */
+    initializeGoogleScript: () => void;
+
+    /**
+     * @description
+     * Boolean to indicate if google script is loaded
+     */
+    googleScriptLoaded: boolean;
+
+    /**
+     * @description Methof to handle signin with google
+     */
+    signInWithGoogle: () => void;
+
+    /**
+     * @description Methof to handle signup with google
+     */
+    signUpWithGoogle: (shopname: string, shopcode: string) => void;
 }
 
 const LoginMutation = graphql(`
     mutation Login($username: String!, $password: String!) {
         login(username: $username, password: $password) {
+            __typename
+            ... on CurrentUser {
+                id
+                identifier
+            }
+            ... on ErrorResult {
+                message
+                errorCode
+            }
+        }
+    }
+`);
+
+const AuthenticateMutation = graphql(`
+    mutation Authenticate($input: AuthenticationInput!) {
+        authenticate(input: $input) {
             __typename
             ... on CurrentUser {
                 id
@@ -97,6 +147,12 @@ const CurrentUserQuery = graphql(`
             firstName
             lastName
             emailAddress
+            shop {
+                id
+                name
+                code
+                domain
+            }
         }
     }
 `);
@@ -107,6 +163,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const [status, setStatus] = React.useState<AuthContext['status']>('initial');
     const [authenticationError, setAuthenticationError] = React.useState<string | undefined>();
     const [isLoginLogoutInProgress, setIsLoginLogoutInProgress] = React.useState(false);
+    const [googleScriptLoaded, setGoogleScriptLoaded] = React.useState(false);
     const { settings, setActiveChannelId } = useUserSettings();
     const queryClient = useQueryClient();
 
@@ -130,6 +187,81 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
             setActiveChannelId(currentUserData.me.channels[0].id);
         }
     }, [settings.activeChannelId, currentUserData?.me?.channels]);
+
+    const initializeGoogleScript = () => {
+        loadGoogleScript().then(() => {
+            setGoogleScriptLoaded(true);
+        });
+    };
+
+    const authenticate = React.useCallback(
+        (token: string, shopname?: string, shopcode?: string) => {
+            setIsLoginLogoutInProgress(true);
+            setStatus('verifying');
+            api.mutate(AuthenticateMutation)({
+                input: {
+                    google: {
+                        token,
+                        shopname,
+                        shopcode,
+                    },
+                },
+            })
+                .then(async data => {
+                    if (data.authenticate.__typename === 'CurrentUser') {
+                        setAuthenticationError(undefined);
+                        await refetchCurrentUser();
+                        // Invalidate all queries to ensure fresh data after login
+                        await queryClient.invalidateQueries();
+                        setStatus('authenticated');
+                        setIsLoginLogoutInProgress(false);
+                    } else {
+                        setAuthenticationError(data?.authenticate.message);
+                        setStatus('unauthenticated');
+                        setIsLoginLogoutInProgress(false);
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    setAuthenticationError(error.additionalMessage ?? error.message);
+                    setStatus('unauthenticated');
+                    setIsLoginLogoutInProgress(false);
+                });
+        },
+        [refetchCurrentUser, queryClient],
+    );
+
+    const handleGoogleSignIn = React.useCallback(
+        (shopname?: string, shopcode?: string) => {
+            setStatus('verifying');
+
+            const client = google.accounts.oauth2.initCodeClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: 'openid email profile',
+                ux_mode: 'popup',
+                callback: ({ code, error }) => {
+                    if (error || !code) {
+                        return;
+                    }
+                    authenticate(code, shopname, shopcode);
+                },
+            });
+
+            client.requestCode();
+        },
+        [googleScriptLoaded, authenticate],
+    );
+
+    const signInWithGoogle = React.useCallback(() => {
+        handleGoogleSignIn();
+    }, [handleGoogleSignIn]);
+
+    const signUpWithGoogle = React.useCallback(
+        (shopname: string, shopcode: string) => {
+            handleGoogleSignIn(shopname, shopcode);
+        },
+        [handleGoogleSignIn],
+    );
 
     // Auth actions
     const login = React.useCallback(
@@ -221,9 +353,14 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
                 status,
                 user: currentUserData?.activeAdministrator,
                 channels: currentUserData?.me?.channels,
+                authenticate,
                 login,
                 logout,
                 refreshCurrentUser,
+                initializeGoogleScript,
+                googleScriptLoaded,
+                signInWithGoogle,
+                signUpWithGoogle,
             }}
         >
             {children}

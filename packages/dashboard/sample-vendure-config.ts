@@ -1,4 +1,4 @@
-import { VendureConfig } from '@vendure/core';
+import { VendureConfig, GoogleAuthPlugin } from '@vendure/core';
 
 export const config: VendureConfig = {
     apiOptions: {
@@ -13,4 +13,5 @@ export const config: VendureConfig = {
     paymentOptions: {
         paymentMethodHandlers: [],
     },
+    plugins: [GoogleAuthPlugin.init({ googleClientId: '', googleClientSecret: '' })],
 };

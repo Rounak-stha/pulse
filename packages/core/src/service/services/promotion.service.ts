@@ -82,7 +82,7 @@ export class PromotionService {
     ): Promise<PaginatedList<Promotion>> {
         return this.listQueryBuilder
             .build(Promotion, options, {
-                where: { deletedAt: IsNull() },
+                where: { deletedAt: IsNull(), shop: { id: ctx.shopId } },
                 channelId: ctx.channelId,
                 relations,
                 ctx,
@@ -104,7 +104,7 @@ export class PromotionService {
     ): Promise<Promotion | undefined> {
         return this.connection
             .findOneInChannel(ctx, Promotion, adjustmentSourceId, ctx.channelId, {
-                where: { deletedAt: IsNull() },
+                where: { deletedAt: IsNull(), shop: { id: ctx.shopId } },
                 relations,
             })
             .then(promotion => (promotion && this.translator.translate(promotion, ctx)) ?? undefined);
@@ -136,6 +136,7 @@ export class PromotionService {
             entityType: Promotion,
             translationType: PromotionTranslation,
             beforeSave: async p => {
+                p.shop = ctx.shop;
                 p.priorityScore = this.calculatePriorityScore(input);
                 p.conditions = conditions;
                 p.actions = actions;
@@ -158,6 +159,7 @@ export class PromotionService {
     ): Promise<ErrorResultUnion<UpdatePromotionResult, Promotion>> {
         const promotion = await this.connection.getEntityOrThrow(ctx, Promotion, input.id, {
             channelId: ctx.channelId,
+            where: { shop: { id: ctx.shopId } },
         });
 
         const hasConditions = input.conditions
@@ -192,7 +194,9 @@ export class PromotionService {
     }
 
     async softDeletePromotion(ctx: RequestContext, promotionId: ID): Promise<DeletionResponse> {
-        const promotion = await this.connection.getEntityOrThrow(ctx, Promotion, promotionId);
+        const promotion = await this.connection.getEntityOrThrow(ctx, Promotion, promotionId, {
+            where: { shop: { id: ctx.shopId } },
+        });
         await this.connection
             .getRepository(ctx, Promotion)
             .update({ id: promotionId }, { deletedAt: new Date() });
@@ -251,6 +255,7 @@ export class PromotionService {
                 enabled: true,
                 deletedAt: IsNull(),
                 channels: { id: ctx.channelId },
+                shop: { id: ctx.shopId },
             },
             relations: ['channels'],
         });
@@ -284,8 +289,10 @@ export class PromotionService {
             .getRepository(ctx, Promotion)
             .createQueryBuilder('promotion')
             .leftJoin('promotion.channels', 'channel')
+            .leftJoin('promotion.shop', 'shop')
             .leftJoinAndSelect('promotion.translations', 'translation')
             .where('channel.id = :channelId', { channelId: ctx.channelId })
+            .andWhere('shop.id = :shopId', { shopId: ctx.shopId })
             .andWhere('promotion.deletedAt IS NULL')
             .andWhere('promotion.enabled = :enabled', { enabled: true })
             .orderBy('promotion.priorityScore', 'ASC')

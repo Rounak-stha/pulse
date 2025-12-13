@@ -55,6 +55,17 @@ export class GlobalSettingsService {
                 .save(settings, { reload: false });
         }
     }
+    /**
+     * @desscription
+     * Create default value after registration
+     */
+    async createDefaultGlobalSettinsAfterRegistration(ctx: RequestContext) {
+        const settings: GlobalSettings = new GlobalSettings({
+            shop: ctx.shop,
+            availableLanguages: [this.configService.defaultLanguageCode],
+        });
+        await this.connection.getRepository(ctx, GlobalSettings).save(settings, { reload: false });
+    }
 
     /**
      * @description
@@ -65,7 +76,9 @@ export class GlobalSettingsService {
             this.connection
                 .getRepository(ctx, GlobalSettings)
                 .createQueryBuilder('global_settings')
-                .orderBy(this.connection.rawConnection.driver.escape('createdAt'), 'ASC')
+                .leftJoin('global_settings.shop', 'shop')
+                .where('shop.id = :shopId', { shopId: ctx.shopId })
+                .orderBy('global_settings.createdAt', 'ASC')
                 .getOne(),
         );
         if (!settings) {

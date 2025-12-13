@@ -26,7 +26,6 @@ import { StockLocation } from '../../entity/stock-location/stock-location.entity
 import { EventBus, StockLocationEvent } from '../../event-bus/index';
 import { CustomFieldRelationService } from '../helpers/custom-field-relation/custom-field-relation.service';
 import { ListQueryBuilder } from '../helpers/list-query-builder/list-query-builder';
-import { RequestContextService } from '../helpers/request-context/request-context.service';
 import { patchEntity } from '../helpers/utils/patch-entity';
 
 import { ChannelService } from './channel.service';
@@ -36,7 +35,6 @@ import { RoleService } from './role.service';
 @Instrument()
 export class StockLocationService {
     constructor(
-        private requestContextService: RequestContextService,
         private connection: TransactionalConnection,
         private channelService: ChannelService,
         private roleService: RoleService,
@@ -46,10 +44,6 @@ export class StockLocationService {
         private customFieldRelationService: CustomFieldRelationService,
         private eventBus: EventBus,
     ) {}
-
-    async initStockLocations() {
-        await this.ensureDefaultStockLocationExists();
-    }
 
     findOne(ctx: RequestContext, stockLocationId: ID): Promise<StockLocation | undefined> {
         return this.connection
@@ -79,6 +73,7 @@ export class StockLocationService {
         const stockLocation = await this.connection.getRepository(ctx, StockLocation).save(
             new StockLocation({
                 name: input.name,
+                shop: ctx.shop,
                 description: input.description ?? '',
                 customFields: input.customFields ?? {},
             }),
@@ -90,7 +85,9 @@ export class StockLocationService {
     }
 
     async update(ctx: RequestContext, input: UpdateStockLocationInput): Promise<StockLocation> {
-        const stockLocation = await this.connection.getEntityOrThrow(ctx, StockLocation, input.id);
+        const stockLocation = await this.connection.getEntityOrThrow(ctx, StockLocation, input.id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         const updatedStockLocation = patchEntity(stockLocation, input);
         await this.connection.getRepository(ctx, StockLocation).save(updatedStockLocation);
         await this.customFieldRelationService.updateRelations(
@@ -109,6 +106,7 @@ export class StockLocationService {
             StockLocation,
             input.id,
             ctx.channelId,
+            { where: { shop: { id: ctx.shopId } } },
         );
         if (!stockLocation) {
             throw new EntityNotFoundError('StockLocation', input.id);
@@ -185,6 +183,7 @@ export class StockLocationService {
                 StockLocation,
                 stockLocationId,
                 ctx.channelId,
+                { where: { shop: { id: ctx.shopId } } },
             );
             await this.channelService.assignToChannels(ctx, StockLocation, stockLocationId, [
                 input.channelId,
@@ -209,12 +208,17 @@ export class StockLocationService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }
         for (const stockLocationId of input.stockLocationIds) {
-            const stockLocation = await this.connection.getEntityOrThrow(ctx, StockLocation, stockLocationId);
+            const stockLocation = await this.connection.getEntityOrThrow(
+                ctx,
+                StockLocation,
+                stockLocationId,
+                { where: { shop: { id: ctx.shopId } } },
+            );
             await this.channelService.removeFromChannels(ctx, StockLocation, stockLocationId, [
                 input.channelId,
             ]);
@@ -229,15 +233,20 @@ export class StockLocationService {
     }
 
     getAllStockLocations(ctx: RequestContext) {
-        return this.requestContextCache.get(ctx, 'StockLocationService.getAllStockLocations', () =>
-            this.connection.getRepository(ctx, StockLocation).find(),
+        return this.requestContextCache.get(
+            ctx,
+            `StockLocationService.getAllStockLocationsfor_${ctx.shopId}`,
+            () =>
+                this.connection
+                    .getRepository(ctx, StockLocation)
+                    .find({ where: { shop: { id: ctx.shopId } } }),
         );
     }
 
     defaultStockLocation(ctx: RequestContext) {
         return this.connection
             .getRepository(ctx, StockLocation)
-            .find({ order: { createdAt: 'ASC' } })
+            .find({ order: { createdAt: 'ASC' }, where: { shop: { id: ctx.shopId } } })
             .then(items => items[0]);
     }
 
@@ -282,35 +291,5 @@ export class StockLocationService {
             quantity,
         );
         return cancellationLocations;
-    }
-
-    private async ensureDefaultStockLocationExists() {
-        const ctx = await this.requestContextService.create({
-            apiType: 'admin',
-        });
-        const stockLocations = await this.connection.getRepository(ctx, StockLocation).find({
-            relations: {
-                channels: true,
-            },
-        });
-        if (stockLocations.length === 0) {
-            const defaultStockLocation = await this.connection.getRepository(ctx, StockLocation).save(
-                new StockLocation({
-                    name: 'Default Stock Location',
-                    description: 'The default stock location',
-                }),
-            );
-            defaultStockLocation.channels = [];
-            stockLocations.push(defaultStockLocation);
-            await this.connection.getRepository(ctx, StockLocation).save(defaultStockLocation);
-        }
-        const defaultChannel = await this.channelService.getDefaultChannel();
-        for (const stockLocation of stockLocations) {
-            if (!stockLocation.channels.find(c => c.id === defaultChannel.id)) {
-                await this.channelService.assignToChannels(ctx, StockLocation, stockLocation.id, [
-                    defaultChannel.id,
-                ]);
-            }
-        }
     }
 }

@@ -1,12 +1,14 @@
 import { ID } from '@vendure/common/lib/shared-types';
 import { Column, Entity, Index, ManyToOne, TableInheritance } from 'typeorm';
 
+import { ShopAware } from '../../common';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
 import { CustomSessionFields } from '../custom-entity-fields';
 import { EntityId } from '../entity-id.decorator';
 import { Order } from '../order/order.entity';
+import { Shop } from '../shop/shop.entity';
 
 /**
  * @description
@@ -17,7 +19,11 @@ import { Order } from '../order/order.entity';
  */
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export abstract class Session extends VendureEntity implements HasCustomFields {
+export abstract class Session extends VendureEntity implements HasCustomFields, ShopAware {
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
+
     @Index({ unique: true })
     @Column()
     token: string;

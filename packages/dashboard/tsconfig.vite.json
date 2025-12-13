@@ -15,6 +15,7 @@
     "vite/**/*"
   ],
   "exclude": [
-    "vite/tests/**/*"
+    "vite/tests/**/*",
+    "**/*.spec.ts"
   ]
 }

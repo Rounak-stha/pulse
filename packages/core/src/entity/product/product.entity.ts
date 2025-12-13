@@ -1,7 +1,7 @@
 import { DeepPartial, ID } from '@vendure/common/lib/shared-types';
 import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
-import { ChannelAware, SoftDeletable } from '../../common/types/common-types';
+import { ChannelAware, ShopAware, SoftDeletable } from '../../common/types/common-types';
 import { LocaleString, Translatable, Translation } from '../../common/types/locale-types';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { Asset } from '../asset/asset.entity';
@@ -12,6 +12,7 @@ import { EntityId } from '../entity-id.decorator';
 import { FacetValue } from '../facet-value/facet-value.entity';
 import { ProductOptionGroup } from '../product-option-group/product-option-group.entity';
 import { ProductVariant } from '../product-variant/product-variant.entity';
+import { Shop } from '../shop/shop.entity';
 
 import { ProductAsset } from './product-asset.entity';
 import { ProductTranslation } from './product-translation.entity';
@@ -26,7 +27,7 @@ import { ProductTranslation } from './product-translation.entity';
 @Entity()
 export class Product
     extends VendureEntity
-    implements Translatable, HasCustomFields, ChannelAware, SoftDeletable
+    implements Translatable, HasCustomFields, ChannelAware, SoftDeletable, ShopAware
 {
     constructor(input?: DeepPartial<Product>) {
         super(input);
@@ -47,6 +48,10 @@ export class Product
     @Index()
     @ManyToOne(type => Asset, asset => asset.featuredInProducts, { onDelete: 'SET NULL' })
     featuredAsset: Asset;
+
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
 
     @EntityId({ nullable: true })
     featuredAssetId: ID;

@@ -32,7 +32,7 @@ export class TagService {
 
     findAll(ctx: RequestContext, options?: ListQueryOptions<Tag>): Promise<PaginatedList<Tag>> {
         return this.listQueryBuilder
-            .build(Tag, options, { ctx })
+            .build(Tag, options, { ctx, where: { shop: { id: ctx.shopId } } })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
                 items,
@@ -43,7 +43,7 @@ export class TagService {
     findOne(ctx: RequestContext, tagId: ID): Promise<Tag | undefined> {
         return this.connection
             .getRepository(ctx, Tag)
-            .findOne({ where: { id: tagId } })
+            .findOne({ where: { id: tagId, shop: { id: ctx.shopId } } })
             .then(result => result ?? undefined);
     }
 
@@ -52,7 +52,9 @@ export class TagService {
     }
 
     async update(ctx: RequestContext, input: UpdateTagInput) {
-        const tag = await this.connection.getEntityOrThrow(ctx, Tag, input.id);
+        const tag = await this.connection.getEntityOrThrow(ctx, Tag, input.id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         if (input.value) {
             tag.value = input.value;
             await this.connection.getRepository(ctx, Tag).save(tag);
@@ -61,7 +63,9 @@ export class TagService {
     }
 
     async delete(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
-        const tag = await this.connection.getEntityOrThrow(ctx, Tag, id);
+        const tag = await this.connection.getEntityOrThrow(ctx, Tag, id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         await this.connection.getRepository(ctx, Tag).remove(tag);
         return {
             result: DeletionResult.DELETED,
@@ -86,7 +90,9 @@ export class TagService {
     }
 
     private async tagValueToTag(ctx: RequestContext, value: string): Promise<Tag> {
-        const existing = await this.connection.getRepository(ctx, Tag).findOne({ where: { value } });
+        const existing = await this.connection
+            .getRepository(ctx, Tag)
+            .findOne({ where: { value, shop: { id: ctx.shopId } } });
         if (existing) {
             return existing;
         }

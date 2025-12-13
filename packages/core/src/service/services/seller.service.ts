@@ -33,13 +33,9 @@ export class SellerService {
         private customFieldRelationService: CustomFieldRelationService,
     ) {}
 
-    async initSellers() {
-        await this.ensureDefaultSellerExists();
-    }
-
     findAll(ctx: RequestContext, options?: ListQueryOptions<Seller>): Promise<PaginatedList<Seller>> {
         return this.listQueryBuilder
-            .build(Seller, options, { ctx })
+            .build(Seller, options, { ctx, where: { shop: { id: ctx.shopId } } })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
                 items,
@@ -50,12 +46,14 @@ export class SellerService {
     findOne(ctx: RequestContext, sellerId: ID): Promise<Seller | undefined> {
         return this.connection
             .getRepository(ctx, Seller)
-            .findOne({ where: { id: sellerId } })
+            .findOne({ where: { id: sellerId, shop: { id: ctx.shopId } } })
             .then(result => result ?? undefined);
     }
 
     async create(ctx: RequestContext, input: CreateSellerInput) {
-        const seller = await this.connection.getRepository(ctx, Seller).save(new Seller(input));
+        const seller = await this.connection
+            .getRepository(ctx, Seller)
+            .save(new Seller({ ...input, shop: ctx.shop }));
         const sellerWithRelations = await this.customFieldRelationService.updateRelations(
             ctx,
             Seller,
@@ -67,7 +65,9 @@ export class SellerService {
     }
 
     async update(ctx: RequestContext, input: UpdateSellerInput) {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, input.id);
+        const seller = await this.connection.getEntityOrThrow(ctx, Seller, input.id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         const updatedSeller = patchEntity(seller, input);
         await this.connection.getRepository(ctx, Seller).save(updatedSeller);
         const sellerWithRelations = await this.customFieldRelationService.updateRelations(
@@ -81,23 +81,14 @@ export class SellerService {
     }
 
     async delete(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, id);
+        const seller = await this.connection.getEntityOrThrow(ctx, Seller, id, {
+            where: { shop: { id: ctx.shopId } },
+        });
         await this.connection.getRepository(ctx, Seller).remove(seller);
         const deletedSeller = new Seller(seller);
         await this.eventBus.publish(new SellerEvent(ctx, deletedSeller, 'deleted', id));
         return {
             result: DeletionResult.DELETED,
         };
-    }
-
-    private async ensureDefaultSellerExists() {
-        const sellers = await this.connection.rawConnection.getRepository(Seller).find();
-        if (sellers.length === 0) {
-            await this.connection.rawConnection.getRepository(Seller).save(
-                new Seller({
-                    name: 'Default Seller',
-                }),
-            );
-        }
     }
 }

@@ -79,7 +79,7 @@ export class CustomHttpHealthIndicator extends HealthIndicator {
         let isHealthy = false;
 
         try {
-            await fetch(url, { timeout });
+            await fetch(url);
             isHealthy = true;
         } catch (err) {
             this.generateHttpError(key, err);

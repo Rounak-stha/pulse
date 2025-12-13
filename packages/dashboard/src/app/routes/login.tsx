@@ -1,6 +1,7 @@
 import { LoginForm } from '@/vdb/components/login/login-form.js';
 import { useAuth } from '@/vdb/hooks/use-auth.js';
 import { createFileRoute, Navigate, redirect, useRouterState } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { z } from 'zod';
 
 const fallback = '/' as const;
@@ -18,32 +19,33 @@ export const Route = createFileRoute('/login')({
 });
 
 function LoginPage() {
-    const auth = useAuth();
+    const {
+        isAuthenticated,
+        googleScriptLoaded,
+        signInWithGoogle,
+        authenticationError,
+        status,
+        initializeGoogleScript,
+    } = useAuth();
     const isLoading = useRouterState({ select: s => s.isLoading });
-    const navigate = Route.useNavigate();
     const search = Route.useSearch();
 
-    const onFormSubmit = (username: string, password: string) => {
-        auth.login(username, password, () => {
-            navigate({ to: search.redirect || fallback });
-        });
-    };
+    useEffect(() => {
+        initializeGoogleScript();
+    }, []);
 
-    if (auth.isAuthenticated) {
+    if (isAuthenticated) {
         return <Navigate to={search.redirect || fallback} />;
     }
 
-    const isVerifying = isLoading || auth.status === 'verifying';
+    const isVerifying = isLoading || status === 'verifying';
 
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-            <div className="w-full max-w-sm md:max-w-4xl">
-                <LoginForm
-                    onFormSubmit={onFormSubmit}
-                    isVerifying={isVerifying}
-                    loginError={auth.authenticationError}
-                />
-            </div>
-        </div>
+        <LoginForm
+            googleScriptLoaded={googleScriptLoaded}
+            onSubmit={signInWithGoogle}
+            isVerifying={isVerifying}
+            signinError={authenticationError}
+        />
     );
 }

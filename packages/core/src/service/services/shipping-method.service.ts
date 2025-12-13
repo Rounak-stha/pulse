@@ -58,17 +58,6 @@ export class ShippingMethodService {
         private translator: TranslatorService,
     ) {}
 
-    /** @internal */
-    async initShippingMethods() {
-        if (this.configService.shippingOptions.fulfillmentHandlers.length === 0) {
-            throw new Error(
-                'No FulfillmentHandlers were found.' +
-                    ' Please ensure the VendureConfig.shippingOptions.fulfillmentHandlers array contains at least one FulfillmentHandler.',
-            );
-        }
-        await this.verifyShippingMethods();
-    }
-
     findAll(
         ctx: RequestContext,
         options?: ListQueryOptions<ShippingMethod>,
@@ -114,6 +103,7 @@ export class ShippingMethodService {
             entityType: ShippingMethod,
             translationType: ShippingMethodTranslation,
             beforeSave: method => {
+                method.shop = ctx.shop;
                 method.fulfillmentHandlerCode = this.ensureValidFulfillmentHandlerCode(
                     method.code,
                     input.fulfillmentHandler,
@@ -142,8 +132,8 @@ export class ShippingMethodService {
     }
 
     async update(ctx: RequestContext, input: UpdateShippingMethodInput): Promise<Translated<ShippingMethod>> {
-        const shippingMethod = await this.findOne(ctx, input.id);
-        if (!shippingMethod) {
+        const shippingMethod = await this.findOne(ctx, input.id, false, ['shop']);
+        if (!shippingMethod || shippingMethod.shop.id !== ctx.shopId) {
             throw new EntityNotFoundError('ShippingMethod', input.id);
         }
         const updatedShippingMethod = await this.translatableSaver.update({
@@ -186,7 +176,7 @@ export class ShippingMethodService {
     async softDelete(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
         const shippingMethod = await this.connection.getEntityOrThrow(ctx, ShippingMethod, id, {
             channelId: ctx.channelId,
-            where: { deletedAt: IsNull() },
+            where: { deletedAt: IsNull(), shop: { id: ctx.shopId } },
         });
         shippingMethod.deletedAt = new Date();
         await this.connection.getRepository(ctx, ShippingMethod).save(shippingMethod, { reload: false });
@@ -234,7 +224,8 @@ export class ShippingMethodService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const shop = ctx.shop;
+        const defaultChannel = await this.channelService.getDefaultChannel(shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }

@@ -144,6 +144,7 @@ export const defaultConfig: RuntimeVendureConfig = {
         moneyStrategy: new DefaultMoneyStrategy(),
         entityDuplicators: defaultEntityDuplicators,
         channelCacheTtl: 30000,
+        shopCacheTtl: 30000,
         zoneCacheTtl: 30000,
         taxRateCacheTtl: 30000,
         metadataModifiers: [],

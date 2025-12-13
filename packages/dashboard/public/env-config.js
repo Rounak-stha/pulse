@@ -1,0 +1,3 @@
+window.env = {
+    VITE_GOOGLE_CLIENT_ID: '$VITE_GOOGLE_CLIENT_ID',
+};

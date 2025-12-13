@@ -92,6 +92,7 @@ export type Administrator = Node & {
   firstName: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lastName: Scalars['String']['output'];
+  shop: Shop;
   updatedAt: Scalars['DateTime']['output'];
   user: User;
 };
@@ -294,6 +295,14 @@ export type AssignStockLocationsToChannelInput = {
   stockLocationIds: Array<Scalars['ID']['input']>;
 };
 
+/** Returned if there is an error during the Authentication Process */
+export type AuthenticationError = ErrorResult & {
+  __typename?: 'AuthenticationError';
+  additionalMessage: Scalars['String']['output'];
+  errorCode: ErrorCode;
+  message: Scalars['String']['output'];
+};
+
 export type AuthenticationInput = {
   native?: InputMaybe<NativeAuthInput>;
 };
@@ -306,10 +315,12 @@ export type AuthenticationMethod = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type AuthenticationResult = CurrentUser | InvalidCredentialsError;
+export type AuthenticationResult = CurrentUser | InvalidCredentialsError | ShopCodeConflictError;
 
 export type BooleanCustomFieldConfig = CustomField & {
   __typename?: 'BooleanCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -854,6 +865,12 @@ export type CreateGroupOptionInput = {
   translations: Array<ProductOptionGroupTranslationInput>;
 };
 
+export type CreatePageInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  slug: Scalars['String']['input'];
+};
+
 export type CreatePaymentMethodInput = {
   checker?: InputMaybe<ConfigurableOperationInput>;
   code: Scalars['String']['input'];
@@ -945,6 +962,7 @@ export type CreateRoleInput = {
   code: Scalars['String']['input'];
   description: Scalars['String']['input'];
   permissions: Array<Permission>;
+  shopId: Scalars['ID']['input'];
 };
 
 export type CreateSellerInput = {
@@ -959,6 +977,12 @@ export type CreateShippingMethodInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   fulfillmentHandler: Scalars['String']['input'];
   translations: Array<ShippingMethodTranslationInput>;
+};
+
+export type CreateShopInput = {
+  code: Scalars['String']['input'];
+  domain?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
 };
 
 export type CreateStockLocationInput = {
@@ -985,6 +1009,10 @@ export type CreateTaxRateInput = {
   name: Scalars['String']['input'];
   value: Scalars['Float']['input'];
   zoneId: Scalars['ID']['input'];
+};
+
+export type CreateThemeInput = {
+  value: Scalars['JSON']['input'];
 };
 
 export type CreateZoneInput = {
@@ -1332,6 +1360,8 @@ export type CurrentUserChannel = {
 };
 
 export type CustomField = {
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -1536,6 +1566,8 @@ export type DateRange = {
  */
 export type DateTimeCustomFieldConfig = CustomField & {
   __typename?: 'DateTimeCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -1658,6 +1690,7 @@ export type EntityDuplicatorDefinition = {
 
 export enum ErrorCode {
   ALREADY_REFUNDED_ERROR = 'ALREADY_REFUNDED_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   CANCEL_ACTIVE_ORDER_ERROR = 'CANCEL_ACTIVE_ORDER_ERROR',
   CANCEL_PAYMENT_ERROR = 'CANCEL_PAYMENT_ERROR',
   CHANNEL_DEFAULT_LANGUAGE_ERROR = 'CHANNEL_DEFAULT_LANGUAGE_ERROR',
@@ -1702,6 +1735,7 @@ export enum ErrorCode {
   REFUND_PAYMENT_ID_MISSING_ERROR = 'REFUND_PAYMENT_ID_MISSING_ERROR',
   REFUND_STATE_TRANSITION_ERROR = 'REFUND_STATE_TRANSITION_ERROR',
   SETTLE_PAYMENT_ERROR = 'SETTLE_PAYMENT_ERROR',
+  SHOP_CODE_CONFLICT_ERROR = 'SHOP_CODE_CONFLICT_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
 
@@ -1890,6 +1924,8 @@ export type FacetValueTranslationInput = {
 
 export type FloatCustomFieldConfig = CustomField & {
   __typename?: 'FloatCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -2110,6 +2146,8 @@ export type InsufficientStockOnHandError = ErrorResult & {
 
 export type IntCustomFieldConfig = CustomField & {
   __typename?: 'IntCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -2588,6 +2626,8 @@ export type LanguageNotAvailableError = ErrorResult & {
 
 export type LocaleStringCustomFieldConfig = CustomField & {
   __typename?: 'LocaleStringCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -2604,6 +2644,8 @@ export type LocaleStringCustomFieldConfig = CustomField & {
 
 export type LocaleTextCustomFieldConfig = CustomField & {
   __typename?: 'LocaleTextCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -2806,6 +2848,8 @@ export type Mutation = {
   createFacetValue: FacetValue;
   /** Create one or more FacetValues */
   createFacetValues: Array<FacetValue>;
+  /** Create a new page with an initial draft version (admin only) */
+  createPage: Page;
   /** Create existing PaymentMethod */
   createPaymentMethod: PaymentMethod;
   /** Create a new Product */
@@ -2832,6 +2876,8 @@ export type Mutation = {
   createTaxCategory: TaxCategory;
   /** Create a new TaxRate */
   createTaxRate: TaxRate;
+  /** Update Shop Theme (Builder) */
+  createTheme: Theme;
   /** Create a new Zone */
   createZone: Zone;
   /** Delete an Administrator */
@@ -2874,6 +2920,10 @@ export type Mutation = {
   /** Delete multiple existing Facets */
   deleteFacets: Array<DeletionResponse>;
   deleteOrderNote: DeletionResponse;
+  /** Delete a page and all its versions (admin only) */
+  deletePage: DeletionResponse;
+  /** Delete a specific version (admin only) */
+  deletePageVersion: DeletionResponse;
   /** Delete a PaymentMethod */
   deletePaymentMethod: DeletionResponse;
   /** Delete multiple PaymentMethods */
@@ -2942,7 +2992,11 @@ export type Mutation = {
   modifyOrder: ModifyOrderResult;
   /** Move a Collection to a different parent or index */
   moveCollection: Collection;
+  /** Publish a draft version (admin only) */
+  publishPage: Page;
   refundOrder: RefundOrderResult;
+  /** Registers a new Shop and its first Administrator (native auth). If autoLogin is true, starts a session for the new admin. */
+  registerShop: RegisterShopResult;
   reindex: Job;
   /** Removes Collections from the specified Channel */
   removeCollectionsFromChannel: Array<Collection>;
@@ -2977,8 +3031,12 @@ export type Mutation = {
   removeShippingMethodsFromChannel: Array<ShippingMethod>;
   /** Removes StockLocations from the specified Channel */
   removeStockLocationsFromChannel: Array<StockLocation>;
+  /** Restore an archived version as a new draft (admin only) */
+  restorePageVersion: PageVersion;
   runPendingSearchIndexUpdates: Success;
   runScheduledTask: Success;
+  /** Save a new draft version (admin only) */
+  savePageDraft: PageVersion;
   setCustomerForDraftOrder: SetCustomerForDraftOrderResult;
   /** Sets the billing address for a draft Order */
   setDraftOrderBillingAddress: Order;
@@ -3031,6 +3089,8 @@ export type Mutation = {
   updateFacetValues: Array<FacetValue>;
   updateGlobalSettings: UpdateGlobalSettingsResult;
   updateOrderNote: HistoryEntry;
+  /** Update page metadata (admin only) */
+  updatePage: Page;
   /** Update an existing PaymentMethod */
   updatePaymentMethod: PaymentMethod;
   /** Update an existing Product */
@@ -3055,6 +3115,8 @@ export type Mutation = {
   updateSeller: Seller;
   /** Update an existing ShippingMethod */
   updateShippingMethod: ShippingMethod;
+  /** Update an existing Shop */
+  updateShop: UpdateShopResult;
   updateStockLocation: StockLocation;
   /** Update an existing Tag */
   updateTag: Tag;
@@ -3062,6 +3124,8 @@ export type Mutation = {
   updateTaxCategory: TaxCategory;
   /** Update an existing TaxRate */
   updateTaxRate: TaxRate;
+  /** Update Shop Theme (Builder) */
+  updateTheme: Theme;
   /** Update an existing Zone */
   updateZone: Zone;
 };
@@ -3252,6 +3316,11 @@ export type MutationCreateFacetValuesArgs = {
 };
 
 
+export type MutationCreatePageArgs = {
+  input: CreatePageInput;
+};
+
+
 export type MutationCreatePaymentMethodArgs = {
   input: CreatePaymentMethodInput;
 };
@@ -3319,6 +3388,11 @@ export type MutationCreateTaxCategoryArgs = {
 
 export type MutationCreateTaxRateArgs = {
   input: CreateTaxRateInput;
+};
+
+
+export type MutationCreateThemeArgs = {
+  input: CreateThemeInput;
 };
 
 
@@ -3431,6 +3505,16 @@ export type MutationDeleteFacetsArgs = {
 
 
 export type MutationDeleteOrderNoteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePageVersionArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -3594,8 +3678,19 @@ export type MutationMoveCollectionArgs = {
 };
 
 
+export type MutationPublishPageArgs = {
+  input: PublishPageInput;
+};
+
+
 export type MutationRefundOrderArgs = {
   input: RefundOrderInput;
+};
+
+
+export type MutationRegisterShopArgs = {
+  autoLogin?: InputMaybe<Scalars['Boolean']['input']>;
+  input: RegisterShopInput;
 };
 
 
@@ -3676,8 +3771,18 @@ export type MutationRemoveStockLocationsFromChannelArgs = {
 };
 
 
+export type MutationRestorePageVersionArgs = {
+  input: RestorePageVersionInput;
+};
+
+
 export type MutationRunScheduledTaskArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type MutationSavePageDraftArgs = {
+  input: SavePageVersionInput;
 };
 
 
@@ -3845,6 +3950,12 @@ export type MutationUpdateOrderNoteArgs = {
 };
 
 
+export type MutationUpdatePageArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdatePageInput;
+};
+
+
 export type MutationUpdatePaymentMethodArgs = {
   input: UpdatePaymentMethodInput;
 };
@@ -3910,6 +4021,11 @@ export type MutationUpdateShippingMethodArgs = {
 };
 
 
+export type MutationUpdateShopArgs = {
+  input: UpdateShopInput;
+};
+
+
 export type MutationUpdateStockLocationArgs = {
   input: UpdateStockLocationInput;
 };
@@ -3927,6 +4043,11 @@ export type MutationUpdateTaxCategoryArgs = {
 
 export type MutationUpdateTaxRateArgs = {
   input: UpdateTaxRateInput;
+};
+
+
+export type MutationUpdateThemeArgs = {
+  input: UpdateThemeInput;
 };
 
 
@@ -4310,6 +4431,79 @@ export enum OrderType {
   Seller = 'Seller'
 }
 
+export type Page = Node & {
+  __typename?: 'Page';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<PageVersion>;
+  id: Scalars['ID']['output'];
+  lastPublishedAt?: Maybe<Scalars['DateTime']['output']>;
+  name: Scalars['String']['output'];
+  publishedVersion?: Maybe<PageVersion>;
+  shop: Shop;
+  slug: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  versions: Array<PageVersion>;
+};
+
+export type PageFilterParameter = {
+  _and?: InputMaybe<Array<PageFilterParameter>>;
+  _or?: InputMaybe<Array<PageFilterParameter>>;
+  createdAt?: InputMaybe<DateOperators>;
+  description?: InputMaybe<StringOperators>;
+  id?: InputMaybe<IdOperators>;
+  lastPublishedAt?: InputMaybe<DateOperators>;
+  name?: InputMaybe<StringOperators>;
+  slug?: InputMaybe<StringOperators>;
+  updatedAt?: InputMaybe<DateOperators>;
+};
+
+export type PageList = PaginatedList & {
+  __typename?: 'PageList';
+  items: Array<Page>;
+  totalItems: Scalars['Int']['output'];
+};
+
+export type PageListOptions = {
+  filter?: InputMaybe<PageFilterParameter>;
+  /** Specifies whether multiple top-level "filter" fields should be combined with a logical AND or OR operation. Defaults to AND. */
+  filterOperator?: InputMaybe<LogicalOperator>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<PageSortParameter>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type PageSortParameter = {
+  createdAt?: InputMaybe<SortOrder>;
+  description?: InputMaybe<SortOrder>;
+  id?: InputMaybe<SortOrder>;
+  lastPublishedAt?: InputMaybe<SortOrder>;
+  name?: InputMaybe<SortOrder>;
+  slug?: InputMaybe<SortOrder>;
+  updatedAt?: InputMaybe<SortOrder>;
+};
+
+export type PageVersion = Node & {
+  __typename?: 'PageVersion';
+  changeDescription?: Maybe<Scalars['String']['output']>;
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  page: Page;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
+  publishedBy?: Maybe<Administrator>;
+  status: PageVersionStatus;
+  theme?: Maybe<Scalars['JSON']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  versionNumber: Scalars['Int']['output'];
+};
+
+export enum PageVersionStatus {
+  ARCHIVED = 'ARCHIVED',
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED'
+}
+
 export type PaginatedList = {
   items: Array<Node>;
   totalItems: Scalars['Int']['output'];
@@ -4497,6 +4691,8 @@ export enum Permission {
   CreateFacet = 'CreateFacet',
   /** Grants permission to create Order */
   CreateOrder = 'CreateOrder',
+  /** Grants permission to create Page */
+  CreatePage = 'CreatePage',
   /** Grants permission to create PaymentMethod */
   CreatePaymentMethod = 'CreatePaymentMethod',
   /** Grants permission to create Product */
@@ -4541,6 +4737,8 @@ export enum Permission {
   DeleteFacet = 'DeleteFacet',
   /** Grants permission to delete Order */
   DeleteOrder = 'DeleteOrder',
+  /** Grants permission to delete Page */
+  DeletePage = 'DeletePage',
   /** Grants permission to delete PaymentMethod */
   DeletePaymentMethod = 'DeletePaymentMethod',
   /** Grants permission to delete Product */
@@ -4589,6 +4787,8 @@ export enum Permission {
   ReadFacet = 'ReadFacet',
   /** Grants permission to read Order */
   ReadOrder = 'ReadOrder',
+  /** Grants permission to read Page */
+  ReadPage = 'ReadPage',
   /** Grants permission to read PaymentMethod */
   ReadPaymentMethod = 'ReadPaymentMethod',
   /** Grants permission to read Product */
@@ -4637,6 +4837,8 @@ export enum Permission {
   UpdateGlobalSettings = 'UpdateGlobalSettings',
   /** Grants permission to update Order */
   UpdateOrder = 'UpdateOrder',
+  /** Grants permission to update Page */
+  UpdatePage = 'UpdatePage',
   /** Grants permission to update PaymentMethod */
   UpdatePaymentMethod = 'UpdatePaymentMethod',
   /** Grants permission to update Product */
@@ -5114,6 +5316,24 @@ export type ProvinceTranslationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PublishPageInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  content: Scalars['String']['input'];
+  pageId: Scalars['ID']['input'];
+};
+
+/** Public version of Page with only published content */
+export type PublishedPage = {
+  __typename?: 'PublishedPage';
+  content: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  publishedAt: Scalars['DateTime']['output'];
+  slug: Scalars['String']['output'];
+  theme?: Maybe<Scalars['JSON']['output']>;
+};
+
 /** Returned if the specified quantity of an OrderLine is greater than the number of items in that line */
 export type QuantityTooGreatError = ErrorResult & {
   __typename?: 'QuantityTooGreatError';
@@ -5167,6 +5387,18 @@ export type Query = {
   metricSummary: Array<MetricSummary>;
   order?: Maybe<Order>;
   orders: OrderList;
+  /** Get a page by ID (admin only) */
+  page?: Maybe<Page>;
+  /** Get a page by slug (admin only) */
+  pageBySlug?: Maybe<Page>;
+  /** Get the draft version for editing (admin only) */
+  pageDraftVersion?: Maybe<PageVersion>;
+  /** Get a specific page version (admin only) */
+  pageVersion?: Maybe<PageVersion>;
+  /** Get all versions for a page (admin only) */
+  pageVersions: Array<PageVersion>;
+  /** List all pages with filtering and pagination (admin only) */
+  pages: PageList;
   paymentMethod?: Maybe<PaymentMethod>;
   paymentMethodEligibilityCheckers: Array<ConfigurableOperationDefinition>;
   paymentMethodHandlers: Array<ConfigurableOperationDefinition>;
@@ -5190,6 +5422,8 @@ export type Query = {
   promotions: PromotionList;
   province?: Maybe<Province>;
   provinces: ProvinceList;
+  /** Get published page by slug (public access) */
+  publishedPage?: Maybe<PublishedPage>;
   role?: Maybe<Role>;
   roles: RoleList;
   scheduledTasks: Array<ScheduledTask>;
@@ -5200,6 +5434,7 @@ export type Query = {
   shippingEligibilityCheckers: Array<ConfigurableOperationDefinition>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingMethods: ShippingMethodList;
+  shop?: Maybe<Shop>;
   stockLocation?: Maybe<StockLocation>;
   stockLocations: StockLocationList;
   tag: Tag;
@@ -5210,6 +5445,8 @@ export type Query = {
   taxRates: TaxRateList;
   testEligibleShippingMethods: Array<ShippingMethodQuote>;
   testShippingMethod: TestShippingMethodResult;
+  /** Get Shop Theme (Builder) */
+  theme: Theme;
   zone?: Maybe<Zone>;
   zones: ZoneList;
 };
@@ -5356,6 +5593,36 @@ export type QueryOrdersArgs = {
 };
 
 
+export type QueryPageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPageBySlugArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
+export type QueryPageDraftVersionArgs = {
+  pageId: Scalars['ID']['input'];
+};
+
+
+export type QueryPageVersionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPageVersionsArgs = {
+  pageId: Scalars['ID']['input'];
+};
+
+
+export type QueryPagesArgs = {
+  options?: InputMaybe<PageListOptions>;
+};
+
+
 export type QueryPaymentMethodArgs = {
   id: Scalars['ID']['input'];
 };
@@ -5424,6 +5691,11 @@ export type QueryProvincesArgs = {
 };
 
 
+export type QueryPublishedPageArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
 export type QueryRoleArgs = {
   id: Scalars['ID']['input'];
 };
@@ -5456,6 +5728,11 @@ export type QueryShippingMethodArgs = {
 
 export type QueryShippingMethodsArgs = {
   options?: InputMaybe<ShippingMethodListOptions>;
+};
+
+
+export type QueryShopArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -5623,8 +5900,28 @@ export type RegionTranslation = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type RegisterShopAdminInput = {
+  email: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+};
+
+export type RegisterShopInput = {
+  administrator: RegisterShopAdminInput;
+  shop: CreateShopInput;
+};
+
+export type RegisterShopResult = EmailAddressConflictError | NativeAuthStrategyError | RegisterShopSuccess | ShopCodeConflictError;
+
+export type RegisterShopSuccess = {
+  __typename?: 'RegisterShopSuccess';
+  currentUser: CurrentUser;
+  shop: Shop;
+};
+
 export type RelationCustomFieldConfig = CustomField & {
   __typename?: 'RelationCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   entity: Scalars['String']['output'];
   internal?: Maybe<Scalars['Boolean']['output']>;
@@ -5697,6 +5994,11 @@ export type RemoveStockLocationsFromChannelInput = {
   stockLocationIds: Array<Scalars['ID']['input']>;
 };
 
+export type RestorePageVersionInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  versionId: Scalars['ID']['input'];
+};
+
 export type Return = Node & StockMovement & {
   __typename?: 'Return';
   createdAt: Scalars['DateTime']['output'];
@@ -5765,6 +6067,13 @@ export type Sale = Node & StockMovement & {
   quantity: Scalars['Int']['output'];
   type: StockMovementType;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type SavePageVersionInput = {
+  changeDescription?: InputMaybe<Scalars['String']['input']>;
+  content: Scalars['String']['input'];
+  pageId: Scalars['ID']['input'];
+  theme?: InputMaybe<Scalars['JSON']['input']>;
 };
 
 export type ScheduledTask = {
@@ -6046,6 +6355,23 @@ export type ShippingMethodTranslationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type Shop = Node & {
+  __typename?: 'Shop';
+  code: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  domain?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+/** Returned when attempting to create a Shop with a code that is already in use */
+export type ShopCodeConflictError = ErrorResult & {
+  __typename?: 'ShopCodeConflictError';
+  errorCode: ErrorCode;
+  message: Scalars['String']['output'];
+};
+
 /** The price value where the result has a single price */
 export type SinglePrice = {
   __typename?: 'SinglePrice';
@@ -6166,6 +6492,8 @@ export enum StockMovementType {
 
 export type StringCustomFieldConfig = CustomField & {
   __typename?: 'StringCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -6219,6 +6547,8 @@ export type StringStructFieldConfig = StructField & {
 
 export type StructCustomFieldConfig = CustomField & {
   __typename?: 'StructCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   fields: Array<StructFieldConfig>;
   internal?: Maybe<Scalars['Boolean']['output']>;
@@ -6450,6 +6780,8 @@ export type TestShippingMethodResult = {
 
 export type TextCustomFieldConfig = CustomField & {
   __typename?: 'TextCustomFieldConfig';
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  deprecationReason?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Array<LocalizedString>>;
   internal?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Array<LocalizedString>>;
@@ -6470,6 +6802,12 @@ export type TextStructFieldConfig = StructField & {
   name: Scalars['String']['output'];
   type: Scalars['String']['output'];
   ui?: Maybe<Scalars['JSON']['output']>;
+};
+
+export type Theme = Node & {
+  __typename?: 'Theme';
+  id: Scalars['ID']['output'];
+  value: Scalars['JSON']['output'];
 };
 
 export type TransitionFulfillmentToStateResult = Fulfillment | FulfillmentStateTransitionError;
@@ -6652,6 +6990,13 @@ export type UpdateOrderNoteInput = {
   noteId: Scalars['ID']['input'];
 };
 
+export type UpdatePageInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdatePaymentMethodInput = {
   checker?: InputMaybe<ConfigurableOperationInput>;
   code?: InputMaybe<Scalars['String']['input']>;
@@ -6772,6 +7117,15 @@ export type UpdateShippingMethodInput = {
   translations: Array<ShippingMethodTranslationInput>;
 };
 
+export type UpdateShopInput = {
+  code?: InputMaybe<Scalars['String']['input']>;
+  domain?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateShopResult = Shop;
+
 export type UpdateStockLocationInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -6800,6 +7154,11 @@ export type UpdateTaxRateInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   value?: InputMaybe<Scalars['Float']['input']>;
   zoneId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type UpdateThemeInput = {
+  id: Scalars['ID']['input'];
+  value: Scalars['JSON']['input'];
 };
 
 export type UpdateZoneInput = {

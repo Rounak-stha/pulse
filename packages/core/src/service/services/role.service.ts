@@ -6,19 +6,14 @@ import {
     Permission,
     UpdateRoleInput,
 } from '@vendure/common/lib/generated-types';
-import {
-    CUSTOMER_ROLE_CODE,
-    CUSTOMER_ROLE_DESCRIPTION,
-    SUPER_ADMIN_ROLE_CODE,
-    SUPER_ADMIN_ROLE_DESCRIPTION,
-} from '@vendure/common/lib/shared-constants';
+import { CUSTOMER_ROLE_CODE, SUPER_ADMIN_ROLE_CODE } from '@vendure/common/lib/shared-constants';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
 import { unique } from '@vendure/common/lib/unique';
 
 import { RequestContext } from '../../api/common/request-context';
 import { RelationPaths } from '../../api/decorators/relations.decorator';
 import { RequestContextCacheService } from '../../cache/request-context-cache.service';
-import { getAllPermissionsMetadata } from '../../common/constants';
+import { getAllPermissionsMetadata, SHOP_ADMIN_PERMISSIONS } from '../../common/constants';
 import {
     EntityNotFoundError,
     ForbiddenError,
@@ -62,19 +57,17 @@ export class RoleService {
         private requestContextCache: RequestContextCacheService,
     ) {}
 
-    async initRoles() {
-        await this.ensureSuperAdminRoleExists();
-        await this.ensureCustomerRoleExists();
-        await this.ensureRolesHaveValidPermissions();
-    }
-
     findAll(
         ctx: RequestContext,
         options?: ListQueryOptions<Role>,
         relations?: RelationPaths<Role>,
     ): Promise<PaginatedList<Role>> {
         return this.listQueryBuilder
-            .build(Role, options, { relations: unique([...(relations ?? []), 'channels']), ctx })
+            .build(Role, options, {
+                relations: unique([...(relations ?? []), 'channels']),
+                ctx,
+                where: { shop: { id: ctx.shopId } },
+            })
             .getManyAndCount()
             .then(async ([items, totalItems]) => {
                 const visibleRoles: Role[] = [];
@@ -95,7 +88,7 @@ export class RoleService {
         return this.connection
             .getRepository(ctx, Role)
             .findOne({
-                where: { id: roleId },
+                where: { id: roleId, shop: { id: ctx.shopId } },
                 relations: unique([...(relations ?? []), 'channels']),
             })
             .then(async result => {
@@ -250,6 +243,22 @@ export class RoleService {
         return role;
     }
 
+    async createShopAdminRole(ctx: RequestContext) {
+        const channel = ctx.channel;
+        const permissions = SHOP_ADMIN_PERMISSIONS;
+        const input: CreateRoleInput = {
+            code: 'shop_admin',
+            description: 'Shop Admin',
+            permissions,
+            shopId: channel.shop.id,
+            channelIds: [channel.id],
+        };
+        const targetChannels = [channel];
+        const role = await this.createRoleForChannels(ctx, input, targetChannels);
+        await this.eventBus.publish(new RoleEvent(ctx, role, 'created', input));
+        return role;
+    }
+
     async update(ctx: RequestContext, input: UpdateRoleInput): Promise<Role> {
         this.checkPermissionsAreValid(input.permissions);
         const role = await this.findOne(ctx, input.id);
@@ -374,32 +383,9 @@ export class RoleService {
     }
 
     /**
-     * Ensure that the SuperAdmin role exists and that it has all possible Permissions.
-     */
-    private async ensureSuperAdminRoleExists() {
-        const assignablePermissions = this.getAllAssignablePermissions();
-        try {
-            const superAdminRole = await this.getSuperAdminRole();
-            superAdminRole.permissions = assignablePermissions;
-            await this.connection.rawConnection.getRepository(Role).save(superAdminRole, { reload: false });
-        } catch (err: any) {
-            const defaultChannel = await this.channelService.getDefaultChannel();
-            await this.createRoleForChannels(
-                RequestContext.empty(),
-                {
-                    code: SUPER_ADMIN_ROLE_CODE,
-                    description: SUPER_ADMIN_ROLE_DESCRIPTION,
-                    permissions: assignablePermissions,
-                },
-                [defaultChannel],
-            );
-        }
-    }
-
-    /**
      * The Customer Role is a special case which must always exist.
      */
-    private async ensureCustomerRoleExists() {
+    /* private async ensureCustomerRoleExists() {
         try {
             await this.getCustomerRole();
         } catch (err: any) {
@@ -414,7 +400,7 @@ export class RoleService {
                 [defaultChannel],
             );
         }
-    }
+    } */
 
     /**
      * Since custom permissions can be added and removed by config, there may exist one or more Roles with
@@ -436,6 +422,7 @@ export class RoleService {
 
     private createRoleForChannels(ctx: RequestContext, input: CreateRoleInput, channels: Channel[]) {
         const role = new Role({
+            shop: ctx.shop,
             code: input.code,
             description: input.description,
             permissions: unique([Permission.Authenticated, ...input.permissions]),

@@ -4,6 +4,11 @@ type Query {
 
 type Mutation {
     """
+    Registers a new Shop and its first Administrator (native auth). If autoLogin is true, starts a session for the new admin.
+    """
+    registerShop(input: RegisterShopInput!, autoLogin: Boolean): RegisterShopResult!
+
+    """
     Authenticates the user using the native authentication strategy. This mutation is an alias for authenticate({ native: { ... }})
 
     The `rememberMe` option applies when using cookie-based sessions, and if `true` it will set the maxAge of the session cookie
@@ -18,5 +23,25 @@ type Mutation {
 # Populated at run-time
 input AuthenticationInput
 
+input RegisterShopInput {
+    shop: CreateShopInput!
+    administrator: RegisterShopAdminInput!
+}
+
+input RegisterShopAdminInput {
+    email: String!
+    password: String!
+}
+
+type RegisterShopSuccess {
+    shop: Shop!
+    currentUser: CurrentUser!
+}
+
 union NativeAuthenticationResult = CurrentUser | InvalidCredentialsError | NativeAuthStrategyError
-union AuthenticationResult = CurrentUser | InvalidCredentialsError
+union AuthenticationResult = CurrentUser | InvalidCredentialsError | ShopCodeConflictError
+union RegisterShopResult =
+    | RegisterShopSuccess
+    | EmailAddressConflictError
+    | ShopCodeConflictError
+    | NativeAuthStrategyError

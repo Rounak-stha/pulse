@@ -42,7 +42,7 @@ export class TaxRateService {
         name: 'No configured tax rate',
         id: '0',
     });
-    private activeTaxRates: SelfRefreshingCache<TaxRate[], [RequestContext]>;
+    private activeTaxRates = new Map<ID, SelfRefreshingCache<TaxRate[], [RequestContext]>>();
 
     constructor(
         private connection: TransactionalConnection,
@@ -52,21 +52,17 @@ export class TaxRateService {
         private customFieldRelationService: CustomFieldRelationService,
     ) {}
 
-    /**
-     * When the app is bootstrapped, ensure the tax rate cache gets created
-     * @internal
-     */
-    async initTaxRates() {
-        await this.ensureCacheExists();
-    }
-
     findAll(
         ctx: RequestContext,
         options?: ListQueryOptions<TaxRate>,
         relations?: RelationPaths<TaxRate>,
     ): Promise<PaginatedList<TaxRate>> {
         return this.listQueryBuilder
-            .build(TaxRate, options, { relations: relations ?? ['category', 'zone', 'customerGroup'], ctx })
+            .build(TaxRate, options, {
+                relations: relations ?? ['category', 'zone', 'customerGroup'],
+                ctx,
+                where: { shop: { id: ctx.shopId } },
+            })
             .getManyAndCount()
             .then(([items, totalItems]) => ({
                 items,
@@ -82,7 +78,7 @@ export class TaxRateService {
         return this.connection
             .getRepository(ctx, TaxRate)
             .findOne({
-                where: { id: taxRateId },
+                where: { id: taxRateId, shop: { id: ctx.shopId } },
                 relations: relations ?? ['category', 'zone', 'customerGroup'],
             })
             .then(result => result ?? undefined);
@@ -90,6 +86,7 @@ export class TaxRateService {
 
     async create(ctx: RequestContext, input: CreateTaxRateInput): Promise<TaxRate> {
         const taxRate = new TaxRate(input);
+        taxRate.shop = ctx.shop;
         taxRate.category = await this.connection.getEntityOrThrow(ctx, TaxCategory, input.categoryId);
         taxRate.zone = await this.connection.getEntityOrThrow(ctx, Zone, input.zoneId);
         if (input.customerGroupId) {
@@ -147,7 +144,9 @@ export class TaxRateService {
     async delete(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
         const taxRate = await this.connection.getEntityOrThrow(ctx, TaxRate, id);
         const deletedTaxRate = new TaxRate(taxRate);
+
         try {
+            if (taxRate.shop.id !== ctx.shopId) throw new Error('No Access');
             await this.connection.getRepository(ctx, TaxRate).remove(taxRate);
             await this.eventBus.publish(new TaxRateEvent(ctx, deletedTaxRate, 'deleted', id));
             return {
@@ -176,11 +175,15 @@ export class TaxRateService {
     }
 
     private async getActiveTaxRates(ctx: RequestContext): Promise<TaxRate[]> {
-        return this.activeTaxRates.value(ctx);
+        if (!this.activeTaxRates.has(ctx.shopId)) return (await this.createCache(ctx)).value(ctx);
+        // eslint-disable-next-line
+        return this.activeTaxRates.get(ctx.shopId)!.value();
     }
 
     private async updateActiveTaxRates(ctx: RequestContext) {
-        await this.activeTaxRates.refresh(ctx);
+        if (!this.activeTaxRates.has(ctx.shopId)) return (await this.createCache(ctx)).refresh(ctx);
+        // eslint-disable-next-line
+        return this.activeTaxRates.get(ctx.shopId)!.refresh(ctx);
     }
 
     private async findActiveTaxRates(ctx: RequestContext): Promise<TaxRate[]> {
@@ -188,6 +191,7 @@ export class TaxRateService {
             relations: ['category', 'zone', 'customerGroup'],
             where: {
                 enabled: true,
+                shop: { id: ctx.shopId },
             },
         });
     }
@@ -195,15 +199,17 @@ export class TaxRateService {
     /**
      * Ensures taxRate cache exists. If not, this method creates one.
      */
-    private async ensureCacheExists() {
-        if (this.activeTaxRates) {
-            return;
-        }
-
-        this.activeTaxRates = await createSelfRefreshingCache({
+    private async createCache(ctx: RequestContext) {
+        const cache = await createSelfRefreshingCache({
             name: 'TaxRateService.activeTaxRates',
             ttl: this.configService.entityOptions.taxRateCacheTtl,
-            refresh: { fn: ctx => this.findActiveTaxRates(ctx), defaultArgs: [RequestContext.empty()] },
+            refresh: {
+                fn: _ctx => this.findActiveTaxRates(_ctx),
+                defaultArgs: [RequestContext.empty().withShopAndChannel(ctx.shop, ctx.channel)],
+            },
         });
+
+        this.activeTaxRates.set(ctx.shopId, cache);
+        return cache;
     }
 }

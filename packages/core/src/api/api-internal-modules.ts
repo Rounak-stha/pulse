@@ -27,6 +27,7 @@ import { GlobalSettingsResolver } from './resolvers/admin/global-settings.resolv
 import { ImportResolver } from './resolvers/admin/import.resolver';
 import { JobResolver } from './resolvers/admin/job.resolver';
 import { OrderResolver } from './resolvers/admin/order.resolver';
+import { PageResolver } from './resolvers/admin/page.resolver';
 import { PaymentMethodResolver } from './resolvers/admin/payment-method.resolver';
 import { ProductOptionResolver } from './resolvers/admin/product-option.resolver';
 import { ProductResolver } from './resolvers/admin/product.resolver';
@@ -89,6 +90,7 @@ import { ShopAuthResolver } from './resolvers/shop/shop-auth.resolver';
 import { ShopCustomerResolver } from './resolvers/shop/shop-customer.resolver';
 import { ShopEnvironmentResolver } from './resolvers/shop/shop-environment.resolver';
 import { ShopOrderResolver } from './resolvers/shop/shop-order.resolver';
+import { ShopPageResolver } from './resolvers/shop/shop-page.resolver';
 import { ShopPaymentMethodsResolver } from './resolvers/shop/shop-payment-methods.resolver';
 import { ShopProductsResolver } from './resolvers/shop/shop-products.resolver';
 import { ShopShippingMethodsResolver } from './resolvers/shop/shop-shipping-methods.resolver';
@@ -110,6 +112,7 @@ const adminResolvers = [
     JobResolver,
     SettingsStoreAdminResolver,
     OrderResolver,
+    PageResolver,
     PaymentMethodResolver,
     ProductOptionResolver,
     ProductResolver,
@@ -132,6 +135,7 @@ const shopResolvers = [
     ShopOrderResolver,
     ShopProductsResolver,
     ShopEnvironmentResolver,
+    ShopPageResolver,
     ShopPaymentMethodsResolver,
     ShopShippingMethodsResolver,
 ];

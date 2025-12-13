@@ -458,7 +458,7 @@ export class ProductVariantService {
             );
         }
 
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         await this.createOrUpdateProductVariantPrice(ctx, createdVariant.id, input.price, ctx.channelId);
         if (!idsAreEqual(ctx.channelId, defaultChannel.id)) {
             // When creating a ProductVariant _not_ in the default Channel, we still need to
@@ -857,7 +857,7 @@ export class ProductVariantService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }

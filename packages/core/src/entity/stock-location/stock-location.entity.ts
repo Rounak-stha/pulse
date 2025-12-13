@@ -1,11 +1,12 @@
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
-import { ChannelAware } from '../../common/types/common-types';
+import { ChannelAware, ShopAware } from '../../common/types/common-types';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
 import { CustomStockLocationFields } from '../custom-entity-fields';
+import { Shop } from '../shop/shop.entity';
 import { StockMovement } from '../stock-movement/stock-movement.entity';
 
 /**
@@ -20,10 +21,15 @@ import { StockMovement } from '../stock-movement/stock-movement.entity';
  * @docsCategory entities
  */
 @Entity()
-export class StockLocation extends VendureEntity implements HasCustomFields, ChannelAware {
+export class StockLocation extends VendureEntity implements HasCustomFields, ChannelAware, ShopAware {
     constructor(input: DeepPartial<StockLocation>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
+
     @Column()
     name: string;
 

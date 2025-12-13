@@ -26,6 +26,8 @@ import { RefundLine } from './order-line-reference/refund-line.entity';
 import { OrderLine } from './order-line/order-line.entity';
 import { OrderModification } from './order-modification/order-modification.entity';
 import { Order } from './order/order.entity';
+import { PageVersion } from './page/page-version.entity';
+import { Page } from './page/page.entity';
 import { PaymentMethodTranslation } from './payment-method/payment-method-translation.entity';
 import { PaymentMethod } from './payment-method/payment-method.entity';
 import { Payment } from './payment/payment.entity';
@@ -56,6 +58,7 @@ import { SettingsStoreEntry } from './settings-store-entry/settings-store-entry.
 import { ShippingLine } from './shipping-line/shipping-line.entity';
 import { ShippingMethodTranslation } from './shipping-method/shipping-method-translation.entity';
 import { ShippingMethod } from './shipping-method/shipping-method.entity';
+import { Shop } from './shop/shop.entity';
 import { StockLevel } from './stock-level/stock-level.entity';
 import { StockLocation } from './stock-location/stock-location.entity';
 import { Allocation } from './stock-movement/allocation.entity';
@@ -68,6 +71,7 @@ import { Surcharge } from './surcharge/surcharge.entity';
 import { Tag } from './tag/tag.entity';
 import { TaxCategory } from './tax-category/tax-category.entity';
 import { TaxRate } from './tax-rate/tax-rate.entity';
+import { Theme } from './theme/theme.entity';
 import { User } from './user/user.entity';
 import { Zone } from './zone/zone.entity';
 
@@ -107,6 +111,8 @@ export const coreEntitiesMap = {
     OrderLine,
     OrderLineReference,
     OrderModification,
+    Page,
+    PageVersion,
     Payment,
     PaymentMethod,
     PaymentMethodTranslation,
@@ -136,6 +142,7 @@ export const coreEntitiesMap = {
     ShippingLine,
     ShippingMethod,
     ShippingMethodTranslation,
+    Shop,
     StockAdjustment,
     StockLevel,
     StockLocation,
@@ -144,6 +151,7 @@ export const coreEntitiesMap = {
     Tag,
     TaxCategory,
     TaxRate,
+    Theme,
     User,
     Seller,
     Zone,

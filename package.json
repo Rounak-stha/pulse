@@ -14,6 +14,8 @@
     "watch": "lerna run watch --parallel",
     "watch:core-common": "lerna run --scope @vendure/common --scope @vendure/core watch --parallel",
     "build:core-common": "lerna run --scope @vendure/common --scope @vendure/core build",
+    "build:dashboard": "lerna run --scope @vendure/dashboard build",
+    "build:prod": "lerna run --scope @vendure/prod-server build",
     "lint": "eslint --fix",
     "format": "prettier --write --html-whitespace-sensitivity ignore",
     "docs:generate-typescript-docs": "ts-node scripts/docs/generate-typescript-docs.ts",
@@ -81,27 +83,6 @@
       "**/@types/jasmine",
       "**/@types/jasminewd2"
     ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ],
-    "rules": {
-      "subject-case": [
-        2,
-        "always",
-        [
-          "sentence-case"
-        ]
-      ]
-    }
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
-      "post-commit": "git update-index --again",
-      "pre-commit": "NODE_OPTIONS=\"--max-old-space-size=8096\" lint-staged"
-    }
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",

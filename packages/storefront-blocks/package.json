@@ -1,0 +1,31 @@
+{
+    "name": "@vendure/storefront-blocks",
+    "version": "3.4.2",
+    "type": "module",
+    "exports": {
+        "./atoms": "./build/atoms/index.js",
+        "./compounds": "./build/compounds/index.js",
+        "./design-system/*": "./build/design-system/*",
+        "./components-map": "./build/components-map.js",
+        "./types": "./build/types.d.ts"
+    },
+    "scripts": {
+        "build": "rimraf build && tsc && tsc-alias && npm run build-types",
+        "build-types": "rollup -c"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.38.0",
+        "@microsoft/api-extractor": "^7.54.0",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^7.0.1",
+        "eslint-plugin-react-refresh": "^0.4.24",
+        "rimraf": "^6.1.0",
+        "rollup": "^4.53.1",
+        "rollup-plugin-dts": "^6.2.3",
+        "tsc-alias": "^1.8.16"
+    },
+    "peerDependencies": {
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^3.3.1"
+    }
+}

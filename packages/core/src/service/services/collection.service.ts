@@ -6,7 +6,6 @@ import {
     CreateCollectionInput,
     DeletionResponse,
     DeletionResult,
-    JobState,
     LanguageCode,
     MoveCollectionInput,
     Permission,
@@ -18,8 +17,6 @@ import { pick } from '@vendure/common/lib/pick';
 import { ROOT_COLLECTION_NAME } from '@vendure/common/lib/shared-constants';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
 import { unique } from '@vendure/common/lib/unique';
-import { merge } from 'rxjs';
-import { debounceTime, filter } from 'rxjs/operators';
 import { In, IsNull } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
@@ -105,7 +102,9 @@ export class CollectionService implements OnModuleInit {
         const productEvents$ = this.eventBus.ofType(ProductEvent);
         const variantEvents$ = this.eventBus.ofType(ProductVariantEvent);
 
-        merge(productEvents$, variantEvents$)
+        // Uncomment after I've figured out a way to handle the queue init
+
+        /* merge(productEvents$, variantEvents$)
             .pipe(
                 filter(() => {
                     if (!this.applyAllFiltersOnProductUpdates) {
@@ -187,7 +186,7 @@ export class CollectionService implements OnModuleInit {
                 }
                 return { processedCollections: completed };
             },
-        });
+        }); */
     }
 
     async findAll(
@@ -968,7 +967,7 @@ export class CollectionService implements OnModuleInit {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }

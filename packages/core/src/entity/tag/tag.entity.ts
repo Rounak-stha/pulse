@@ -1,7 +1,9 @@
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Index, ManyToOne } from 'typeorm';
 
+import { ShopAware } from '../../common';
 import { VendureEntity } from '../base/base.entity';
+import { Shop } from '../shop/shop.entity';
 
 /**
  * @description
@@ -11,10 +13,14 @@ import { VendureEntity } from '../base/base.entity';
  * @docsCategory entities
  */
 @Entity()
-export class Tag extends VendureEntity {
+export class Tag extends VendureEntity implements ShopAware {
     constructor(input?: DeepPartial<Tag>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
 
     @Column()
     value: string;

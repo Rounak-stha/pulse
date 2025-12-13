@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
     CreateAdministratorInput,
     DeletionResult,
+    RegisterShopAdminInput,
     UpdateAdministratorInput,
 } from '@vendure/common/lib/generated-types';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
@@ -9,10 +10,10 @@ import { In, IsNull } from 'typeorm';
 
 import { RequestContext } from '../../api/common/request-context';
 import { RelationPaths } from '../../api/decorators/relations.decorator';
-import { Instrument } from '../../common';
+import { Instrument, isEmailAddressLike } from '../../common';
 import { EntityNotFoundError, InternalServerError, UserInputError } from '../../common/error/errors';
 import { ListQueryOptions } from '../../common/types/common-types';
-import { assertFound, idsAreEqual, normalizeEmailAddress } from '../../common/utils';
+import { idsAreEqual, normalizeEmailAddress } from '../../common/utils';
 import { ConfigService } from '../../config';
 import { TransactionalConnection } from '../../connection/transactional-connection';
 import { Administrator } from '../../entity/administrator/administrator.entity';
@@ -53,11 +54,6 @@ export class AdministratorService {
         private requestContextService: RequestContextService,
     ) {}
 
-    /** @internal */
-    async initAdministrators() {
-        await this.ensureSuperAdminExists();
-    }
-
     /**
      * @description
      * Get a paginated list of Administrators.
@@ -78,6 +74,27 @@ export class AdministratorService {
                 items,
                 totalItems,
             }));
+    }
+
+    /**
+     * @description
+     * Get an Administrator by id.
+     */
+    findOneByEmail(
+        ctx: RequestContext,
+        email: string,
+        relations?: RelationPaths<Administrator>,
+    ): Promise<Administrator | undefined> {
+        return this.connection
+            .getRepository(ctx, Administrator)
+            .findOne({
+                relations: relations ?? ['user', 'user.roles'],
+                where: {
+                    emailAddress: email,
+                    deletedAt: IsNull(),
+                },
+            })
+            .then(result => result ?? undefined);
     }
 
     /**
@@ -120,6 +137,35 @@ export class AdministratorService {
                 },
             })
             .then(result => result ?? undefined);
+    }
+
+    /**
+     * @description
+     * Registers a new Administrator.
+     */
+    async registerAdministrator(ctx: RequestContext, input: RegisterShopAdminInput): Promise<Administrator> {
+        if (!isEmailAddressLike(input.email)) {
+            throw new UserInputError('Invalid email address');
+        }
+        const shop = ctx.shop;
+        const channel = ctx.channel;
+        const [firstName, lastName = ''] = input.email.split('@')[0].split(/[._]/);
+        const administrator = new Administrator({ shop, firstName, lastName });
+
+        administrator.emailAddress = normalizeEmailAddress(input.email);
+        administrator.user = await this.userService.createAdminUser(ctx, input.email, input.password);
+
+        const adminRole = await this.roleService.createShopAdminRole(ctx);
+        const createdAdministrator = await this.connection
+            .getRepository(ctx, Administrator)
+            .save(administrator);
+
+        createdAdministrator.user.roles = [adminRole];
+
+        await this.connection.getRepository(ctx, User).save(createdAdministrator.user, { reload: false });
+        await this.eventBus.publish(new AdministratorEvent(ctx, createdAdministrator, 'created'));
+
+        return createdAdministrator;
     }
 
     /**
@@ -287,72 +333,6 @@ export class AdministratorService {
             return false;
         } else {
             return idsAreEqual(superAdmins[0].id, id);
-        }
-    }
-
-    /**
-     * @description
-     * There must always exist a SuperAdmin, otherwise full administration via API will
-     * no longer be possible.
-     *
-     * @internal
-     */
-    private async ensureSuperAdminExists() {
-        const { superadminCredentials } = this.configService.authOptions;
-
-        const superAdminUser = await this.connection.rawConnection.getRepository(User).findOne({
-            where: {
-                identifier: superadminCredentials.identifier,
-            },
-        });
-
-        if (!superAdminUser) {
-            const ctx = await this.requestContextService.create({ apiType: 'admin' });
-            const superAdminRole = await this.roleService.getSuperAdminRole();
-            const administrator = new Administrator({
-                emailAddress: superadminCredentials.identifier,
-                firstName: 'Super',
-                lastName: 'Admin',
-            });
-            administrator.user = await this.userService.createAdminUser(
-                ctx,
-                superadminCredentials.identifier,
-                superadminCredentials.password,
-            );
-            const { id } = await this.connection.getRepository(ctx, Administrator).save(administrator);
-            const createdAdministrator = await assertFound(this.findOne(ctx, id));
-            createdAdministrator.user.roles.push(superAdminRole);
-            await this.connection.getRepository(ctx, User).save(createdAdministrator.user, { reload: false });
-        } else {
-            const superAdministrator = await this.connection.rawConnection
-                .getRepository(Administrator)
-                .findOne({
-                    where: {
-                        user: {
-                            id: superAdminUser.id,
-                        },
-                    },
-                });
-            if (!superAdministrator) {
-                const administrator = new Administrator({
-                    emailAddress: superadminCredentials.identifier,
-                    firstName: 'Super',
-                    lastName: 'Admin',
-                });
-                const createdAdministrator = await this.connection.rawConnection
-                    .getRepository(Administrator)
-                    .save(administrator);
-                createdAdministrator.user = superAdminUser;
-                await this.connection.rawConnection.getRepository(Administrator).save(createdAdministrator);
-            } else if (superAdministrator.deletedAt != null) {
-                superAdministrator.deletedAt = null;
-                await this.connection.rawConnection.getRepository(Administrator).save(superAdministrator);
-            }
-
-            if (superAdminUser.deletedAt != null) {
-                superAdminUser.deletedAt = null;
-                await this.connection.rawConnection.getRepository(User).save(superAdminUser);
-            }
         }
     }
 }

@@ -40,6 +40,7 @@ export function viteConfigPlugin({ packageRoot }: { packageRoot: string }): Plug
                     // See the readme for an explanation of this alias.
                     '@/vdb': path.resolve(packageRoot, './src/lib'),
                     '@/graphql': path.resolve(packageRoot, './src/lib/graphql'),
+                    '@/builder-blocks': path.resolve(packageRoot, '../storefront-blocks/src'),
                 },
             };
             // This is required to prevent Vite from pre-bundling the

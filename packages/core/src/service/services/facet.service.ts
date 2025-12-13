@@ -68,6 +68,7 @@ export class FacetService {
                 relations: relations ?? ['values', 'values.facet', 'channels'],
                 ctx,
                 channelId: ctx.channelId,
+                where: { shop: { id: ctx.shopId } },
             })
             .getManyAndCount()
             .then(([facets, totalItems]) => {
@@ -89,6 +90,7 @@ export class FacetService {
         return this.connection
             .findOneInChannel(ctx, Facet, facetId, ctx.channelId, {
                 relations: relations ?? ['values', 'values.facet', 'channels'],
+                where: { shop: { id: ctx.shopId } },
             })
             .then(
                 facet =>
@@ -147,7 +149,9 @@ export class FacetService {
             .createQueryBuilder('facet')
             .leftJoinAndSelect('facet.translations', 'translations')
             .leftJoin('facet.values', 'facetValue')
-            .where('facetValue.id = :id', { id })
+            .leftJoin('facet.shop', 'shop')
+            .andWhere('facetValue.id = :id', { id })
+            .andWhere('shop.id = :shopId', { shopId: ctx.shopId })
             .getOne();
         if (facet) {
             return this.translator.translate(facet, ctx);
@@ -161,6 +165,7 @@ export class FacetService {
             entityType: Facet,
             translationType: FacetTranslation,
             beforeSave: async f => {
+                f.shop = ctx.shop;
                 f.code = await this.ensureUniqueCode(ctx, f.code);
                 await this.channelService.assignToCurrentChannel(f, ctx);
             },
@@ -196,6 +201,7 @@ export class FacetService {
         const facet = await this.connection.getEntityOrThrow(ctx, Facet, id, {
             relations: ['values'],
             channelId: ctx.channelId,
+            where: { shop: { id: ctx.shopId } },
         });
         let productCount = 0;
         let variantCount = 0;
@@ -280,7 +286,7 @@ export class FacetService {
         }
         const facetsToAssign = await this.connection
             .getRepository(ctx, Facet)
-            .find({ where: { id: In(input.facetIds) }, relations: ['values'] });
+            .find({ where: { id: In(input.facetIds), shop: { id: ctx.shopId } }, relations: ['values'] });
         const valuesToAssign = facetsToAssign.reduce(
             (values, facet) => [...values, ...facet.values],
             [] as FacetValue[],
@@ -320,13 +326,13 @@ export class FacetService {
         if (!hasPermission) {
             throw new ForbiddenError();
         }
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+        const defaultChannel = await this.channelService.getDefaultChannel(ctx.shop);
         if (idsAreEqual(input.channelId, defaultChannel.id)) {
             throw new UserInputError('error.items-cannot-be-removed-from-default-channel');
         }
         const facetsToRemove = await this.connection
             .getRepository(ctx, Facet)
-            .find({ where: { id: In(input.facetIds) }, relations: ['values'] });
+            .find({ where: { id: In(input.facetIds), shop: { id: ctx.shopId } }, relations: ['values'] });
 
         const results: Array<ErrorResultUnion<RemoveFacetFromChannelResult, Facet>> = [];
 

@@ -2,6 +2,7 @@ import { TaxLine } from '@vendure/common/lib/generated-types';
 import { DeepPartial, ID } from '@vendure/common/lib/shared-types';
 import { Column, Entity, Index, ManyToOne } from 'typeorm';
 
+import { ShopAware } from '../../common';
 import { grossPriceOf, netPriceOf, taxComponentOf, taxPayableOn } from '../../common/tax-utils';
 import { idsAreEqual } from '../../common/utils';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
@@ -9,6 +10,7 @@ import { VendureEntity } from '../base/base.entity';
 import { CustomTaxRateFields } from '../custom-entity-fields';
 import { CustomerGroup } from '../customer-group/customer-group.entity';
 import { EntityId } from '../entity-id.decorator';
+import { Shop } from '../shop/shop.entity';
 import { TaxCategory } from '../tax-category/tax-category.entity';
 import { DecimalTransformer } from '../value-transformers';
 import { Zone } from '../zone/zone.entity';
@@ -24,10 +26,14 @@ import { Zone } from '../zone/zone.entity';
  * @docsCategory entities
  */
 @Entity()
-export class TaxRate extends VendureEntity implements HasCustomFields {
+export class TaxRate extends VendureEntity implements HasCustomFields, ShopAware {
     constructor(input?: DeepPartial<TaxRate>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
 
     @Column() name: string;
 

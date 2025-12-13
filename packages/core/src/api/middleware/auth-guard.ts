@@ -13,6 +13,7 @@ import { ChannelService } from '../../service/services/channel.service';
 import { CustomerService } from '../../service/services/customer.service';
 import { SessionService } from '../../service/services/session.service';
 import { extractSessionToken } from '../common/extract-session-token';
+import { getApiType } from '../common/get-api-type';
 import { isFieldResolver } from '../common/is-field-resolver';
 import { parseContext } from '../common/parse-context';
 import {
@@ -48,6 +49,7 @@ export class AuthGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const { req, res, info } = parseContext(context);
         const targetIsFieldResolver = isFieldResolver(info);
+        const apiType = getApiType(info);
         const permissions = this.reflector.get<Permission[]>(PERMISSIONS_METADATA_KEY, context.getHandler());
         if (targetIsFieldResolver && !permissions) {
             return true;
@@ -55,17 +57,24 @@ export class AuthGuard implements CanActivate {
         const authDisabled = this.configService.authOptions.disableAuth;
         const isPublic = !!permissions && permissions.includes(Permission.Public);
         const hasOwnerPermission = !!permissions && permissions.includes(Permission.Owner);
+        const isAdminApi = apiType === 'admin';
         let requestContext: RequestContext;
         if (targetIsFieldResolver) {
             requestContext = internal_getRequestContext(req);
         } else {
-            const session = await this.getSession(req, res, hasOwnerPermission);
-            requestContext = await this.requestContextService.fromRequest(req, info, permissions, session);
-
+            const session = await this.getSession(req, res, hasOwnerPermission, isAdminApi);
+            requestContext = await this.requestContextService.fromRequest(
+                req,
+                isPublic,
+                info,
+                permissions,
+                session,
+            );
             const requestContextShouldBeReinitialized = await this.setActiveChannel(requestContext, session);
             if (requestContextShouldBeReinitialized) {
                 requestContext = await this.requestContextService.fromRequest(
                     req,
+                    isPublic,
                     info,
                     permissions,
                     session,
@@ -101,6 +110,14 @@ export class AuthGuard implements CanActivate {
         if (activeChannelShouldBeSet) {
             await this.sessionService.setActiveChannel(session, requestContext.channel);
             if (requestContext.activeUserId) {
+                /**
+                 * AI Description
+                 * This is intentionally customer-only because:
+                   Customers are channel-scoped Shop entities. Assigning them ensures their data is accessible/visible on that channel (e.g., orders, profiles).
+                   Administrators are managed differently. Their channel access is controlled by roles/permissions per channel and configured in the Admin UI or
+                   setup flow, not by auto-assigning them at request time. There is no need to “assign” an Administrator to a channel during request handling;
+                   that association is already defined in the admin’s channel permissions. Setting activeChannelId is enough for context-dependent behavior.
+                 */
                 const customer = await this.customerService.findOneByUserId(
                     requestContext,
                     requestContext.activeUserId,
@@ -137,6 +154,7 @@ export class AuthGuard implements CanActivate {
         req: Request,
         res: Response,
         hasOwnerPermission: boolean,
+        isAdminApi: boolean,
     ): Promise<CachedSession | undefined> {
         const sessionToken = extractSessionToken(req, this.configService.authOptions.tokenMethod);
         let serializedSession: CachedSession | undefined;
@@ -156,7 +174,7 @@ export class AuthGuard implements CanActivate {
             });
         }
 
-        if (hasOwnerPermission && !serializedSession) {
+        if (hasOwnerPermission && !serializedSession && !isAdminApi) {
             serializedSession = await this.sessionService.createAnonymousSession();
             setSessionToken({
                 sessionToken: serializedSession.token,

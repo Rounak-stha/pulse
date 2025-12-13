@@ -1,12 +1,14 @@
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
+import { ShopAware } from '../../common';
 import { HasCustomFields } from '../../config/custom-field/custom-field-types';
 import { VendureEntity } from '../base/base.entity';
 import { Channel } from '../channel/channel.entity';
 import { CustomZoneFields } from '../custom-entity-fields';
 import { Country } from '../region/country.entity';
 import { Region } from '../region/region.entity';
+import { Shop } from '../shop/shop.entity';
 import { TaxRate } from '../tax-rate/tax-rate.entity';
 
 /**
@@ -17,10 +19,14 @@ import { TaxRate } from '../tax-rate/tax-rate.entity';
  * @docsCategory entities
  */
 @Entity()
-export class Zone extends VendureEntity implements HasCustomFields {
+export class Zone extends VendureEntity implements HasCustomFields, ShopAware {
     constructor(input?: DeepPartial<Zone>) {
         super(input);
     }
+
+    @Index()
+    @ManyToOne(type => Shop, { onDelete: 'CASCADE' })
+    shop: Shop;
 
     @Column() name: string;
 

@@ -3,8 +3,10 @@ import {
     AuthenticationResult,
     MutationAuthenticateArgs,
     MutationLoginArgs,
+    MutationRegisterShopArgs,
     NativeAuthenticationResult,
     Permission,
+    RegisterShopResult,
     Success,
 } from '@vendure/common/lib/generated-types';
 import { Request, Response } from 'express';
@@ -15,8 +17,6 @@ import { ConfigService } from '../../../config/config.service';
 import { Logger } from '../../../config/logger/vendure-logger';
 import { AdministratorService } from '../../../service/services/administrator.service';
 import { AuthService } from '../../../service/services/auth.service';
-import { ChannelService } from '../../../service/services/channel.service';
-import { CustomerService } from '../../../service/services/customer.service';
 import { UserService } from '../../../service/services/user.service';
 import { RequestContext } from '../../common/request-context';
 import { Allow } from '../../decorators/allow.decorator';
@@ -38,6 +38,22 @@ export class AuthResolver extends BaseAuthResolver {
     @Transaction()
     @Mutation()
     @Allow(Permission.Public)
+    async registerShop(
+        @Args() args: MutationRegisterShopArgs,
+        @Ctx() ctx: RequestContext,
+        @Context('req') req: Request,
+        @Context('res') res: Response,
+    ): Promise<RegisterShopResult> {
+        const nativeAuthStrategyError = this.requireNativeAuthStrategy();
+        if (nativeAuthStrategyError) {
+            return nativeAuthStrategyError;
+        }
+        return this.authService.registerShopAndAdminUser(args, ctx, req, res);
+    }
+
+    @Transaction()
+    @Mutation()
+    @Allow(Permission.Public)
     async login(
         @Args() args: MutationLoginArgs,
         @Ctx() ctx: RequestContext,
@@ -48,7 +64,7 @@ export class AuthResolver extends BaseAuthResolver {
         if (nativeAuthStrategyError) {
             return nativeAuthStrategyError;
         }
-        return (await super.baseLogin(args, ctx, req, res)) as AuthenticationResult;
+        return (await super.baseLogin(args, ctx, req, res)) as any;
     }
 
     @Transaction()

@@ -1,11 +1,42 @@
 import { LogicalOperator } from '@vendure/common/lib/generated-types';
 import { Type } from '@vendure/common/lib/shared-types';
+import type { DataSourceOptions } from 'typeorm'
 
+import { Administrator } from '../../entity';
 import { VendureEntity } from '../../entity/base/base.entity';
 import { Channel } from '../../entity/channel/channel.entity';
+import { Shop } from '../../entity/shop/shop.entity';
 import { Tag } from '../../entity/tag/tag.entity';
+import {
+    EmailAddressConflictError,
+    NativeAuthStrategyError,
+    ShopCodeConflictError,
+} from '../error/generated-graphql-shop-errors';
 
 import { LocaleString } from './locale-types';
+
+/**
+ * @description Reexport of the DataSource option from TypeOrm
+ */
+export { DataSourceOptions }
+
+
+/**
+ * @description
+ * Entities which should be assigned to Shop should implement this interface.
+ *
+ * @docsCategory entities
+ * @docsPage interfaces
+ */
+export interface ShopAware {
+    shop: Shop;
+}
+
+export type RegisterShopIntemediateResult =
+    | { shop: Shop; administrator: Administrator }
+    | ShopCodeConflictError
+    | EmailAddressConflictError
+    | NativeAuthStrategyError;
 
 /**
  * @description

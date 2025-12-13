@@ -3,9 +3,13 @@ import { AwesomeGraphQLClient } from 'awesome-graphql-client';
 import { DocumentNode, print } from 'graphql';
 import { uiConfig } from 'virtual:vendure-ui-config';
 
+const API_PORT = uiConfig.api.port === 'auto' ? window.location.port : uiConfig.api.port;
+
 const API_URL =
-    (uiConfig.api.host !== "auto" ? uiConfig.api.host : `${window.location.protocol}//${window.location.hostname}`) +
-    `:${(uiConfig.api.port !== 'auto' ? uiConfig.api.port : window.location.port)}` +
+    (uiConfig.api.host !== 'auto'
+        ? uiConfig.api.host
+        : `${window.location.protocol}//${window.location.hostname}`) +
+    (API_PORT ? `:${API_PORT}` : '') +
     `/${uiConfig.api.adminApiPath}`;
 
 export const SELECTED_CHANNEL_TOKEN_KEY = 'vendure-selected-channel-token';

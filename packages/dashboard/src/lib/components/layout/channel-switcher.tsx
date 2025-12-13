@@ -14,6 +14,7 @@ import {
 } from '@/vdb/components/ui/dropdown-menu.js';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/vdb/components/ui/sidebar.js';
 import { DEFAULT_CHANNEL_CODE } from '@/vdb/constants.js';
+import { useAuth } from '@/vdb/hooks/use-auth.js';
 import { useChannel } from '@/vdb/hooks/use-channel.js';
 import { useLocalFormat } from '@/vdb/hooks/use-local-format.js';
 import { useServerConfig } from '@/vdb/hooks/use-server-config.js';
@@ -46,6 +47,7 @@ function getChannelInitialsFromCode(code: string) {
 
 export function ChannelSwitcher() {
     const { isMobile } = useSidebar();
+    const { user } = useAuth()
     const { channels, activeChannel, setActiveChannel } = useChannel();
     const serverConfig = useServerConfig();
     const { formatLanguageName } = useLocalFormat();
@@ -54,6 +56,7 @@ export function ChannelSwitcher() {
         setContentLanguage,
     } = useUserSettings();
     const [showManageLanguagesDialog, setShowManageLanguagesDialog] = useState(false);
+    const shop = user?.shop;
     const displayChannel = activeChannel;
 
     // Get available languages from server config
@@ -91,21 +94,17 @@ export function ChannelSwitcher() {
                                     }
                                 >
                                     <span className="truncate font-semibold text-xs uppercase">
-                                        {getChannelInitialsFromCode(displayChannel?.code || '')}
+                                        {getChannelInitialsFromCode(shop?.code || '')}
                                     </span>
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">
-                                        <ChannelCodeLabel code={displayChannel?.code} />
+                                        {shop?.name}
                                     </span>
                                     <span className="truncate text-xs">
-                                        {hasMultipleLanguages ? (
-                                            <span className="cursor-pointer hover:text-foreground">
-                                                Language: {formatLanguageName(contentLanguage)}
-                                            </span>
-                                        ) : (
-                                            <span>Language: {formatLanguageName(contentLanguage)}</span>
-                                        )}
+                                        <span className="cursor-pointer hover:text-foreground">
+                                        <ChannelCodeLabel code={displayChannel?.code} />
+                                        </span>
                                     </span>
                                 </div>
                                 <ChevronsUpDown className="ml-auto" />
