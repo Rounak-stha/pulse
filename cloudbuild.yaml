@@ -55,6 +55,7 @@ steps:
           - 'DB_PORT=DB_PORT:latest'
           - '--update-secrets'
           - 'DB_USERNAME=DB_USERNAME:latest'
+          - '--update-secrets'
           - 'DB_PASSWORD=DB_PASSWORD:latest'
           - '--update-secrets'
           - 'DB_NAME=DB_NAME:latest'
