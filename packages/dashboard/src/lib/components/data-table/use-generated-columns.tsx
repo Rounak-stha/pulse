@@ -36,7 +36,12 @@ import {
 } from '../ui/alert-dialog.js';
 import { Button } from '../ui/button.js';
 import { Checkbox } from '../ui/checkbox.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu.js';
 import { DataTableColumnHeader } from './data-table-column-header.js';
 
 /**
@@ -242,7 +247,11 @@ function getRowActions(
                             </DropdownMenuItem>
                         ))}
                         {bulkActions?.map((action, index) => (
-                            <action.component key={`bulk-action-${index}`} selection={[row]} table={table} />
+                            <action.component
+                                key={`bulk-action-${index}`}
+                                selection={[row.original]}
+                                table={table}
+                            />
                         ))}
                         {deleteMutation && (
                             <DeleteMutationRowAction deleteMutation={deleteMutation} row={row} />
