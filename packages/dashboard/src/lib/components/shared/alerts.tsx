@@ -1,7 +1,7 @@
 import { AlertItem } from '@/vdb/framework/alert/alert-item.js';
 import { AlertsIndicator } from '@/vdb/framework/alert/alerts-indicator.js';
 import { useAlerts } from '@/vdb/hooks/use-alerts.js';
-import { Trans } from '@lingui/react/macro';
+import { Trans } from '@/vdb/lib/trans.js';
 import { BellIcon } from 'lucide-react';
 import { Button } from '../ui/button.js';
 import {
