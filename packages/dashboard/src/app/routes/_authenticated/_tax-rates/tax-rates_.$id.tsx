@@ -67,16 +67,21 @@ function TaxRateDetailPage() {
         },
         params: { id: params.id },
         onSuccess: async data => {
-            toast.success(i18n.t(creatingNewEntity ? 'Successfully created tax rate' : 'Successfully updated tax rate'));
+            toast.success(
+                i18n.t(creatingNewEntity ? 'Successfully created tax rate' : 'Successfully updated tax rate'),
+            );
             resetForm();
             if (creatingNewEntity) {
                 await navigate({ to: `../$id`, params: { id: data.id } });
             }
         },
         onError: err => {
-            toast.error(i18n.t(creatingNewEntity ? 'Failed to create tax rate' : 'Failed to update tax rate'), {
-                description: err instanceof Error ? err.message : 'Unknown error',
-            });
+            toast.error(
+                i18n.t(creatingNewEntity ? 'Failed to create tax rate' : 'Failed to update tax rate'),
+                {
+                    description: err instanceof Error ? err.message : 'Unknown error',
+                },
+            );
         },
     });
 
@@ -123,6 +128,7 @@ function TaxRateDetailPage() {
                                     {...field}
                                     type="number"
                                     suffix="%"
+                                    min={0}
                                     value={field.value}
                                     onChange={e => field.onChange(e.target.valueAsNumber)}
                                 />

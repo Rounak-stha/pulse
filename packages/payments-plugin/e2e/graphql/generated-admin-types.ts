@@ -5377,6 +5377,8 @@ export type Query = {
   shippingMethod?: Maybe<ShippingMethod>;
   shippingMethods: ShippingMethodList;
   shop?: Maybe<Shop>;
+  /** Generate slug for entity */
+  slugForEntity: Scalars['String']['output'];
   stockLocation?: Maybe<StockLocation>;
   stockLocations: StockLocationList;
   tag: Tag;
@@ -5680,6 +5682,11 @@ export type QueryShippingMethodsArgs = {
 
 export type QueryShopArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QuerySlugForEntityArgs = {
+  input: SlugForEntityInput;
 };
 
 
@@ -6291,6 +6298,13 @@ export type ShopCodeConflictError = ErrorResult & {
 /** The price value where the result has a single price */
 export type SinglePrice = {
   value: Scalars['Money']['output'];
+};
+
+export type SlugForEntityInput = {
+  entityId?: InputMaybe<Scalars['ID']['input']>;
+  entityName: Scalars['String']['input'];
+  fieldName: Scalars['String']['input'];
+  inputValue: Scalars['String']['input'];
 };
 
 export enum SortOrder {

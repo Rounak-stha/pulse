@@ -36,6 +36,7 @@ export * from './entity/entity-duplicator';
 export * from './entity/entity-duplicators/index';
 export * from './entity/entity-id-strategy';
 export * from './entity/money-strategy';
+export * from './entity/slug-strategy';
 export * from './entity/uuid-id-strategy';
 export * from './fulfillment/default-fulfillment-process';
 export * from './fulfillment/fulfillment-handler';

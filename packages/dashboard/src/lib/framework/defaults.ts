@@ -1,3 +1,5 @@
+import { registerAlert } from '@/vdb/framework/alert/alert-extensions.js';
+import { searchIndexBufferAlert } from '@/vdb/framework/alert/search-index-buffer-alert/search-index-buffer-alert.js';
 import { setNavMenuConfig } from '@/vdb/framework/nav-menu/nav-menu-extensions.js';
 import {
     LayoutDashboardIcon,
@@ -272,6 +274,7 @@ export function registerDefaults() {
         defaultSize: { w: 6, h: 3, x: 6, y: 0 },
     });
 
+    registerAlert(searchIndexBufferAlert);
     // registerAlert<boolean>({
     //     id: 'test-alert',
     //     title: data => `Test Alert ${String(data)}`,

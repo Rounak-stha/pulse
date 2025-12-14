@@ -60,7 +60,7 @@ export function DataTableBulkActions<TData>({
 
     return (
         <div
-            className="flex items-center gap-4 px-8 py-2 animate-in fade-in duration-200 fixed transform -translate-x-1/2 bg-white shadow-2xl rounded-md border z-50"
+            className="flex items-center gap-4 px-8 py-2 animate-in fade-in duration-200 fixed transform -translate-x-1/2 bg-background shadow-2xl rounded-md border z-50"
             style={{
                 height: 'auto',
                 maxHeight: '60px',

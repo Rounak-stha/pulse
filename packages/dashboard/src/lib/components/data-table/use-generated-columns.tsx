@@ -36,7 +36,12 @@ import {
 } from '../ui/alert-dialog.js';
 import { Button } from '../ui/button.js';
 import { Checkbox } from '../ui/checkbox.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu.js';
 import { DataTableColumnHeader } from './data-table-column-header.js';
 
 /**
@@ -98,12 +103,12 @@ export function useGeneratedColumns<T extends TypedDocumentNode<any, any>>({
 
         const queryBasedColumns = columnConfigs.map(({ fieldInfo, isCustomField }) => {
             const customConfig = customizeColumns?.[fieldInfo.name as unknown as AllItemFieldKeys<T>] ?? {};
-            const { header, ...customConfigRest } = customConfig;
+            const { header, meta, ...customConfigRest } = customConfig;
             const enableColumnFilter = fieldInfo.isScalar && !facetedFilters?.[fieldInfo.name];
 
             return columnHelper.accessor(fieldInfo.name as any, {
                 id: fieldInfo.name,
-                meta: { fieldInfo, isCustomField },
+                meta: { fieldInfo, isCustomField, ...(meta ?? {}) },
                 enableColumnFilter,
                 enableSorting: fieldInfo.isScalar && enableSorting,
                 // Filtering is done on the server side, but we set this to 'equalsString' because
@@ -242,7 +247,11 @@ function getRowActions(
                             </DropdownMenuItem>
                         ))}
                         {bulkActions?.map((action, index) => (
-                            <action.component key={`bulk-action-${index}`} selection={[row]} table={table} />
+                            <action.component
+                                key={`bulk-action-${index}`}
+                                selection={[row.original]}
+                                table={table}
+                            />
                         ))}
                         {deleteMutation && (
                             <DeleteMutationRowAction deleteMutation={deleteMutation} row={row} />
