@@ -164,7 +164,7 @@ export function OrderTable({ order, pageId }: Readonly<OrderTableProps>) {
     });
 
     const columnVisibility = getColumnVisibility(fields, defaultColumnVisibility, customFieldColumnNames);
-    const visibleColumnCount = Object.values(columnVisibility).filter(Boolean).length;
+    const visibleColumnCount = Object.values(columnVisibility).filter(Boolean).length - 2; // -2 for "actions" and "selection" cols;
     const data = order.lines;
 
     return (
