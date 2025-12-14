@@ -1,4 +1,5 @@
 import { DateTimeInput } from '@/vdb/components/data-input/datetime-input.js';
+import { NumberInput } from '@/vdb/components/data-input/number-input.js';
 import { RichTextInput } from '@/vdb/components/data-input/rich-text-input.js';
 import { ErrorPage } from '@/vdb/components/shared/error-page.js';
 import { FormFieldWrapper } from '@/vdb/components/shared/form-field-wrapper.js';
@@ -99,21 +100,33 @@ function PromotionDetailPage() {
         params: { id: params.id },
         onSuccess: async data => {
             if (data.__typename === 'Promotion') {
-                toast.success(i18n.t(creatingNewEntity ? 'Successfully created promotion' : 'Successfully updated promotion'));
+                toast.success(
+                    i18n.t(
+                        creatingNewEntity
+                            ? 'Successfully created promotion'
+                            : 'Successfully updated promotion',
+                    ),
+                );
                 resetForm();
                 if (creatingNewEntity) {
                     await navigate({ to: `../$id`, params: { id: data.id } });
                 }
             } else {
-                toast.error(i18n.t(creatingNewEntity ? 'Failed to create promotion' : 'Failed to update promotion'), {
-                    description: data.message,
-                });
+                toast.error(
+                    i18n.t(creatingNewEntity ? 'Failed to create promotion' : 'Failed to update promotion'),
+                    {
+                        description: data.message,
+                    },
+                );
             }
         },
         onError: err => {
-            toast.error(i18n.t(creatingNewEntity ? 'Failed to create promotion' : 'Failed to update promotion'), {
-                description: err instanceof Error ? err.message : 'Unknown error',
-            });
+            toast.error(
+                i18n.t(creatingNewEntity ? 'Failed to create promotion' : 'Failed to update promotion'),
+                {
+                    description: err instanceof Error ? err.message : 'Unknown error',
+                },
+            );
         },
     });
 
@@ -196,11 +209,7 @@ function PromotionDetailPage() {
                             name="perCustomerUsageLimit"
                             label={<Trans>Per customer usage limit</Trans>}
                             render={({ field }) => (
-                                <Input
-                                    type="number"
-                                    value={field.value ?? ''}
-                                    onChange={e => field.onChange(e.target.valueAsNumber)}
-                                />
+                                <NumberInput {...field} value={field.value ?? ''} min={0} max={1000} />
                             )}
                         />
                         <FormFieldWrapper
@@ -208,11 +217,7 @@ function PromotionDetailPage() {
                             name="usageLimit"
                             label={<Trans>Usage limit</Trans>}
                             render={({ field }) => (
-                                <Input
-                                    type="number"
-                                    value={field.value ?? ''}
-                                    onChange={e => field.onChange(e.target.valueAsNumber)}
-                                />
+                                <NumberInput {...field} value={field.value ?? ''} min={0} max={1000} />
                             )}
                         />
                     </DetailFormGrid>

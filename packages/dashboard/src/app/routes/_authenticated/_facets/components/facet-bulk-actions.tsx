@@ -89,12 +89,6 @@ export const DuplicateFacetsBulkAction: BulkActionComponent<any> = ({ selection,
         <DuplicateBulkAction
             entityType="Facet"
             duplicatorCode="facet-duplicator"
-            duplicatorArguments={[
-                {
-                    name: 'includeValues',
-                    value: 'true',
-                },
-            ]}
             requiredPermissions={['UpdateCatalog', 'UpdateFacet']}
             entityName="Facet"
             selection={selection}
