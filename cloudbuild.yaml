@@ -9,7 +9,7 @@ steps:
       args:
           - 'build'
           - '-t'
-          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/pulse-docker-repo/pulse-image:${_TAG}'
           - '.'
           # Pass VITE variables required at BUILD TIME (must be defined in Dockerfile as ARG)
           - '--build-arg'
@@ -27,7 +27,7 @@ steps:
           - 'deploy'
           - 'bazaar-server'
           - '--image'
-          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+          - 'asia-south1-docker.pkg.dev/$PROJECT_ID/pulse-docker-repo/pulse-image:${_TAG}'
           - '--region'
           - 'asia-south1'
           - '--platform'
@@ -89,11 +89,11 @@ steps:
 
           # 4. Cloud SQL Connection
           # This is an infrastructure identifier, not a secret, so it is set directly.
-          - '--set-cloudsql-instances=bazaar-480217:asia-south1:bazaar-prod'
+          - '--set-cloudsql-instances=bazaar-480217:asia-south1:pulse-db'
 
 # This block ensures the built image is pushed to Artifact Registry after Step 1.
 images:
-    - 'asia-south1-docker.pkg.dev/$PROJECT_ID/bazaar-docker-repo/bazaar-image:${_TAG}'
+    - 'asia-south1-docker.pkg.dev/$PROJECT_ID/pulse-docker-repo/pulse-image:${_TAG}'
 
 options:
     logging: CLOUD_LOGGING_ONLY # This sends the logs directly to Cloud Logging
