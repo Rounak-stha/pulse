@@ -31,7 +31,7 @@ steps:
       args:
           - 'run'
           - 'deploy'
-          - 'bazaar-server'
+          - 'pulse-server'
           - '--image'
           - 'asia-south1-docker.pkg.dev/$PROJECT_ID/pulse-docker-repo/pulse-image:${_TAG}'
           - '--region'
