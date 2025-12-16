@@ -17,6 +17,12 @@ steps:
           - '--build-arg'
           - 'VITE_ADMIN_API_PORT=${_VITE_ADMIN_API_PORT}'
 
+    - name: 'gcr.io/cloud-builders/docker'
+      id: 'Push Image'
+      args:
+          - push
+          - asia-south1-docker.pkg.dev/$PROJECT_ID/pulse-docker-repo/pulse-image:${_TAG}
+
     # STEP 2: Deploy to Cloud Run
     # This step sets all necessary runtime configurations and securely links secrets.
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
