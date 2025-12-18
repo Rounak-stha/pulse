@@ -89,7 +89,7 @@ export class PageService {
         const draftVersion = new PageVersion({
             page: new Page({ id: savedPage.id }),
             versionNumber: 1,
-            content: '',
+            content: input.content ?? '',
             status: PageVersionStatus.DRAFT,
         });
 

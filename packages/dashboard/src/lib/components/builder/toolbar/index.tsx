@@ -10,9 +10,10 @@ import {
     TabletIcon,
     Undo2Icon,
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '../../ui/button.js';
 import { DeviceType } from '../types.js';
+import { CreatePageDialog } from './create-page-dialog.js';
 import { PageSwitcher } from './page-switcher.js';
 
 interface ToolbarInnerProps {
@@ -21,6 +22,7 @@ interface ToolbarInnerProps {
 }
 
 export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
+    const [newPageDialogOpen, setNewPageDialogOpen] = useState(false);
     const builderContext = useBuilder();
     const { actions, enabled } = useEditor(state => ({
         enabled: state.options.enabled,
@@ -48,11 +50,30 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
         });
     }, [actions]);
 
+    const handleCreatePage = async (input: { name: string; slug: string; description?: string }) => {
+        await createPage(input); // navigate if page exists else no
+        setNewPageDialogOpen(false);
+    };
+
+    const handleSave = async () => {
+        if (!page) setNewPageDialogOpen(true);
+        else save();
+    };
+
+    const handlePublish = async () => {
+        if (!page) setNewPageDialogOpen(true);
+        else publish();
+    };
+
     return (
         <div className="h-14 bg-background border-b border-border flex items-center justify-between px-4">
             <div className="flex items-center gap-4">
                 <h1 className="text-sm font-semibold text-foreground">Builder</h1>
-                <PageSwitcher currentPage={page} onCreatePage={createPage} onPageChange={changePage} />
+                <PageSwitcher
+                    currentPage={page}
+                    onPageChange={changePage}
+                    openCreatePageDialog={() => setNewPageDialogOpen(true)}
+                />
             </div>
 
             <div className="flex flex-1 items-center gap-2">
@@ -93,15 +114,20 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
                     <span className="text-sm">{mode == 'edit' ? 'Preview' : 'Edit'}</span>
                 </button>
 
-                <Button onClick={() => save()} size="sm" variant="outline">
+                <Button onClick={handleSave} size="sm" variant="outline">
                     <SaveIcon className="w-4 h-4 inline" />
                     Save
                 </Button>
-                <Button onClick={() => publish()} size="sm">
+                <Button onClick={handlePublish} size="sm">
                     <SendIcon className="w-4 h-4 inline" />
                     Publish
                 </Button>
             </div>
+            <CreatePageDialog
+                open={newPageDialogOpen}
+                onOpenChange={setNewPageDialogOpen}
+                onSubmit={handleCreatePage}
+            />
         </div>
     );
 };

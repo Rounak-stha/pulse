@@ -871,6 +871,7 @@ export type CreateGroupOptionInput = {
 };
 
 export type CreatePageInput = {
+  content?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   slug: Scalars['String']['input'];

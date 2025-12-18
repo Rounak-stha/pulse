@@ -59,6 +59,7 @@ input PageSortParameter {
 input CreatePageInput {
     name: String!
     slug: String!
+    content: String
     description: String
 }
 

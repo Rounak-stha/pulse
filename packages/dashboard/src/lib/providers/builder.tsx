@@ -139,6 +139,13 @@ export function BuilderProvider({
         onError: () => toast.error('Failed to save'),
     });
 
+    const getPageContent = () => {
+        const json = query.serialize();
+        const compressed = LZString.compressToBase64(json);
+
+        return json;
+    };
+
     const changeMode = (mode: Mode) => setMode(mode);
 
     // Publish mutation
@@ -160,8 +167,11 @@ export function BuilderProvider({
 
     // Create page mutation
     const createMutation = useMutation({
-        mutationFn: (input: { name: string; slug: string; description?: string }) =>
-            api.mutate(createPageMutation, { input }),
+        mutationFn: (input: { name: string; slug: string; description?: string }) => {
+            const createInput = { ...input, content: '' };
+            if (!pageId) createInput.content = getPageContent();
+            return api.mutate(createPageMutation, { input: createInput });
+        },
     });
 
     const themeUpdateMutation = useMutation({
@@ -217,11 +227,10 @@ export function BuilderProvider({
                 return;
             }
 
-            const json = query.serialize();
-            const compressed = LZString.compressToBase64(json);
+            const pageContent = getPageContent();
 
             await saveDraftMutation.mutateAsync({
-                content: json,
+                content: pageContent,
                 changeDescription,
             });
         },
@@ -236,11 +245,10 @@ export function BuilderProvider({
                 return;
             }
 
-            const json = query.serialize();
-            const compressed = LZString.compressToBase64(json);
+            const pageContent = getPageContent();
 
             await publishMutation.mutateAsync({
-                content: json,
+                content: pageContent,
                 changeDescription,
             });
         },
