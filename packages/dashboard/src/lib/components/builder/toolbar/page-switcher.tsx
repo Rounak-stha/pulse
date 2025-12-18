@@ -1,7 +1,6 @@
-// components/PageSwitcher.tsx
-import { useBuilderPage } from '@/vdb/framework/page/use-builder-page.js';
 import { api } from '@/vdb/graphql/api.js';
 import { PageFragment } from '@/vdb/graphql/fragments.js';
+import { useBuilder } from '@/vdb/providers/builder.js';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, FileText, Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -11,7 +10,7 @@ import { CreatePageDialog } from './create-page-dialog.js';
 interface PageSwitcherProps {
     currentPage: PageFragment | null;
     onPageChange: (pageId: string) => void;
-    onCreatePage: ReturnType<typeof useBuilderPage>['createPage'];
+    onCreatePage: ReturnType<typeof useBuilder>['createPage'];
 }
 
 export const PageSwitcher: React.FC<PageSwitcherProps> = ({ currentPage, onPageChange, onCreatePage }) => {
