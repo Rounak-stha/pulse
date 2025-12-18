@@ -162,11 +162,6 @@ export function BuilderProvider({
     const createMutation = useMutation({
         mutationFn: (input: { name: string; slug: string; description?: string }) =>
             api.mutate(createPageMutation, { input }),
-        onSuccess: data => {
-            console.log({ data });
-            void queryClient.invalidateQueries({ queryKey: ['pages'] });
-            navigate({ to: `../$id`, params: { id: data.createPage.id } });
-        },
     });
 
     const themeUpdateMutation = useMutation({
@@ -256,14 +251,15 @@ export function BuilderProvider({
     const createPage = useCallback(
         async (input: { name: string; slug: string; description?: string }) => {
             const result = await createMutation.mutateAsync(input);
-            await navigate({ to: `../$id`, params: { id: pageId } });
+            void queryClient.invalidateQueries({ queryKey: ['pages'] });
+            navigate({ to: `/dashboard/builder/$id`, params: { id: result.createPage.id } });
         },
         [createPageMutation],
     );
 
     const changePage = useCallback(
         async (pageId: string) => {
-            await navigate({ to: `../$id`, params: { id: pageId } });
+            await navigate({ to: `/dashboard/builder/$id`, params: { id: pageId } });
         },
         [navigate],
     );

@@ -190,4 +190,9 @@ export const SHOP_ADMIN_PERMISSIONS: Permission[] = [
     Permission.ReadChannel,
     Permission.UpdateChannel,
     // Intentionally exclude Permission.DeleteChannel unless you want to allow it
+
+    Permission.CreatePage,
+    Permission.ReadPage,
+    Permission.UpdatePage,
+    Permission.DeletePage,
 ];
