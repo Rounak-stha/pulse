@@ -16,7 +16,6 @@
     "build:core-common": "lerna run --scope @vendure/common --scope @vendure/core build",
     "build:dashboard": "lerna run --scope @vendure/dashboard build",
     "build:prod": "lerna run --scope @vendure/prod-server build",
-    "build:storefront": "lerna run build --scope @vendure/storefront --include-dependencies",
     "lint": "eslint --fix",
     "format": "prettier --write --html-whitespace-sensitivity ignore",
     "docs:generate-typescript-docs": "ts-node scripts/docs/generate-typescript-docs.ts",
