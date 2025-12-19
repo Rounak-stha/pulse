@@ -23,7 +23,6 @@ function getSlots({ node, tree }: HeroBannerRendererProps): GetSlotsReturn {
             const componentName = (
                 typeof node.type == 'string' ? node.type : node.type.resolvedName
             ) as keyof typeof ComponentMap;
-            console.log({ componentName });
             const Component = ComponentMap[componentName];
             if (!componentName || !Component) return;
 
@@ -46,7 +45,6 @@ function getSlots({ node, tree }: HeroBannerRendererProps): GetSlotsReturn {
         }
     });
 
-    console.log({ nodes });
     return nodes;
 }
 

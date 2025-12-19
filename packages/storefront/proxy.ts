@@ -1,4 +1,4 @@
-import { SITE_URL } from '@/lib/constants/url';
+import { PathPrefix, SITE_URL } from '@/lib/constants/url';
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -15,13 +15,13 @@ function extractSubdomain(request: NextRequest): string | null {
 
 // This function can be marked `async` if using `await` inside
 export function proxy(request: NextRequest) {
-    /* const subDomain = extractSubdomain(request);
+    const subDomain = extractSubdomain(request);
 
     if (subDomain) {
         const path = request.nextUrl.pathname;
         const response = NextResponse.rewrite(new URL(`${PathPrefix.shop}/${subDomain}${path}`, request.url));
         return response;
-    } */
+    }
 
     return NextResponse.next();
 }
