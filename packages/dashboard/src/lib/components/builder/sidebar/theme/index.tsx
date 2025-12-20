@@ -1,4 +1,4 @@
-import { FC, memo, useCallback, useMemo, useRef } from 'react';
+import { ChangeEventHandler, FC, memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useDesignSystem } from '@/builder-blocks/design-system/context.js';
 import { DESIGN_SYSTEM_PRESETS } from '@/builder-blocks/design-system/presets/index.js';
@@ -115,24 +115,46 @@ interface ThemeColorProps {
     name: string;
     label: string;
     value: string;
+    description?: string;
     onChange: (key: string, value: string) => void;
 }
 
-const ThemeColor: FC<ThemeColorProps> = memo(({ name, label, value, onChange: handleChange }) => {
-    return (
-        <div className="space-y-1">
-            <Label htmlFor={`theme-${name}`} className="text-xs">
-                {label}
-            </Label>
-            <div className="flex items-center space-x-2">
-                <Input
-                    id={`theme-${name}`}
-                    type="color"
-                    defaultValue={value}
-                    onChange={e => handleChange(name, e.target.value)}
-                    className="p-0 border-none w-full h-10"
-                />
+const ThemeColor: FC<ThemeColorProps> = memo(
+    ({ name, label, description, value, onChange: handleChange }) => {
+        const [hexValue, setHexValue] = useState(value);
+        const colorInputRef = useRef<HTMLInputElement>(null);
+
+        const handleColorChange: ChangeEventHandler<HTMLInputElement> = e => {
+            const newValue = e.target.value;
+            setHexValue(newValue);
+            handleChange(name, newValue);
+        };
+
+        return (
+            <div className="flex py-2.5">
+                <div className="flex-1">
+                    <p className="text-sm font-medium">{label}</p>
+                    {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Label
+                        htmlFor={`theme-${name}-color`}
+                        className="border rounded-md flex gap-2 items-center p-1.5 cursor-pointer bg-muted/50 hover:bg-muted"
+                    >
+                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: hexValue }} />
+
+                        <span className="text-muted-foreground font-medium text-xs">{hexValue}</span>
+                    </Label>
+                    <Input
+                        ref={colorInputRef}
+                        id={`theme-${name}-color`}
+                        type="color"
+                        value={hexValue}
+                        onChange={handleColorChange}
+                        className="sr-only"
+                    />
+                </div>
             </div>
-        </div>
-    );
-});
+        );
+    },
+);
