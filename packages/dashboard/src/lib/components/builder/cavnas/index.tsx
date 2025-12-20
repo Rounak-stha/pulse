@@ -17,7 +17,7 @@ export const Canvas: React.FC<CanvasProps> = ({ device }) => {
     return (
         <div className="flex-1 bg-muted/30 overflow-auto p-8">
             <div
-                className="mx-auto bg-background transition-all"
+                className="mx-auto ring ring-border rounded-xl overflow-hidden bg-background transition-all"
                 style={{ width: widthMap[device], minHeight: '100vh' }}
                 id={CANVAS_ROOT_ID}
             >

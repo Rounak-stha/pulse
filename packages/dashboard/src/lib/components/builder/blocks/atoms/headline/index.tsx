@@ -21,7 +21,7 @@ export const Headline: React.FC<HeadlineProps> = props => {
             }}
             className={cn({
                 'hover:outline hover:outline-blue-500 hover:outline-dotted': !selected,
-                'ring-2 ring-blue-500 ring-offset-2': selected,
+                'ring-2 ring-blue-500 ring-inset': selected,
             })}
         />
     );

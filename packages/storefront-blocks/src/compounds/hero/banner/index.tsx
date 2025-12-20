@@ -131,7 +131,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 verticalAlignClasses[verticalAlign],
                 rounded && 'rounded-lg overflow-hidden',
                 shadow && 'shadow-2xl',
-                selected && 'ring-2 ring-blue-500 ring-offset-2',
+                selected && 'ring-2 ring-blue-500 ring-inset',
             )}
             style={getBackgroundStyles()}
         >
