@@ -2,19 +2,19 @@
 
 :root {
     --radius: 0.75rem;
-    --background: #ffffff;
-    --foreground: #a8a8a8;
+    --background: #f6f6f8;
+    --foreground: #000;
     --card: #ffffff;
     --card-foreground: #2a2a33;
     --popover: #ffffff;
     --popover-foreground: #2a2a33;
-    --primary: #1f8fff;
+    --primary: #1132d4;
     --primary-foreground: #fcfcfb;
     --secondary: #f3f4f3;
     --secondary-foreground: #404a54;
     --muted: #f3f4f3;
     --muted-foreground: #8b8fa3;
-    --accent: #f9f9f8;
+    --accent: #0d9488;
     --accent-foreground: #404a54;
     --destructive: #dd6e55;
     --destructive-foreground: #fcfcfb;
@@ -51,13 +51,6 @@
 }
 
 @source "../../storefront-blocks/src/";
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
-}
 
 body {
     background: var(--background);

@@ -7,6 +7,8 @@ export const SITE_URL = (() => {
     return 'http://localtest.com:3000';
 })();
 
+export const LandingPageSubdomain = 'landing';
+
 export const PathPrefix = {
     api: '/api',
     shop: '/shop',
