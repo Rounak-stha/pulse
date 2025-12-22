@@ -4,6 +4,7 @@ import { setNavMenuConfig } from '@/vdb/framework/nav-menu/nav-menu-extensions.j
 import {
     LayoutDashboardIcon,
     Mail,
+    PanelsTopLeftIcon,
     Settings2,
     ShoppingCart,
     SquareTerminal,
@@ -109,6 +110,14 @@ export function registerDefaults() {
                         requiresPermission: ['ReadCustomerGroup'],
                     },
                 ],
+            },
+            {
+                id: 'builder',
+                title: 'Builder',
+                placement: 'top',
+                icon: PanelsTopLeftIcon,
+                url: '/builder',
+                order: 500,
             },
             {
                 id: 'marketing',
