@@ -42,12 +42,18 @@ const Header: React.FC = () => (
             </div>
 
             <div className="flex items-center gap-2">
-                <button className="bg-muted/50 hover:bg-muted text-muted-foreground px-5 py-2  border border-gray-200 rounded-lg text-sm font-medium cursor-pointer">
-                    <a href="https://tdata.app/dashboard/login">Log In</a>
-                </button>
-                <button className="bg-primary/90 hover:bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium cursor-pointer">
-                    <a href="https://tdata.app/dashboard/signup">Start Free</a>
-                </button>
+                <a
+                    href="https://tdata.app/dashboard/login"
+                    className="bg-muted/50 hover:bg-muted text-muted-foreground px-5 py-2  border border-gray-200 rounded-lg text-sm font-medium cursor-pointer"
+                >
+                    Log In
+                </a>
+                <a
+                    href="https://tdata.app/dashboard/signup"
+                    className="bg-primary/90 hover:bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                >
+                    Start Free
+                </a>
             </div>
         </nav>
     </header>
@@ -66,9 +72,12 @@ const HeroSection: React.FC = () => (
                     dashboard.
                 </p>
                 <div className="flex items-center gap-4 mb-8">
-                    <button className="bg-primary/90 hover:bg-primary text-white px-6 py-3 rounded-lg font-medium">
-                        <a href="https://tdata.app/dashboard/signup">Start Free</a>
-                    </button>
+                    <a
+                        href="https://tdata.app/dashboard/signup"
+                        className="bg-primary/90 hover:bg-primary text-white px-6 py-3 rounded-lg font-medium"
+                    >
+                        Start Free
+                    </a>
                 </div>
                 <div className="flex items-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
@@ -317,12 +326,18 @@ const CTASection: React.FC = () => (
                     Join thousands of merchants growing with Pulse. Start your 14-day free trial today.
                 </p>
                 <div className="flex items-center justify-center gap-4">
-                    <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-medium">
+                    <a
+                        href="https://tdata.app/dashboard/signup"
+                        className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-medium"
+                    >
                         Get Started Free
-                    </button>
-                    <button className="border-2 border-white text-white hover:bg-white/10 px-8 py-3 rounded-lg font-medium">
+                    </a>
+                    <a
+                        href="mailto:rsthaofficial@gmail.com"
+                        className="border-2 border-white text-white hover:bg-white/10 px-8 py-3 rounded-lg font-medium"
+                    >
                         Contact Sales
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
