@@ -67,7 +67,7 @@ const HeroSection: React.FC = () => (
                 </p>
                 <div className="flex items-center gap-4 mb-8">
                     <button className="bg-primary/90 hover:bg-primary text-white px-6 py-3 rounded-lg font-medium">
-                        <a href="https://tdata.app/dashboard/signup">Start Free</a>Free
+                        <a href="https://tdata.app/dashboard/signup">Start Free</a>
                     </button>
                 </div>
                 <div className="flex items-center gap-6 text-sm">
