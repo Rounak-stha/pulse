@@ -27,17 +27,11 @@ const Header: React.FC = () => (
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                <a href="#FeaturesSection" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                     Product
                 </a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                    Solutions
-                </a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                    Pricing
-                </a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                    Resources
+                <a href="#StepsSection" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                    Steps
                 </a>
             </div>
 
@@ -169,7 +163,7 @@ const ComparisonSection: React.FC = () => (
 );
 
 const FeaturesSection: React.FC = () => (
-    <section className="py-20 px-6">
+    <section id="FeaturesSection" className="py-20 px-6">
         <div className="max-w-6xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Powerful features built for growth</h2>
             <p className="text-gray-600">
@@ -246,7 +240,7 @@ const FeaturesSection: React.FC = () => (
 );
 
 const StepsSection: React.FC = () => (
-    <section className="py-20 px-6 bg-gray-50">
+    <section id="StepsSection" className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Launch in three simple steps</h2>
         </div>
