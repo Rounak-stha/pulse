@@ -75,11 +75,15 @@ const HeroSection: React.FC = () => (
                 </div>
                 <div className="flex items-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
+                        <span className="bg-green-600 h-4 w-4 flex items-center justify-center rounded-full text-white text-xs">
+                            ✓
+</span>
                         <span className="text-gray-600">No credit card required</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
+                        <span className="bg-green-600 h-4 w-4 flex items-center justify-center rounded-full text-white text-xs">
+                            ✓
+</span>
                         <span className="text-gray-600">Setup: Free trial</span>
                     </div>
                 </div>
