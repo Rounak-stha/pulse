@@ -36,5 +36,5 @@ export default async function ShopPage({ params }: PageProps<'/shop/[shopcode]/[
         theme = data?.theme?.value ? JSON.parse(data?.theme?.value) : {};
     } catch {}
 
-    return <BuilderTreeRenderer tree={tree} theme={theme} />;
+    return <BuilderTreeRenderer tree={tree} theme={theme} shopcode={shopcode} />;
 }

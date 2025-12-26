@@ -1,7 +1,9 @@
+import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
+import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
 import { useEditor } from '@craftjs/core';
 import { ReactNode } from '@tanstack/react-router';
-import { SectionIcon } from 'lucide-react';
+import { HeadingIcon, SectionIcon, ShapesIcon } from 'lucide-react';
 import { FC, useMemo, useState } from 'react';
 
 type Block = {
@@ -17,6 +19,18 @@ const blocks: Block[] = [
         name: 'Hero Banner',
         Icon: SectionIcon,
         Component: HeroBanner,
+    },
+    {
+        category: 'Header',
+        name: 'Header',
+        Icon: HeadingIcon,
+        Component: Header,
+    },
+    {
+        category: 'ShowCase',
+        name: 'Featured Collections',
+        Icon: ShapesIcon,
+        Component: FeaturedCollections,
     },
 ];
 

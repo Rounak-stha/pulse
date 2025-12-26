@@ -13,6 +13,7 @@
 */
 @import 'virtual:admin-theme';
 
+@source "../../../storefront-blocks/src/";
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
