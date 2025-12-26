@@ -644,7 +644,7 @@ export class CollectionService implements OnModuleInit {
         ctx: RequestContext,
         options?: { collectionIds?: ID[]; applyToChangedVariantsOnly?: boolean },
     ) {
-        await this.applyFiltersQueue.add(
+        /* await this.applyFiltersQueue.add(
             {
                 ctx: {
                     languageCode: ctx.languageCode,
@@ -654,7 +654,7 @@ export class CollectionService implements OnModuleInit {
                 collectionIds: options?.collectionIds ?? [],
             },
             { ctx },
-        );
+        ); */
     }
 
     private getCollectionFiltersFromInput(
