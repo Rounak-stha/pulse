@@ -7,7 +7,7 @@ type CollectionListForFeaturedCollectionComponent = {
             name: string;
             slug: string;
             description: string;
-            featuredAsset: {
+            featuredAsset?: {
                 id: string;
                 source: string;
             };

@@ -7,6 +7,7 @@ import { Button } from '@/vdb/components/builder/blocks/atoms/button/index.js';
 import { Headline } from '@/vdb/components/builder/blocks/atoms/headline/index.js';
 import { RootContainer } from '@/vdb/components/builder/blocks/atoms/root-container/index.js';
 import { Subtext } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
+import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/index.js';
 import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
 import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
@@ -34,6 +35,7 @@ export const BuilderEditor: React.FC<BuilderEditorProps> = ({ pageId }) => {
                     Headline,
                     Subtext,
                     Button,
+                    Footer,
                 }}
                 onRender={({ render }) => render}
             >

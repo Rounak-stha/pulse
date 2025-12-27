@@ -1,9 +1,10 @@
+import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/index.js';
 import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
 import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
 import { useEditor } from '@craftjs/core';
 import { ReactNode } from '@tanstack/react-router';
-import { HeadingIcon, SectionIcon, ShapesIcon } from 'lucide-react';
+import { FootprintsIcon, HeadingIcon, SectionIcon, ShapesIcon } from 'lucide-react';
 import { FC, useMemo, useState } from 'react';
 
 type Block = {
@@ -31,6 +32,12 @@ const blocks: Block[] = [
         name: 'Featured Collections',
         Icon: ShapesIcon,
         Component: FeaturedCollections,
+    },
+    {
+        category: 'Footer',
+        name: 'Footer',
+        Icon: FootprintsIcon,
+        Component: Footer,
     },
 ];
 

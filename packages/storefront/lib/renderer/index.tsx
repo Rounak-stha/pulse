@@ -1,6 +1,7 @@
 import type { SerializedNode, SerializedNodes } from '@craftjs/core';
 import { RootContainer } from '@vendure/storefront-blocks/atoms';
 import { ComponentMap } from '@vendure/storefront-blocks/components-map';
+import { FooterRenderer } from './compounds/footer/main';
 import { HeaderRenderer } from './compounds/header/main';
 import { HeroBannerRenderer } from './compounds/hero/banner';
 import { FeaturedCollectionsRenderer } from './showcase/featured';
@@ -33,6 +34,8 @@ function RenderRoot({ node, tree, theme, shopcode }: NodeRendererProps) {
             return <HeroBannerRenderer key={nodeId} node={currentChildNode} tree={tree} />;
         if (componentName == 'Header')
             return <HeaderRenderer key={nodeId} node={currentChildNode} tree={tree} />;
+        if (componentName == 'Footer')
+            return <FooterRenderer key={nodeId} node={currentChildNode} tree={tree} />;
         if (componentName == 'FeaturedCollections')
             return (
                 <FeaturedCollectionsRenderer

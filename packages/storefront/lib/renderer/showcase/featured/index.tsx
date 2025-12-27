@@ -45,7 +45,7 @@ export async function FeaturedCollectionsRenderer({ node, shopcode }: RendererPr
         id: c.id,
         name: c.name,
         description: c.description,
-        image: c.featuredAsset.source,
+        image: c.featuredAsset?.source,
         slug: c.slug,
     }));
 
