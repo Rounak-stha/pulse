@@ -66,7 +66,7 @@ export class AdministratorService {
         return this.listQueryBuilder
             .build(Administrator, options, {
                 relations: relations ?? ['user', 'user.roles'],
-                where: { deletedAt: IsNull() },
+                where: { shop: { id: ctx.shopId }, deletedAt: IsNull() },
                 ctx,
             })
             .getManyAndCount()
@@ -90,6 +90,7 @@ export class AdministratorService {
             .findOne({
                 relations: relations ?? ['user', 'user.roles'],
                 where: {
+                    shop: { id: ctx.shopId },
                     emailAddress: email,
                     deletedAt: IsNull(),
                 },
@@ -112,6 +113,7 @@ export class AdministratorService {
                 relations: relations ?? ['user', 'user.roles'],
                 where: {
                     id: administratorId,
+                    shop: { id: ctx.shopId },
                     deletedAt: IsNull(),
                 },
             })
@@ -132,6 +134,7 @@ export class AdministratorService {
             .findOne({
                 relations,
                 where: {
+                    shop: { id: ctx.shopId },
                     user: { id: userId },
                     deletedAt: IsNull(),
                 },
@@ -177,6 +180,7 @@ export class AdministratorService {
         const administrator = new Administrator(input);
         administrator.emailAddress = normalizeEmailAddress(input.emailAddress);
         administrator.user = await this.userService.createAdminUser(ctx, input.emailAddress, input.password);
+        administrator.shop = ctx.shop;
         let createdAdministrator = await this.connection
             .getRepository(ctx, Administrator)
             .save(administrator);
@@ -301,8 +305,13 @@ export class AdministratorService {
      */
     async softDelete(ctx: RequestContext, id: ID) {
         const administrator = await this.connection.getEntityOrThrow(ctx, Administrator, id, {
-            relations: ['user'],
+            relations: ['user', 'shop'],
         });
+
+        if (administrator.shop.id !== ctx.shopId) {
+            throw new InternalServerError('error.cannot-delete-administrator');
+        }
+
         const isSoleSuperadmin = await this.isSoleSuperadmin(ctx, id);
         if (isSoleSuperadmin) {
             throw new InternalServerError('error.cannot-delete-sole-superadmin');
