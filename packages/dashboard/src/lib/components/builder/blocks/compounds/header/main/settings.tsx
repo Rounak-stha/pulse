@@ -9,7 +9,12 @@ import {
     ToggleInput,
 } from '../../../../common/index.js';
 
-import { HeaderProps, LinkItem } from '@vendure/storefront-blocks/types';
+import { HeaderProps, LinkItem, LinkType } from '@/builder-blocks/compounds/header/index.js';
+import { getPagesQuery } from '@/vdb/components/builder/buider.graphql.js';
+import { Input } from '@/vdb/components/ui/input.js';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/vdb/components/ui/select.js';
+import { api } from '@/vdb/graphql/api.js';
+import { useQuery } from '@tanstack/react-query';
 
 const Tabs = [
     { id: 'layout', label: 'Layout' },
@@ -170,37 +175,24 @@ export function HeaderSettings() {
                                             </button>
                                         </div>
 
-                                        <input
-                                            type="text"
-                                            placeholder="Label"
-                                            value={link.label}
-                                            onChange={e => updateLink(index, 'label', e.target.value)}
-                                            className="w-full px-2 py-1 border rounded text-sm"
-                                        />
-
-                                        <select
-                                            value={link.type}
-                                            onChange={e =>
-                                                updateLink(
-                                                    index,
-                                                    'type',
-                                                    e.target.value as 'internal' | 'external',
-                                                )
-                                            }
-                                            className="w-full px-2 py-1 border rounded text-sm"
+                                        <Select
+                                            defaultValue={link.type}
+                                            onValueChange={val => updateLink(index, 'type', val)}
                                         >
-                                            <option value="internal">Internal Page</option>
-                                            <option value="external">External Link</option>
-                                        </select>
-
-                                        <input
-                                            type="text"
-                                            placeholder={
-                                                link.type === 'internal' ? 'Page ID or path' : 'https://...'
-                                            }
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select link type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="internal">Internal</SelectItem>
+                                                <SelectItem value="external">External</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <LinkSelect
+                                            linkType={link.type}
+                                            setLabel={val => updateLink(index, 'label', val)}
+                                            setValue={val => updateLink(index, 'url', val)}
+                                            label={link.label}
                                             value={link.url}
-                                            onChange={e => updateLink(index, 'url', e.target.value)}
-                                            className="w-full px-2 py-1 border rounded text-sm"
                                         />
                                     </div>
                                 ))}
@@ -273,5 +265,65 @@ export function HeaderSettings() {
                 </div>
             )}
         </SettingsTabs>
+    );
+}
+
+type LinkSelectProps = {
+    linkType: LinkType;
+    label: string;
+    value: string;
+    setLabel: (val: string) => void;
+    setValue: (val: string) => void;
+};
+function LinkSelect({ linkType, setLabel, setValue, label, value }: LinkSelectProps) {
+    const { data, isLoading } = useQuery({
+        queryKey: ['pages'],
+        queryFn: () => api.query(getPagesQuery, { options: { take: 20 } }),
+    });
+
+    const pages = data?.pages.items || [];
+
+    const selectInternalLink = (id: string) => {
+        [];
+        const page = pages.find(page => page.id == id);
+
+        if (!page) return;
+
+        setLabel(page.name);
+        setValue(page.slug);
+    };
+
+    const defaultInternalId = linkType == 'internal' ? pages.find(page => page.slug == value)?.id || '' : '';
+
+    if (linkType == 'internal') {
+        return (
+            <Select defaultValue={defaultInternalId} onValueChange={selectInternalLink}>
+                <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Page" />
+                </SelectTrigger>
+                <SelectContent>
+                    {isLoading && (
+                        <SelectItem value="disabled" disabled>
+                            Loading...
+                        </SelectItem>
+                    )}
+                    {pages.map(page => (
+                        <SelectItem value={page.id}>{page.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        );
+    }
+
+    return (
+        <>
+            <Input type="text" placeholder="Label" value={label} onChange={e => setLabel(e.target.value)} />
+            <Input
+                type="text"
+                placeholder="https://..."
+                value={value}
+                onChange={e => setValue(e.target.value)}
+            />
+        </>
     );
 }

@@ -1,7 +1,9 @@
+export type LinkType = 'internal' | 'external';
+
 export interface LinkItem {
     id: string;
     label: string;
-    type: 'internal' | 'external';
+    type: LinkType;
     url: string; // page ID for internal, full URL for external
 }
 

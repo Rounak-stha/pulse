@@ -5,10 +5,8 @@ export const DefaultHeaderProps: HeaderProps = {
     logoImage: undefined,
     showLogo: true,
     links: [
-        { id: '1', label: 'Home', type: 'internal', url: '/' },
-        { id: '2', label: 'Shop', type: 'internal', url: '/shop' },
-        { id: '3', label: 'About', type: 'internal', url: '/about' },
-        { id: '4', label: 'Contact', type: 'internal', url: '/contact' },
+        { id: '1', label: 'Home', type: 'internal', url: '/home' },
+        { id: '2', label: 'Shop', type: 'external', url: 'https://example.com' },
     ],
     showNavigation: true,
     layout: 'split',
