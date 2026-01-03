@@ -1,6 +1,6 @@
 import { useAuth } from '@/vdb/hooks/use-auth.js';
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
-import { ChevronsUpDown, LogOut, Monitor, Moon, Sparkles, Sun } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 
 // import { Avatar, AvatarFallback, AvatarImage } from '@/vdb/components/ui/avatar.js';
 import {
@@ -101,15 +101,6 @@ export function NavUser() {
                                     </div>
                                 </div>
                             </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem asChild>
-                                    <a href="https://vendure.io/pricing" target="_blank">
-                                        <Sparkles />
-                                        Explore Enterprise Edition
-                                    </a>
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
                                 <DropdownMenuItem asChild>
