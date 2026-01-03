@@ -12,7 +12,7 @@ const tabs: Array<{ id: TabType; icon: any; label: string }> = [
     { id: 'settings', icon: SettingsIcon, label: 'Settings' },
 ];
 
-export const LeftSidebar: React.FC = () => {
+export const LeftSidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<TabType>('blocks');
 
     return (
@@ -31,7 +31,7 @@ export const LeftSidebar: React.FC = () => {
             </div>
 
             <div className="w-72 p-4 overflow-y-auto">
-                {activeTab === 'blocks' && <BlocksPanel />}
+                {activeTab === 'blocks' && <BlocksPanel onBlockAdd={onClose} />}
 
                 {activeTab === 'theme' && <ThemePanel />}
 

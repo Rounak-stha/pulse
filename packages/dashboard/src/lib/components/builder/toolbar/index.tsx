@@ -19,9 +19,16 @@ import { PageSwitcher } from './page-switcher.js';
 interface ToolbarInnerProps {
     device: DeviceType;
     setDevice: (device: DeviceType) => void;
+    onOpenLeftSidebar?: () => void;
+    onOpenRightSidebar?: () => void;
 }
 
-export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
+export const Toolbar: React.FC<ToolbarInnerProps> = ({
+    device,
+    setDevice,
+    onOpenLeftSidebar,
+    onOpenRightSidebar,
+}) => {
     const [newPageDialogOpen, setNewPageDialogOpen] = useState(false);
     const builderContext = useBuilder();
     const { actions, enabled } = useEditor(state => ({
@@ -29,6 +36,10 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
     }));
 
     const { createPage, save, page, changePage, mode, changeMode, publish } = builderContext;
+    const { selected } = useEditor(state => {
+        const [currentNodeId] = state.events.selected;
+        return { selected: currentNodeId };
+    });
 
     const handleUndo = useCallback(() => {
         if (actions?.history?.undo) {
@@ -66,9 +77,31 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
     };
 
     return (
-        <div className="h-14 bg-background border-b border-border flex items-center justify-between px-4">
+        <div className="h-14 bg-background border-b border-border flex items-center justify-between px-4 gap-4">
             <div className="flex items-center gap-4">
-                <h1 className="text-sm font-semibold text-foreground">Builder</h1>
+                {/* Mobile Left Sidebar Toggle */}
+                <button
+                    onClick={onOpenLeftSidebar}
+                    className="md:hidden p-2 hover:bg-muted rounded"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5"
+                    >
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                        <line x1="9" y1="3" x2="9" y2="21" />
+                    </svg>
+                </button>
+
+                <h1 className="text-sm font-semibold text-foreground hidden sm:block">Builder</h1>
                 <PageSwitcher
                     currentPage={page}
                     onPageChange={changePage}
@@ -76,8 +109,8 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
                 />
             </div>
 
-            <div className="flex flex-1 items-center gap-2">
-                <div className="flex-1 flex justify-center">
+            <div className="flex flex-1 items-center justify-end gap-2">
+                <div className="flex-1 justify-center hidden md:flex">
                     <div className="flex items-center gap-2 bg-accent/80 rounded-md p-1">
                         {[
                             { icon: MonitorIcon, value: 'desktop' as DeviceType },
@@ -95,33 +128,65 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({ device, setDevice }) => {
                     </div>
                 </div>
 
-                <div className="h-6 w-px bg-border" />
+                <div className="h-6 w-px bg-border hidden md:block" />
 
-                <button onClick={handleUndo} className="p-2 hover:bg-muted rounded">
-                    <Undo2Icon className="w-4 h-4" />
-                </button>
-                <button onClick={handleRedo} className="p-2 hover:bg-muted rounded">
-                    <Redo2Icon className="w-4 h-4" />
-                </button>
+                <div className="hidden md:flex items-center gap-1">
+                    <button onClick={handleUndo} className="p-2 hover:bg-muted rounded">
+                        <Undo2Icon className="w-4 h-4" />
+                    </button>
+                    <button onClick={handleRedo} className="p-2 hover:bg-muted rounded">
+                        <Redo2Icon className="w-4 h-4" />
+                    </button>
+                </div>
 
-                <div className="h-6 w-px bg-border" />
+                <div className="h-6 w-px bg-border hidden md:block" />
 
                 <button
                     onClick={togglePreview}
-                    className="px-3 py-2 hover:bg-muted rounded flex items-center gap-2"
+                    className="px-3 py-2 hover:bg-muted rounded hidden md:flex items-center gap-2"
                 >
                     <EyeIcon className="w-4 h-4" />
                     <span className="text-sm">{mode == 'edit' ? 'Preview' : 'Edit'}</span>
                 </button>
 
-                <Button onClick={handleSave} size="sm" variant="outline">
-                    <SaveIcon className="w-4 h-4 inline" />
-                    Save
-                </Button>
-                <Button onClick={handlePublish} size="sm">
-                    <SendIcon className="w-4 h-4 inline" />
-                    Publish
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button onClick={handleSave} size="sm" variant="outline" className="hidden sm:flex">
+                        <SaveIcon className="w-4 h-4 inline sm:mr-2" />
+                        <span className="hidden sm:inline">Save</span>
+                    </Button>
+                    <Button onClick={handlePublish} size="sm" className="hidden sm:flex">
+                        <SendIcon className="w-4 h-4 inline sm:mr-2" />
+                        <span className="hidden sm:inline">Publish</span>
+                    </Button>
+                     {/* Mobile Save/Publish (Simplified or just Icons if space is tight) */}
+                     <Button onClick={handleSave} size="icon" variant="ghost" className="sm:hidden">
+                        <SaveIcon className="w-4 h-4" />
+                    </Button>
+                </div>
+
+                 {/* Mobile Right Sidebar Toggle (Only if something is selected) */}
+                 {selected && (
+                    <button
+                        onClick={onOpenRightSidebar}
+                        className="md:hidden p-2 hover:bg-muted rounded ml-2"
+                    >
+                         <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                        >
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                            <line x1="15" y1="3" x2="15" y2="21" />
+                        </svg>
+                    </button>
+                 )}
             </div>
             <CreatePageDialog
                 open={newPageDialogOpen}

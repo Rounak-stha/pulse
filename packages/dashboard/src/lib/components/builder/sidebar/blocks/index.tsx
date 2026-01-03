@@ -1,8 +1,20 @@
+import { RootContainer } from '@/vdb/components/builder/blocks/atoms/root-container/index.js';
 import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/index.js';
 import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
 import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
-import { useEditor } from '@craftjs/core';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/vdb/components/ui/alert-dialog.js';
+import { useIsMobile } from '@/vdb/hooks/use-mobile.js';
+import { Element, useEditor } from '@craftjs/core';
 import { ReactNode } from '@tanstack/react-router';
 import { FootprintsIcon, HeadingIcon, SectionIcon, ShapesIcon } from 'lucide-react';
 import { FC, useMemo, useState } from 'react';
@@ -44,9 +56,16 @@ const blocks: Block[] = [
 const ALL_CATEGORIES_NAME = 'all';
 const categories = [ALL_CATEGORIES_NAME, ...Array.from(new Set(blocks.map(b => b.category)))];
 
-export const BlocksPanel: FC = () => {
+interface BlocksPanelProps {
+    onBlockAdd?: () => void;
+}
+
+export const BlocksPanel: FC<BlocksPanelProps> = ({ onBlockAdd }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES_NAME);
+    const [pendingBlock, setPendingBlock] = useState<{ block: Block; parentId: string } | null>(null);
+    const { connectors, query, actions } = useEditor();
+    const isMobile = useIsMobile();
 
     const filteredBlocks = useMemo(() => {
         let filtered = [...blocks];
@@ -67,8 +86,40 @@ export const BlocksPanel: FC = () => {
         return filtered;
     }, [selectedCategory, searchQuery]);
 
+    const handleMobileTap = (block: Block) => {
+        const selectedId = query.getEvent('selected').first();
+        let parentId: string | null = null;
+
+        if (selectedId) {
+            const node = query.node(selectedId).get();
+            if (node) {
+                 if (node.data.isCanvas) {
+                    parentId = selectedId;
+                } else {
+                    parentId = node.data.parent;
+                }
+            }
+        }
+
+        if (!parentId) {
+             // Verify RootContainer exists
+             const root = query.node('RootContainer').get();
+             if (root) {
+                 parentId = 'RootContainer';
+             } else {
+                 // Fallback to internal ROOT if RootContainer custom ID is not found (unlikely but safe)
+                 parentId = 'ROOT'; 
+             }
+        }
+        
+        if (parentId) {
+            setPendingBlock({ block, parentId });
+        }
+    };
+
     return (
         <div className="h-full space-y-4 flex flex-col">
+            {/* ... Header and Filters ... */}
             {/* Header */}
             <div className="border-b">
                 <h2 className="text-sm font-semibold text-foreground tracking-wide uppercase mb-4">
@@ -143,11 +194,52 @@ export const BlocksPanel: FC = () => {
                 ) : (
                     <div className="space-y-2">
                         {filteredBlocks.map(block => (
-                            <SectionCard key={block.name} {...block} />
+                            <SectionCard
+                                key={block.name}
+                                {...block}
+                                onBlockAdd={onBlockAdd}
+                                onMobileTap={() => handleMobileTap(block)}
+                            />
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog open={!!pendingBlock} onOpenChange={open => !open && setPendingBlock(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Add {pendingBlock?.block.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will add the section to your page.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setPendingBlock(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (pendingBlock) {
+                                    const { block, parentId } = pendingBlock;
+                                    const Component = block.Component;
+                                    
+                                    // Final safety check
+                                    const parentNode = query.node(parentId).get();
+                                    if (parentNode) {
+                                         const node = query.createNode(<Component />);
+                                         actions.add(node, parentId);
+                                         if (onBlockAdd) onBlockAdd();
+                                    } else {
+                                        console.error(`Starting add ignored: Parent node ${parentId} not found`);
+                                    }
+                                    setPendingBlock(null);
+                                }
+                            }}
+                        >
+                            Add Section
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Footer */}
             <div className="px-6 py-3 border-t bg-muted/30">
@@ -165,16 +257,32 @@ interface SectionCardProps {
     name: string;
     category: string;
     Component: FC;
+    onBlockAdd?: () => void;
+    onMobileTap?: () => void;
 }
 
-function SectionCard({ Icon, name, category, Component }: SectionCardProps) {
-    const { connectors } = useEditor();
+function SectionCard({ Icon, name, category, Component, onBlockAdd, onMobileTap }: SectionCardProps) {
+    const { connectors, query, actions } = useEditor();
+    const isMobile = useIsMobile();
+
+    const handleAddBlock = () => {
+        if (!isMobile) return;
+        if (onMobileTap) {
+            onMobileTap();
+            return;
+        }
+        // Fallback or old logic if onMobileTap not provided (though we will provide it)
+    };
 
     return (
         <button
             ref={(ref: HTMLButtonElement) => {
-                connectors.create(ref, <Component />);
+                // Only enable drag connector on desktop
+                if (!isMobile) {
+                    connectors.create(ref, <Component />);
+                }
             }}
+            onClick={handleAddBlock}
             className="w-full p-3 bg-card border border-border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all duration-200 text-left group cursor-move active:scale-[0.98]"
         >
             <div className="flex items-center gap-3">
@@ -189,7 +297,7 @@ function SectionCard({ Icon, name, category, Component }: SectionCardProps) {
                     <p className="text-xs text-muted-foreground truncate">{category}</p>
                 </div>
 
-                {/* Drag Icon */}
+                {/* Drag Icon - Always rendered, hidden by default until hover/group-hover */}
                 <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                     <svg className="w-4 h-4 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
                         <circle cx="9" cy="6" r="1.5" />

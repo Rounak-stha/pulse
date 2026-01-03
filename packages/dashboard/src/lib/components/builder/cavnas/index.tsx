@@ -7,7 +7,10 @@ interface CanvasProps {
     device: DeviceType;
 }
 
+import { useIsMobile } from '@/vdb/hooks/use-mobile.js';
+
 export const Canvas: React.FC<CanvasProps> = ({ device }) => {
+    const isMobile = useIsMobile();
     const widthMap: Record<DeviceType, string> = {
         desktop: '100%',
         tablet: '768px',
@@ -15,10 +18,10 @@ export const Canvas: React.FC<CanvasProps> = ({ device }) => {
     };
 
     return (
-        <div className="flex-1 bg-muted/30 overflow-auto p-8">
+        <div className={`flex-1 bg-muted/30 overflow-auto ${isMobile ? 'p-2' : 'p-8'}`}>
             <div
                 className="mx-auto ring ring-border rounded-xl overflow-hidden bg-background transition-all"
-                style={{ width: widthMap[device], minHeight: '100vh' }}
+                style={{ width: isMobile ? '100%' : widthMap[device], minHeight: '100vh' }}
                 id={CANVAS_ROOT_ID}
             >
                 {/* Wrap Frame with DesignSystemProvider */}
