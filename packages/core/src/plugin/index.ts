@@ -13,4 +13,5 @@ export * from './plugin-utils';
 export * from './redis-cache-plugin/redis-cache-plugin';
 export * from './redis-cache-plugin/redis-cache-strategy';
 export * from './redis-cache-plugin/types';
+export * from './sync-pages-plugin/index';
 export * from './vendure-plugin';

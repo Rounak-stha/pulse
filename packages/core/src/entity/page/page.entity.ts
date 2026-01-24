@@ -1,6 +1,6 @@
 // src/plugins/page-builder/entities/page.entity.ts
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Column, Entity, Index, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, OneToMany, Unique } from 'typeorm';
 
 import { ShopAware } from '../../common';
 import { VendureEntity } from '../base/base.entity';
@@ -9,6 +9,7 @@ import { Shop } from '../shop/shop.entity';
 import { PageVersion } from './page-version.entity';
 
 @Entity()
+@Unique('UQ_shop_page_slug', ['shop', 'slug'])
 export class Page extends VendureEntity implements ShopAware {
     constructor(input?: DeepPartial<Page>) {
         super(input);
@@ -21,9 +22,12 @@ export class Page extends VendureEntity implements ShopAware {
     @Column()
     name: string;
 
-    @Column({ unique: true })
     @Index()
+    @Column()
     slug: string;
+
+    @Column({ default: false })
+    system: boolean;
 
     @Column({ nullable: true })
     description: string;

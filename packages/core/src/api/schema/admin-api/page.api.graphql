@@ -7,6 +7,7 @@ type Page implements Node {
     shop: Shop!
     name: String!
     slug: String!
+    system: Boolean!
     description: String
     publishedVersion: PageVersion
     draftVersion: PageVersion

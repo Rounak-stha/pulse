@@ -4517,6 +4517,7 @@ export type Page = Node & {
   publishedVersion?: Maybe<PageVersion>;
   shop: Shop;
   slug: Scalars['String']['output'];
+  system: Scalars['Boolean']['output'];
   updatedAt: Scalars['DateTime']['output'];
   versions: Array<PageVersion>;
 };
@@ -4530,6 +4531,7 @@ export type PageFilterParameter = {
   lastPublishedAt?: InputMaybe<DateOperators>;
   name?: InputMaybe<StringOperators>;
   slug?: InputMaybe<StringOperators>;
+  system?: InputMaybe<BooleanOperators>;
   updatedAt?: InputMaybe<DateOperators>;
 };
 
