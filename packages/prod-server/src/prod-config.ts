@@ -7,6 +7,7 @@ import {
     DefaultSearchPlugin,
     dummyPaymentHandler,
     GoogleAuthPlugin,
+    SyncPagesPlugin,
     LogLevel,
     SettingsStoreScopes,
     VendureConfig,
@@ -104,6 +105,7 @@ export const config: VendureConfig = {
             googleClientId: getRequiredEnv('GOOGLE_CLIENT_ID'),
             googleClientSecret: getRequiredEnv('GOOGLE_CLIENT_SECRET'),
         }),
+        SyncPagesPlugin
     ],
 };
 
