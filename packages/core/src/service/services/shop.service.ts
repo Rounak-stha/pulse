@@ -20,12 +20,10 @@ import { Channel } from '../../entity/channel/channel.entity';
 import { Shop } from '../../entity/shop/shop.entity';
 import defaultTheme from '../../entity/theme/default-theme.json';
 import { EventBus } from '../../event-bus';
-import { CustomFieldRelationService } from '../helpers/custom-field-relation/custom-field-relation.service';
 
 import { ChannelService } from './channel.service';
 import { GlobalSettingsService } from './global-settings.service';
-import { ShippingMethodService } from './shipping-method.service';
-import { StockLocationService } from './stock-location.service';
+import { PageService } from './page.service';
 import { ZoneService } from './zone.service';
 /**
  * @description
@@ -43,10 +41,8 @@ export class ShopService {
         private configService: ConfigService,
         private zoneService: ZoneService,
         private channelService: ChannelService,
-        private shippingMethodService: ShippingMethodService,
-        private stockLocationService: StockLocationService,
         private globalSettingsService: GlobalSettingsService,
-        private customFieldRelationService: CustomFieldRelationService,
+        private pageService: PageService,
         private eventBus: EventBus,
     ) {}
 
@@ -170,6 +166,7 @@ export class ShopService {
         const zone = await this.zoneService.createDefaultZoneAfterRegistration(ctx, shop);
         const channel = await this.channelService.createDefaultChannelAfterRegistration(ctx, shop, zone);
         ctx = ctx.withShopAndChannel(shop, channel);
+        await this.pageService.createDefaultPagesAfterRegistration(ctx);
         await this.globalSettingsService.createDefaultGlobalSettinsAfterRegistration(ctx);
         return ctx;
     }

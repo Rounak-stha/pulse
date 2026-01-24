@@ -15,6 +15,7 @@ import { UserInputError } from '../../common';
 import { ListQueryOptions } from '../../common/types/common-types';
 import { Logger } from '../../config';
 import { TransactionalConnection } from '../../connection';
+import DefaultPages from '../../entity/page/default-pages.json';
 import { PageVersion, PageVersionStatus } from '../../entity/page/page-version.entity';
 import { Page } from '../../entity/page/page.entity';
 import { ListQueryBuilder } from '../helpers/list-query-builder/list-query-builder';
@@ -317,5 +318,60 @@ export class PageService {
             theme: version.theme,
             publishedAt: version.publishedAt,
         };
+    }
+
+    async createDefaultPagesAfterRegistration(ctx: RequestContext): Promise<Page[]> {
+        return this.connection.withTransaction(ctx, async transactionalCtx => {
+            const pageRepo = this.connection.getRepository(transactionalCtx, Page);
+            const versionRepo = this.connection.getRepository(transactionalCtx, PageVersion);
+
+            const defaults = new Map(DefaultPages.map(p => [p.slug, p]));
+
+            const pages = DefaultPages.map(p =>
+                pageRepo.create({
+                    name: p.name,
+                    slug: p.slug,
+                    system: true,
+                    shop: { id: ctx.shop.id },
+                }),
+            );
+
+            const savedPages = await pageRepo.save(pages);
+
+            const draftVersions = savedPages.map(page =>
+                versionRepo.create({
+                    page,
+                    versionNumber: 1,
+                    content: defaults.get(page.slug)?.content || '',
+                    status: PageVersionStatus.DRAFT,
+                }),
+            );
+
+            const publishedVersions = savedPages.map(page =>
+                versionRepo.create({
+                    page,
+                    versionNumber: 1,
+                    content: defaults.get(page.slug)?.content || '',
+                    status: PageVersionStatus.PUBLISHED,
+                }),
+            );
+
+            const [savedDrafts, savedPublished] = await Promise.all([
+                versionRepo.save(draftVersions),
+                versionRepo.save(publishedVersions),
+            ]);
+
+            const draftByPageId = new Map(savedDrafts.map(v => [v.page.id, v]));
+            const publishedByPageId = new Map(savedPublished.map(v => [v.page.id, v]));
+
+            const updatedPages = savedPages.map(page => ({
+                ...page,
+                lastPublishedAt: new Date(),
+                draftVersion: draftByPageId.get(page.id),
+                publishedVersion: publishedByPageId.get(page.id),
+            }));
+
+            return pageRepo.save(updatedPages);
+        });
     }
 }
