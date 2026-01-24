@@ -6,6 +6,7 @@ import {
     DefaultLogger,
     DefaultSchedulerPlugin,
     DefaultSearchPlugin,
+    SyncPagesPlugin,
     dummyPaymentHandler,
     GoogleAuthPlugin,
     LogLevel,
@@ -118,9 +119,10 @@ export const devConfig: VendureConfig = {
             appDir: path.join(__dirname, '..', 'dashboard', 'build'),
         }),
         GoogleAuthPlugin.init({
-            googleClientId: process.env.GOOGLE_CLIENT_ID!,
-            googleClientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+            googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
         }),
+        SyncPagesPlugin
     ],
 };
 
