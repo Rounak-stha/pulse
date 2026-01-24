@@ -73,6 +73,8 @@ steps:
           - 'GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest'
           - '--update-secrets'
           - 'VITE_GOOGLE_CLIENT_ID=VITE_GOOGLE_CLIENT_ID:latest'
+          - '--update-secrets'
+          - 'RUN_JOB_QUEUE_FROM_SERVER=RUN_JOB_QUEUE_FROM_SERVER:latest'
 
           # -------------------------------------------------------------------
           # B. CLOUD RUN CONFIGURATION FLAGS
