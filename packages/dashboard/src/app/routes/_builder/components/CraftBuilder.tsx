@@ -1,17 +1,9 @@
+import { Canvas } from '@/vdb/components/builder/cavnas/index.js';
 import { Editor } from '@craftjs/core';
 import React, { useState } from 'react';
 
 import { DesignSystemProvider } from '@/builder-blocks/design-system/context.js';
-import { Badge } from '@/vdb/components/builder/blocks/atoms/badge/index.js';
-import { Button } from '@/vdb/components/builder/blocks/atoms/button/index.js';
-import { Headline } from '@/vdb/components/builder/blocks/atoms/headline/index.js';
-import { RootContainer } from '@/vdb/components/builder/blocks/atoms/root-container/index.js';
-import { Subtext } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
-import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/index.js';
-import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
-import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
-import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
-import { Canvas } from '@/vdb/components/builder/cavnas/index.js';
+import { BuilderComponents } from '@/vdb/components/builder/index.js';
 import { LeftSidebar } from '@/vdb/components/builder/sidebar/left.js';
 import { RightSidebar } from '@/vdb/components/builder/sidebar/right.js';
 import { Toolbar } from '@/vdb/components/builder/toolbar/index.js';
@@ -27,20 +19,7 @@ interface BuilderEditorProps {
 export const BuilderEditor: React.FC<BuilderEditorProps> = ({ pageId }) => {
     return (
         <div className="h-screen flex flex-col bg-background text-foreground">
-            <Editor
-                resolver={{
-                    RootContainer,
-                    HeroBanner,
-                    Header,
-                    FeaturedCollections,
-                    Badge,
-                    Headline,
-                    Subtext,
-                    Button,
-                    Footer,
-                }}
-                onRender={({ render }) => render}
-            >
+            <Editor resolver={BuilderComponents} onRender={({ render }) => render}>
                 <WrappedEditor pageId={pageId} />
             </Editor>
         </div>
@@ -95,7 +74,10 @@ function InnerBuilderWrapper() {
                         </Sheet>
                         <Canvas device={device} />
                         <Sheet open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
-                            <SheetContent side="right" className="p-0 w-[80vw] sm:w-[380px] sm:max-w-none gap-0">
+                            <SheetContent
+                                side="right"
+                                className="p-0 w-[80vw] sm:w-[380px] sm:max-w-none gap-0"
+                            >
                                 <SheetHeader>
                                     <SheetTitle className="sr-only">Right Sidebar</SheetTitle>
                                     <SheetDescription className="sr-only">

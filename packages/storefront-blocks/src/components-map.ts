@@ -1,5 +1,5 @@
 import { Badge, Button, Headline, RootContainer, Subtext } from './atoms/index.js';
-import { FeaturedCollections, Footer, Header, HeroBanner } from './compounds/index.js';
+import { FeaturedCollections, Footer, Header, HeroBanner, ProductGallery, ProductInfo, ProductPage, AddToCart } from './compounds/index.js';
 
 export const ComponentMap = {
     Headline,
@@ -11,4 +11,8 @@ export const ComponentMap = {
     Header,
     FeaturedCollections,
     Footer,
+    ProductPage,
+    ProductGallery,
+    ProductInfo,
+    AddToCart,
 } as const;

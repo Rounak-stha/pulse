@@ -2,6 +2,7 @@ import { VariantProps } from 'class-variance-authority';
 import type { ColorMode } from '../../types.js';
 import { headlineVariants } from './variant.js';
 
+export type { ColorMode } from '../../types.js';
 export type HeadlineTag = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
 export type HeadlinePurpose =
     | 'page-title'

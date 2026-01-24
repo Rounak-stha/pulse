@@ -84,6 +84,11 @@ export interface BuilderContext {
     updateTheme: (input: { id: string; value: string }) => Promise<void>;
     /**
      * @description
+     * The function to get the page content.
+     */
+    getPageContent: () => string;
+    /**
+     * @description
      * Saving State
      */
     isSaving: boolean;
@@ -143,7 +148,12 @@ export function BuilderProvider({
         const json = query.serialize();
         const compressed = LZString.compressToBase64(json);
 
-        return json;
+        return compressed;
+    };
+
+    const decompressContent = (compressed: string) => {
+        const decompressed = LZString.decompressFromBase64(compressed);
+        return decompressed;
     };
 
     const changeMode = (mode: Mode) => setMode(mode);
@@ -197,11 +207,8 @@ export function BuilderProvider({
             }
             if (content) {
                 try {
-                    actions.deserialize(content);
-                    /* const decompressed = LZString.decompressFromBase64(content);
-                    if (decompressed) {
-                        actions.deserialize(decompressed);
-                    } */
+                    const decompressedContent = decompressContent(content);
+                    actions.deserialize(decompressedContent);
                     setIsContentLoaded(true);
                 } catch (error) {
                     console.error('Failed to load page content:', error);
@@ -297,6 +304,7 @@ export function BuilderProvider({
                 changePage,
                 refresh: refetch,
                 updateTheme,
+                getPageContent,
 
                 // States
                 isSaving: saveDraftMutation.isPending,

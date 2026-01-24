@@ -8,6 +8,7 @@ export const getPagesQuery = graphql(`
                 id
                 name
                 slug
+                system
                 createdAt
                 updatedAt
                 publishedVersion {

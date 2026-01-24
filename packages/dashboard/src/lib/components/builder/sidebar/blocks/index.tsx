@@ -16,8 +16,9 @@ import {
 import { useIsMobile } from '@/vdb/hooks/use-mobile.js';
 import { Element, useEditor } from '@craftjs/core';
 import { ReactNode } from '@tanstack/react-router';
-import { FootprintsIcon, HeadingIcon, SectionIcon, ShapesIcon } from 'lucide-react';
+import { FootprintsIcon, HeadingIcon, PackageOpenIcon, SectionIcon, ShapesIcon } from 'lucide-react';
 import { FC, useMemo, useState } from 'react';
+import { ProductPage } from '../../pages/product/index.js';
 
 type Block = {
     name: string;
@@ -51,6 +52,12 @@ const blocks: Block[] = [
         Icon: FootprintsIcon,
         Component: Footer,
     },
+    {
+        category: 'Product',
+        name: 'Product Gallery',
+        Icon: PackageOpenIcon,
+        Component: ProductPage,
+    }
 ];
 
 const ALL_CATEGORIES_NAME = 'all';

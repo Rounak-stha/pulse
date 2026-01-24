@@ -2,7 +2,7 @@ import { api } from '@/vdb/graphql/api.js';
 import { PageFragment } from '@/vdb/graphql/fragments.js';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, FileText, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getPagesQuery } from '../buider.graphql.js';
 
 interface PageSwitcherProps {
@@ -23,54 +23,88 @@ export const PageSwitcher: React.FC<PageSwitcherProps> = ({
         queryFn: () => api.query(getPagesQuery, { options: { take: 20 } }),
     });
 
+    const pages = data?.pages.items || [];
+
+    const systemPages = useMemo(() =>    pages.filter(page => page.system), [pages]);
+    const customPages = useMemo(() => pages.filter(page => !page.system), [pages]);
+
+    console.log({pages})
     return (
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted rounded-md text-sm"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted rounded-md text-sm transition-colors"
             >
                 <FileText className="w-4 h-4" />
                 <span className="font-medium">{currentPage?.name}</span>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
-
+            
             {isOpen && (
                 <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                    <div className="absolute top-full left-0 mt-1 w-64 bg-popover border rounded-md shadow-lg z-20">
-                        <div className="p-2">
-                            <button
-                                onClick={() => {
-                                    openCreatePageDialog();
-                                    setIsOpen(false);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded text-sm font-medium"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Create New Page
-                            </button>
-                        </div>
+                <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+                <div className="absolute top-full left-0 mt-1 w-64 bg-popover border rounded-md shadow-lg z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-2 border-b">
+                    <button
+                        onClick={() => {
+                        openCreatePageDialog();
+                        setIsOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded text-sm font-medium transition-colors"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Create New Page
+                    </button>
+                    </div>
 
-                        <div className="border-t max-h-64 overflow-y-auto">
-                            {data?.pages?.items?.map(page => (
-                                <button
-                                    key={page.id}
-                                    onClick={() => {
-                                        onPageChange(page.id);
-                                        setIsOpen(false);
-                                    }}
-                                    className={`w-full flex items-center justify-between px-3 py-2 hover:bg-muted text-sm ${
-                                        page.id === currentPage?.id ? 'bg-muted' : ''
-                                    }`}
-                                >
-                                    <span>{page.name}</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {page.publishedVersion ? '●' : '○'}
-                                    </span>
-                                </button>
-                            ))}
+                    <div className="p-3 space-y-4">
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3">System Pages</p>
+                        <div className="max-h-64 overflow-y-auto">
+                        {systemPages.map(page => (
+                            <button
+                            key={page.id}
+                            onClick={() => {
+                                onPageChange(page.id);
+                                setIsOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2 hover:bg-muted rounded text-sm transition-colors ${
+                                page.id === currentPage?.id ? 'bg-muted' : ''
+                            }`}
+                            >
+                            <span>{page.name}</span>
+                            <span className={`text-xs ${page.publishedVersion ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                {page.publishedVersion ? '●' : '○'}
+                            </span>
+                            </button>
+                        ))}
                         </div>
                     </div>
+
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3">Custom Pages</p>
+                        <div className="max-h-64 overflow-y-auto">
+                        {customPages.map(page => (
+                            <button
+                            key={page.id}
+                            onClick={() => {
+                                onPageChange(page.id);
+                                setIsOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2 hover:bg-muted rounded text-sm transition-colors ${
+                                page.id === currentPage?.id ? 'bg-muted' : ''
+                            }`}
+                            >
+                            <span>{page.name}</span>
+                            <span className={`text-xs ${page.publishedVersion ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                {page.publishedVersion ? '●' : '○'}
+                            </span>
+                            </button>
+                        ))}
+                        </div>
+                    </div>
+                    </div>
+                </div>
                 </>
             )}
         </div>

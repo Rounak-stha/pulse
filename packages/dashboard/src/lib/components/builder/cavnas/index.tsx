@@ -27,7 +27,7 @@ export const Canvas: React.FC<CanvasProps> = ({ device }) => {
                 {/* Wrap Frame with DesignSystemProvider */}
 
                 <Frame>
-                    <Element id="RootContainer" is={RootContainer} canvas></Element>
+                    <Element id="RootContainer" is={RootContainer} canvas />
                 </Frame>
             </div>
         </div>

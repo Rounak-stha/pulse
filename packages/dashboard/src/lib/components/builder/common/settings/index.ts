@@ -1,5 +1,7 @@
 export * from './color-input.js';
 export * from './image-input.js';
+export * from './number-input.js';
+export * from './product-search.js';
 export * from './select-input.js';
 export * from './spacing-input.js';
 export * from './tabs.js';
