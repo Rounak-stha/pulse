@@ -159,6 +159,15 @@ function PaymentMethodDetailPage() {
                     />
                 </PageBlock>
                 <CustomFieldsPageBlock column="main" entityType="PaymentMethod" control={form.control} />
+                <PageBlock column="main" blockId="payment-handler" title={<Trans>Provider</Trans>}>
+                    <FormFieldWrapper
+                        control={form.control}
+                        name="handler"
+                        render={({ field }) => (
+                            <PaymentHandlerSelector value={field.value} onChange={field.onChange} />
+                        )}
+                    />
+                </PageBlock>
                 <PageBlock
                     column="main"
                     blockId="payment-eligibility-checker"
@@ -172,15 +181,6 @@ function PaymentMethodDetailPage() {
                                 value={field.value}
                                 onChange={field.onChange}
                             />
-                        )}
-                    />
-                </PageBlock>
-                <PageBlock column="main" blockId="payment-handler" title={<Trans>Calculator</Trans>}>
-                    <FormFieldWrapper
-                        control={form.control}
-                        name="handler"
-                        render={({ field }) => (
-                            <PaymentHandlerSelector value={field.value} onChange={field.onChange} />
                         )}
                     />
                 </PageBlock>

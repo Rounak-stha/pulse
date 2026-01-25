@@ -74,6 +74,7 @@ export * from './order/use-guest-strategy';
 export * from './payment/default-payment-process';
 export * from './payment/dummy-payment-method-handler';
 export * from './payment/example-payment-method-handler';
+export * from './payment/khalti-payment-method-handler';
 export * from './payment/payment-method-eligibility-checker';
 export * from './payment/payment-method-handler';
 export * from './payment/payment-process';

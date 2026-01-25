@@ -5,7 +5,7 @@ import type { DataSourceOptions } from '@vendure/core';
 import {
     DefaultLogger,
     DefaultSearchPlugin,
-    dummyPaymentHandler,
+    khaltiPaymentHandler,
     GoogleAuthPlugin,
     SyncPagesPlugin,
     LogLevel,
@@ -60,7 +60,7 @@ export const config: VendureConfig = {
         ...getDbConfig(),
     },
     paymentOptions: {
-        paymentMethodHandlers: [dummyPaymentHandler],
+        paymentMethodHandlers: [khaltiPaymentHandler],
     },
     settingsStoreFields: {
         MyPlugin: [

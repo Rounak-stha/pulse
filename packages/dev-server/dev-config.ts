@@ -6,11 +6,11 @@ import {
     DefaultLogger,
     DefaultSchedulerPlugin,
     DefaultSearchPlugin,
-    SyncPagesPlugin,
-    dummyPaymentHandler,
     GoogleAuthPlugin,
+    khaltiPaymentHandler,
     LogLevel,
     SettingsStoreScopes,
+    SyncPagesPlugin,
     VendureConfig,
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
@@ -61,7 +61,7 @@ export const devConfig: VendureConfig = {
         ...getDbConfig(),
     },
     paymentOptions: {
-        paymentMethodHandlers: [dummyPaymentHandler],
+        paymentMethodHandlers: [khaltiPaymentHandler],
     },
     settingsStoreFields: {
         MyPlugin: [
@@ -122,7 +122,7 @@ export const devConfig: VendureConfig = {
             googleClientId: process.env.GOOGLE_CLIENT_ID || '',
             googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
         }),
-        SyncPagesPlugin
+        SyncPagesPlugin,
     ],
 };
 
