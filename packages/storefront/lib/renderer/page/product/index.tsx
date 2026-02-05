@@ -1,49 +1,31 @@
 import type { SerializedNode, SerializedNodes } from '@craftjs/core';
 import { ComponentMap } from '@vendure/storefront-blocks/components-map';
-import { DefaultProductGalleryProps, DefaultProductInfoProps, DefaultAddToCartProps, DefaultProductPageProps, ProductPage } from '@vendure/storefront-blocks/compounds';
-import type { Product, ProductGalleryProps, ProductInfoProps, ProductPageRuntimeProps } from '@vendure/storefront-blocks/types';
+import {
+    DefaultAddToCartProps,
+    DefaultProductGalleryProps,
+    DefaultProductInfoProps,
+    DefaultProductPageProps,
+    ProductPage,
+} from '@vendure/storefront-blocks/compounds';
+import type { Product, ProductPageRuntimeProps } from '@vendure/storefront-blocks/types';
+import { AddToCart } from './add-to-cart';
+import { ProductGallery } from './gallery';
+import { ProductInfo } from './info';
 
 interface ProductPageRendererProps {
     node: SerializedNode;
     tree: SerializedNodes;
-    product: Product
+    product: Product;
+    shopcode: string;
 }
 
-type GetSlotsReturn = Pick<ProductPageRuntimeProps, 'ProductGallerySlot' | 'ProductInfoSlot' | 'AddToCartSlot'>;
+type GetSlotsReturn = Pick<
+    ProductPageRuntimeProps,
+    'ProductGallerySlot' | 'ProductInfoSlot' | 'AddToCartSlot'
+>;
 
-function getProductGallerySlotProps({ node, product }: ProductPageRendererProps): ProductGalleryProps {
-    const images = [product.featuredAsset, ...product.assets.filter(p => p.id !== product.featuredAsset?.id)] as Array<{
-        id: string;
-        source: string;
-        preview: string;
-    }>;
-    return {
-        ...DefaultProductGalleryProps,
-        ...node.props,
-        images,
-    }
-}
-
-function getProductInfoSlotProps({ node, product }: ProductPageRendererProps): ProductInfoProps {
-    const productInfo: ProductInfoProps['product'] = {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        sku: product.variants.length ? product.variants[0].sku : '',
-    }
-
-    const selectedVariant: ProductInfoProps['selectedVariant'] = product.variants.length ? product.variants[0] : DefaultProductInfoProps.selectedVariant;
-    return {
-        ...DefaultProductInfoProps,
-        ...node.props,
-        product: productInfo,
-        selectedVariant,
-    }
-}
-
-function getSlots({ node, tree, product }: ProductPageRendererProps): GetSlotsReturn {
+function getSlots({ node, tree, product, shopcode }: ProductPageRendererProps): GetSlotsReturn {
     const nodes = {} as GetSlotsReturn;
-    console.log({ product })
     Object.values(node.linkedNodes).forEach(id => {
         const node = tree[id];
         if (node) {
@@ -55,16 +37,24 @@ function getSlots({ node, tree, product }: ProductPageRendererProps): GetSlotsRe
 
             switch (componentName) {
                 case 'ProductGallery':
-                    const ProductGalleryComponent = ComponentMap['ProductGallery'];
-                    nodes['ProductGallerySlot'] = <ProductGalleryComponent {...getProductGallerySlotProps({ node, tree, product })} />;
+                    nodes['ProductGallerySlot'] = (
+                        <ProductGallery {...DefaultProductGalleryProps} {...node.props} product={product} />
+                    );
                     break;
                 case 'ProductInfo':
-                    const ProductInfoComponent = ComponentMap['ProductInfo'];
-                    nodes['ProductInfoSlot'] = <ProductInfoComponent {...getProductInfoSlotProps({ node, tree, product })} />;
+                    nodes['ProductInfoSlot'] = (
+                        <ProductInfo {...DefaultProductInfoProps} {...node.props} product={product} />
+                    );
                     break;
                 case 'AddToCart':
-                    const AddToCartComponent = ComponentMap['AddToCart'];
-                    nodes['AddToCartSlot'] = <AddToCartComponent {...DefaultAddToCartProps} {...node.props} variant={product.variants[0]} />;
+                    nodes['AddToCartSlot'] = (
+                        <AddToCart
+                            {...DefaultAddToCartProps}
+                            {...node.props}
+                            product={product}
+                            shopcode={shopcode}
+                        />
+                    );
                     break;
                 default:
                     return;
@@ -75,9 +65,9 @@ function getSlots({ node, tree, product }: ProductPageRendererProps): GetSlotsRe
     return nodes;
 }
 
-export function ProductPageRenderer({ node, tree, product }: ProductPageRendererProps) {
+export function ProductPageRenderer({ node, tree, product, shopcode }: ProductPageRendererProps) {
     const props = node.props;
-    const slots = getSlots({ node, tree, product });
+    const slots = getSlots({ node, tree, product, shopcode });
 
     return <ProductPage {...DefaultProductPageProps} {...props} {...slots} />;
 }

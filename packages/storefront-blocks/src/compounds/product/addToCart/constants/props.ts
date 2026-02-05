@@ -1,3 +1,4 @@
+import { Product } from '../../page/types.js';
 import { AddToCartProps } from '../types.js';
 
 export const DefaultAddToCartProps: AddToCartProps = {
@@ -6,6 +7,7 @@ export const DefaultAddToCartProps: AddToCartProps = {
     showCompare: false,
     buttonSize: 'large',
     buttonStyle: 'solid',
+    product: {} as Product,
     variant: {
         id: '',
         currencyCode: 'NPR',
@@ -13,5 +15,7 @@ export const DefaultAddToCartProps: AddToCartProps = {
         stockLevel: 'IN_STOCK',
         name: 'Variant Name',
         sku: 'Variant SKU',
+        featuredAsset: null,
+        assets: [],
     },
 };

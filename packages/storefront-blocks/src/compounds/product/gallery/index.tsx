@@ -1,6 +1,6 @@
-'use client'
+'use client';
 import { ChevronLeft, ChevronRight, Maximize2, ZoomIn } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../../../lib/utils.js';
 import { ProductGalleryProps } from './types.js';
 
@@ -30,6 +30,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({ image, index, isSelected, onClick
 export const ProductGallery: React.FC<ProductGalleryProps> = ({
     className,
     images,
+    selectedImageIndex,
     layout = 'grid',
     thumbnailPosition = 'bottom',
     zoom = true,
@@ -37,12 +38,15 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     ref,
     selected,
 }) => {
-    console.log({ images });
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [selectedIndex, setSelectedIndex] = useState(selectedImageIndex);
     const [isZoomed, setIsZoomed] = useState(false);
     const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
     const [isFullscreen, setIsFullscreen] = useState(false);
     const imageRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setSelectedIndex(selectedImageIndex);
+    }, [selectedImageIndex]);
 
     const aspectRatioMap = {
         '1:1': 'aspect-square',

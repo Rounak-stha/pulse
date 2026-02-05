@@ -1,12 +1,12 @@
 import type { SerializedNode, SerializedNodes } from '@craftjs/core';
 import { RootContainer } from '@vendure/storefront-blocks/atoms';
 import { ComponentMap } from '@vendure/storefront-blocks/components-map';
+import { Product } from '@vendure/storefront-blocks/types';
 import { FooterRenderer } from './compounds/footer/main';
 import { HeaderRenderer } from './compounds/header/main';
 import { HeroBannerRenderer } from './compounds/hero/banner';
-import { FeaturedCollectionsRenderer } from './showcase/featured';
-import { Product } from '@vendure/storefront-blocks/types';
 import { ProductPageRenderer } from './page/product';
+import { FeaturedCollectionsRenderer } from './showcase/featured';
 
 type ProductRenderData = { type: 'product'; product: Product };
 type DefaultRenderData = { type: 'default' };
@@ -24,10 +24,8 @@ interface NodeRendererProps extends BuilderTreeRendererProps {
     node: SerializedNode;
 }
 
-function isProductPage(
-  data?: BuilderRenderData
-): data is ProductRenderData {
-  return data?.type === 'product';
+function isProductPage(data?: BuilderRenderData): data is ProductRenderData {
+    return data?.type === 'product';
 }
 
 export function BuilderTreeRenderer({ tree, theme, shopcode, data }: BuilderTreeRendererProps) {
@@ -60,7 +58,7 @@ function RenderRoot({ node, tree, theme, shopcode, data }: NodeRendererProps) {
                 />
             );
         if (componentName == 'ProductPage') {
-            const product = isProductPage(data) ?  data.product : null;
+            const product = isProductPage(data) ? data.product : null;
 
             if (!product) return null;
 
@@ -70,6 +68,7 @@ function RenderRoot({ node, tree, theme, shopcode, data }: NodeRendererProps) {
                     node={currentChildNode}
                     tree={tree}
                     product={product}
+                    shopcode={shopcode}
                 />
             );
         }

@@ -24,6 +24,16 @@ export interface Product {
         stockLevel: StockLevel;
         price: number;
         currencyCode: string;
+        featuredAsset: {
+            id: string;
+            source: string;
+            preview: string;
+        } | null;
+        assets: Array<{
+            id: string;
+            source: string;
+            preview: string;
+        }>;
     }>;
 }
 

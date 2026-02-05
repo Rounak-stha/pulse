@@ -1,7 +1,8 @@
-import { Product } from "../page/types.js";
+import { Product } from '../page/types.js';
 
 export interface AddToCartProps {
     className?: string;
+    product: Product;
     variant: Product['variants'][number];
     onAddToCart?: (variantId: string, quantity: number) => void;
     showQuantitySelector: boolean;

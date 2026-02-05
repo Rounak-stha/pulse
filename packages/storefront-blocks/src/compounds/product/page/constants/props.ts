@@ -25,9 +25,11 @@ export const DefaultProductPageProps: ProductPageRuntimeProps = {
                 id: '',
                 name: 'Default',
                 sku: 'SKU-001',
-                price: 9999, 
+                price: 9999,
                 currencyCode: 'USD',
-                stockLevel: 'IN_STOCK'
+                stockLevel: 'IN_STOCK',
+                assets: [],
+                featuredAsset: null,
             },
         ],
     },

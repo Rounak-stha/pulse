@@ -1,6 +1,10 @@
-import { CheckCircle2, Package, Star, XCircle } from 'lucide-react';
+'use client';
+import { CheckCircle2, ChevronDown, ChevronUp, Package, XCircle } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '../../../lib/utils.js';
 import { ProductInfoProps } from './types.js';
+
+const DESCRIPTION_MAX_HEIGHT = 100;
 
 export const ProductInfo: React.FC<ProductInfoProps> = ({
     className,
@@ -9,9 +13,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
     showSKU = true,
     showStock = true,
     priceSize = 'large',
+    onVariantChange,
     ref,
 }) => {
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const inStock = selectedVariant.stockLevel !== 'OUT_OF_STOCK';
+    const hasMultipleVariants = product.variants.length > 1;
+
     const formatPrice = (price: number, currencyCode: string) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -22,7 +30,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
     return (
         <div ref={ref} className={cn('space-y-6', className)}>
             <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">{product.name}</h1>
-
 
             <div className="h-px bg-border" />
 
@@ -50,11 +57,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
                                 : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400',
                         )}
                     >
-                        {inStock ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                        ) : (
-                            <XCircle className="h-4 w-4" />
-                        )}
+                        {inStock ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                         <span>{inStock ? 'In Stock' : 'Out of Stock'}</span>
                         {inStock && selectedVariant.stockLevel && (
                             <span className="opacity-75">• {selectedVariant.stockLevel} available</span>
@@ -78,7 +81,76 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
                         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Description
                         </h2>
-                        <p className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: product.description }} />
+                        <div className="relative">
+                            <div
+                                className={cn(
+                                    'overflow-hidden transition-all duration-300',
+                                    !isDescriptionExpanded && 'max-h-[100px]',
+                                )}
+                                style={
+                                    isDescriptionExpanded
+                                        ? { maxHeight: 'none' }
+                                        : { maxHeight: DESCRIPTION_MAX_HEIGHT }
+                                }
+                            >
+                                <p
+                                    className="text-sm leading-relaxed text-foreground/90"
+                                    dangerouslySetInnerHTML={{ __html: product.description }}
+                                />
+                            </div>
+                            {!isDescriptionExpanded && (
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-background to-transparent" />
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsDescriptionExpanded(prev => !prev)}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                        >
+                            {isDescriptionExpanded ? (
+                                <>
+                                    Show less <ChevronUp className="h-4 w-4" />
+                                </>
+                            ) : (
+                                <>
+                                    Read more <ChevronDown className="h-4 w-4" />
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {hasMultipleVariants && (
+                <>
+                    <div className="h-px bg-border" />
+                    <div className="space-y-3">
+                        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Variant
+                        </h2>
+                        <div className="flex flex-wrap gap-2">
+                            {product.variants.map(variant => {
+                                const isSelected = variant.id === selectedVariant.id;
+                                const isOutOfStock = variant.stockLevel === 'OUT_OF_STOCK';
+                                return (
+                                    <button
+                                        key={variant.id}
+                                        type="button"
+                                        disabled={isOutOfStock}
+                                        onClick={() => onVariantChange?.(variant)}
+                                        className={cn(
+                                            'rounded-lg border px-4 py-2 text-sm font-medium transition-all',
+                                            isSelected
+                                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                                : 'border-border bg-background text-foreground hover:border-primary hover:bg-muted',
+                                            isOutOfStock && 'cursor-not-allowed opacity-50 line-through',
+                                        )}
+                                    >
+                                        {variant.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </>
             )}

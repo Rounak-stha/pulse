@@ -32,6 +32,16 @@ export const getProductQuery: TypedDocumentNode<GetProductQuery, GetProductQuery
                 stockLevel
                 price
                 currencyCode
+                featuredAsset {
+                    id
+                    source
+                    preview
+                }
+                assets {
+                    id
+                    source
+                    preview
+                }
             }
         }
     }
