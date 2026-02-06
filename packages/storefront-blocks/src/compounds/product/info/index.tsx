@@ -2,20 +2,24 @@
 import { CheckCircle2, ChevronDown, ChevronUp, Package, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../../lib/utils.js';
+import { useProductPreview } from '../context.js';
 import { ProductInfoProps } from './types.js';
 
 const DESCRIPTION_MAX_HEIGHT = 100;
 
 export const ProductInfo: React.FC<ProductInfoProps> = ({
     className,
-    product,
-    selectedVariant,
+    product: productProp,
+    selectedVariant: selectedVariantProp,
     showSKU = true,
     showStock = true,
     priceSize = 'large',
     onVariantChange,
     ref,
 }) => {
+    const preview = useProductPreview();
+    const product = preview?.product ?? productProp;
+    const selectedVariant = preview?.selectedVariant ?? selectedVariantProp;
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const inStock = selectedVariant.stockLevel !== 'OUT_OF_STOCK';
     const hasMultipleVariants = product.variants.length > 1;
@@ -27,6 +31,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         }).format(price);
     };
 
+    console.log({ product });
     return (
         <div ref={ref} className={cn('space-y-6', className)}>
             <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">{product.name}</h1>
@@ -141,7 +146,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
                                         className={cn(
                                             'rounded-lg border px-4 py-2 text-sm font-medium transition-all',
                                             isSelected
-                                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                                ? 'border-secondary bg-secondary text-secondary-foreground shadow-sm'
                                                 : 'border-border bg-background text-foreground hover:border-primary hover:bg-muted',
                                             isOutOfStock && 'cursor-not-allowed opacity-50 line-through',
                                         )}

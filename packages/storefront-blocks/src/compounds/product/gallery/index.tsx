@@ -2,6 +2,7 @@
 import { ChevronLeft, ChevronRight, Maximize2, ZoomIn } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../../../lib/utils.js';
+import { useProductPreview } from '../context.js';
 import { ProductGalleryProps } from './types.js';
 
 interface ThumbnailProps {
@@ -29,7 +30,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({ image, index, isSelected, onClick
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({
     className,
-    images,
+    images: imagesProp,
     selectedImageIndex,
     layout = 'grid',
     thumbnailPosition = 'bottom',
@@ -38,6 +39,8 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     ref,
     selected,
 }) => {
+    const preview = useProductPreview();
+    const images = preview?.images ?? imagesProp;
     const [selectedIndex, setSelectedIndex] = useState(selectedImageIndex);
     const [isZoomed, setIsZoomed] = useState(false);
     const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });

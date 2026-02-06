@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { cn } from '../../../lib/utils.js';
+import { useProductPreview } from '../context.js';
 import { AddToCartProps } from './types.js';
 
 import type { FC } from 'react';
 
 export const AddToCart: FC<AddToCartProps> = ({
     className,
-    variant,
+    variant: variantProp,
     onAddToCart,
     showQuantitySelector = true,
     showWishlist = true,
@@ -15,6 +16,8 @@ export const AddToCart: FC<AddToCartProps> = ({
     buttonSize = 'large',
     ref,
 }) => {
+    const preview = useProductPreview();
+    const variant = preview?.selectedVariant ?? variantProp;
     const [quantity, setQuantity] = useState(1);
 
     const handleAddToCart = () => {

@@ -24,6 +24,16 @@ export const productPageQuery = graphql(`
                 stockLevel
                 price
                 currencyCode
+                featuredAsset {
+                    id
+                    source
+                    preview
+                }
+                assets {
+                    id
+                    source
+                    preview
+                }
             }
         }
     }
@@ -51,14 +61,18 @@ export const ProductPageSetttingsSearchQuery = graphql(`
                     id
                     name
                     sku
-                    stockLevels {
+                    stockLevel
+                    price
+                    currencyCode
+                    featuredAsset {
                         id
-                        stockOnHand
-                        stockAllocated
+                        source
+                        preview
                     }
-                    prices {
-                        price
-                        currencyCode
+                    assets {
+                        id
+                        source
+                        preview
                     }
                 }
             }

@@ -2,6 +2,8 @@ export * from './addToCart/constants/props.js';
 export * from './addToCart/index.js';
 export * from './addToCart/types.js';
 
+export * from './context.js';
+
 export * from './gallery/constants/props.js';
 export * from './gallery/index.js';
 export * from './gallery/types.js';
