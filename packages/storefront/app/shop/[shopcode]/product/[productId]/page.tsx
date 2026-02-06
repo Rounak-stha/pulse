@@ -7,7 +7,7 @@ import { BuilderTreeRenderer } from '@/lib/renderer';
 export default async function ProductPage({ params }: PageProps<'/shop/[shopcode]/product/[productId]'>) {
     const { shopcode, productId } = await params;
     const { data, error } = await fetchPageData(shopcode, [
-        { query: getPageBySlugQuery, variables: { slug: 'products' } },
+        { query: getPageBySlugQuery, variables: { slug: 'product' } },
         { query: getProductQuery, variables: { id: productId } },
     ]);
 
