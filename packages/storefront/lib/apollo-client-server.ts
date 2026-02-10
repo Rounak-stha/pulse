@@ -7,6 +7,7 @@ export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
         link: new HttpLink({
             // this needs to be an absolute url, as relative urls cannot be used in SSR
             uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
+            credentials: 'include',
         }),
     });
 });

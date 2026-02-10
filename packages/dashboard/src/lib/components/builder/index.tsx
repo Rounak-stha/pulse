@@ -7,7 +7,19 @@ import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/in
 import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
 import { HeroBanner } from '@/vdb/components/builder/blocks/compounds/hero/banner/index.js';
 import { FeaturedCollections } from '@/vdb/components/builder/blocks/compounds/showcase/featured/index.js';
-import { AddToCart, ProductGallery, ProductInfo, ProductPage } from '@/vdb/components/builder/pages/index.js';
+import {
+    AddToCart,
+    CheckoutPage,
+    Confirmation,
+    CustomerInfo,
+    OrderSummary,
+    Payment,
+    ProductGallery,
+    ProductInfo,
+    ProductPage,
+    ShippingAddress,
+    ShippingMethod,
+} from '@/vdb/components/builder/pages/index.js';
 
 export const BuilderComponents = {
     RootContainer,
@@ -23,4 +35,11 @@ export const BuilderComponents = {
     ProductGallery,
     ProductInfo,
     AddToCart,
+    CheckoutPage,
+    OrderSummary,
+    CustomerInfo,
+    ShippingAddress,
+    ShippingMethod,
+    Payment,
+    Confirmation,
 };

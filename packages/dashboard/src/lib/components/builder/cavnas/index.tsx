@@ -7,7 +7,9 @@ interface CanvasProps {
     device: DeviceType;
 }
 
+import { DefaultCheckoutPageProps } from '@/builder-blocks/compounds/index.js';
 import { useIsMobile } from '@/vdb/hooks/use-mobile.js';
+import { CheckoutPage } from '../pages/index.js';
 
 export const Canvas: React.FC<CanvasProps> = ({ device }) => {
     const isMobile = useIsMobile();
@@ -27,7 +29,9 @@ export const Canvas: React.FC<CanvasProps> = ({ device }) => {
                 {/* Wrap Frame with DesignSystemProvider */}
 
                 <Frame>
-                    <Element id="RootContainer" is={RootContainer} canvas />
+                    <Element id="RootContainer" is={RootContainer} canvas>
+                        <CheckoutPage {...DefaultCheckoutPageProps} />
+                    </Element>
                 </Frame>
             </div>
         </div>

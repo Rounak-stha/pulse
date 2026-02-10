@@ -397,3 +397,5 @@ build
 !packages/core/build/**
 
 journal
+
+certs

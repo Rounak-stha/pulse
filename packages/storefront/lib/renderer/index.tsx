@@ -5,6 +5,7 @@ import { Product } from '@vendure/storefront-blocks/types';
 import { FooterRenderer } from './compounds/footer/main';
 import { HeaderRenderer } from './compounds/header/main';
 import { HeroBannerRenderer } from './compounds/hero/banner';
+import { CheckoutPageRenderer } from './page/checkout';
 import { ProductPageRenderer } from './page/product';
 import { FeaturedCollectionsRenderer } from './showcase/featured';
 
@@ -70,6 +71,12 @@ function RenderRoot({ node, tree, theme, shopcode, data }: NodeRendererProps) {
                     product={product}
                     shopcode={shopcode}
                 />
+            );
+        }
+
+        if (componentName == 'CheckoutPage') {
+            return (
+                <CheckoutPageRenderer key={nodeId} node={currentChildNode} tree={tree} shopcode={shopcode} />
             );
         }
         return null;
