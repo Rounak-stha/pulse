@@ -1,3 +1,4 @@
+export * from './collection-search.js';
 export * from './color-input.js';
 export * from './image-input.js';
 export * from './number-input.js';

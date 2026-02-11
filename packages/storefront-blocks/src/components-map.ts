@@ -11,10 +11,15 @@ import {
     OrderSummary,
     Payment,
     ProductGallery,
+    ProductGrid,
     ProductInfo,
     ProductPage,
     ShippingAddress,
     ShippingMethod,
+    ShopFilters,
+    ShopPage,
+    ShopPagination,
+    ShopToolbar,
 } from './compounds/index.js';
 
 export const ComponentMap = {
@@ -38,4 +43,9 @@ export const ComponentMap = {
     ShippingMethod,
     Payment,
     Confirmation,
+    ShopPage,
+    ProductGrid,
+    ShopFilters,
+    ShopToolbar,
+    ShopPagination,
 } as const;

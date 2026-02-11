@@ -112,13 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
                             {links.map(link => (
                                 <a
                                     key={link.id}
-                                    href={link.type === 'external' ? link.url : `#${link.url}`}
-                                    onClick={e => {
-                                        if (link.type === 'internal') {
-                                            e.preventDefault();
-                                            onLinkClick?.(link);
-                                        }
-                                    }}
+                                    href={link.type === 'external' ? link.url : `/${link.url}`}
                                     className={cn(
                                         'relative font-medium text-sm transition-all duration-200',
                                         'hover:opacity-70',

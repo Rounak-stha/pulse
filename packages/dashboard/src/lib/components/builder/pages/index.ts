@@ -10,3 +10,9 @@ export * from './product/addToCart/index.js';
 export * from './product/gallery/index.js';
 export * from './product/index.js';
 export * from './product/info/index.js';
+
+export * from './shop/index.js';
+export * from './shop/productGrid/index.js';
+export * from './shop/filters/index.js';
+export * from './shop/toolbar/index.js';
+export * from './shop/pagination/index.js';

@@ -15,10 +15,15 @@ import {
     OrderSummary,
     Payment,
     ProductGallery,
+    ProductGrid,
     ProductInfo,
     ProductPage,
     ShippingAddress,
     ShippingMethod,
+    ShopFilters,
+    ShopPage,
+    ShopPagination,
+    ShopToolbar,
 } from '@/vdb/components/builder/pages/index.js';
 
 export const BuilderComponents = {
@@ -42,4 +47,9 @@ export const BuilderComponents = {
     ShippingMethod,
     Payment,
     Confirmation,
+    ShopPage,
+    ProductGrid,
+    ShopFilters,
+    ShopToolbar,
+    ShopPagination,
 };
