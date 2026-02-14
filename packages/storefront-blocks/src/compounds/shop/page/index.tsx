@@ -75,7 +75,6 @@ export const ShopPage: FC<ShopPageRuntimeProps> = ({
             )}
         >
             <div className={cn('flex flex-col', gapClasses[spacing])}>
-                Filters ya huna parne
                 {showFilters && FiltersSlot && (
                     <div className="md:hidden">
                         <button
