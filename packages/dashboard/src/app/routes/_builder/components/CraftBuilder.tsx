@@ -45,7 +45,6 @@ function InnerBuilderWrapper() {
     const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
     const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
-    console.log({ isGlobal });
     // Auto-switch device preview on mobile
     React.useEffect(() => {
         if (isMobile) {

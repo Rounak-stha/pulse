@@ -1,5 +1,6 @@
 import { useBuilder } from '@/vdb/providers/builder.js';
 import { useEditor } from '@craftjs/core';
+import { useNavigate } from '@tanstack/react-router';
 import {
     ArrowLeftIcon,
     EyeIcon,
@@ -16,7 +17,6 @@ import { Button } from '../../ui/button.js';
 import { DeviceType } from '../types.js';
 import { CreatePageDialog } from './create-page-dialog.js';
 import { PageSwitcher } from './page-switcher.js';
-import { useNavigate } from '@tanstack/react-router';
 
 interface ToolbarInnerProps {
     device: DeviceType;
@@ -43,7 +43,8 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
         enabled: state.options.enabled,
     }));
 
-    const { createPage, save, page, changePage, mode, changeMode, publish, isGlobal, region } = builderContext;
+    const { createPage, save, page, changePage, mode, changeMode, publish, isGlobal, region } =
+        builderContext;
     const { selected } = useEditor(state => {
         const [currentNodeId] = state.events.selected;
         return { selected: currentNodeId };
@@ -92,10 +93,7 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
         <div className="h-14 bg-background border-b border-border flex items-center justify-between px-4 gap-4">
             <div className="flex items-center gap-4">
                 {/* Mobile Left Sidebar Toggle */}
-                <button
-                    onClick={onOpenLeftSidebar}
-                    className="md:hidden p-2 hover:bg-muted rounded"
-                >
+                <button onClick={onOpenLeftSidebar} className="md:hidden p-2 hover:bg-muted rounded">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -124,7 +122,9 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                         </button>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-muted-foreground uppercase">Global</span>
+                            <span className="text-xs font-medium text-muted-foreground uppercase">
+                                Global
+                            </span>
                             <span className="text-sm font-semibold">{regionLabel}</span>
                         </div>
                     </>
@@ -181,27 +181,27 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                 </button>
 
                 <div className="flex items-center gap-2">
-                    <Button onClick={save} size="sm" variant="outline" className="hidden sm:flex">
+                    <Button onClick={handleSave} size="sm" variant="outline" className="hidden sm:flex">
                         <SaveIcon className="w-4 h-4 inline sm:mr-2" />
                         <span className="hidden sm:inline">Save</span>
                     </Button>
-                    <Button onClick={publish} size="sm" className="hidden sm:flex">
+                    <Button onClick={handlePublish} size="sm" className="hidden sm:flex">
                         <SendIcon className="w-4 h-4 inline sm:mr-2" />
                         <span className="hidden sm:inline">Publish</span>
                     </Button>
-                     {/* Mobile Save/Publish (Simplified or just Icons if space is tight) */}
-                     <Button onClick={save} size="icon" variant="ghost" className="sm:hidden">
+                    {/* Mobile Save/Publish (Simplified or just Icons if space is tight) */}
+                    <Button onClick={handleSave} size="icon" variant="ghost" className="sm:hidden">
                         <SaveIcon className="w-4 h-4" />
                     </Button>
                 </div>
 
-                 {/* Mobile Right Sidebar Toggle (Only if something is selected) */}
-                 {selected && (
+                {/* Mobile Right Sidebar Toggle (Only if something is selected) */}
+                {selected && (
                     <button
                         onClick={onOpenRightSidebar}
                         className="md:hidden p-2 hover:bg-muted rounded ml-2"
                     >
-                         <svg
+                        <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
                             height="24"
@@ -217,9 +217,9 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                             <line x1="15" y1="3" x2="15" y2="21" />
                         </svg>
                     </button>
-                 )}
+                )}
             </div>
-            
+
             {!isGlobalContext && (
                 <CreatePageDialog
                     open={newPageDialogOpen}
