@@ -6,6 +6,7 @@ export * from './authentication-method/authentication-method.entity';
 export * from './authentication-method/external-authentication-method.entity';
 export * from './authentication-method/native-authentication-method.entity';
 export * from './base/base.entity';
+export * from './builder-global/builder-global.entity';
 export * from './channel/channel.entity';
 export * from './collection/collection-asset.entity';
 export * from './collection/collection-translation.entity';

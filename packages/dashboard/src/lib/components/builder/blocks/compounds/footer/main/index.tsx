@@ -27,4 +27,7 @@ export const Footer: React.FC<FooterProps> = props => {
     displayName: 'Footer',
     props: DefaultFooterProps,
     related: { settings: FooterSettings },
+    custom: {
+        isGlobal: true,
+    },
 };

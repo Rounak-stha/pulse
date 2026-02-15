@@ -27,4 +27,7 @@ export const Header: React.FC<HeaderProps> = props => {
     displayName: 'Header',
     props: DefaultHeaderProps,
     related: { settings: HeaderSettings },
+    custom: {
+        isGlobal: true,
+    },
 };

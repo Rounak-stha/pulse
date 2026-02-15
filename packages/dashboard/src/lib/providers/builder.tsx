@@ -1,10 +1,15 @@
 import {
-    createPageMutation,
+    createPageMutation as createPageGql,
     getPageQuery,
-    publishPageMutation,
-    savePageDraftMutation,
-    updateThemeMutation,
-} from '@/vdb/components/builder/buider.graphql.js';
+    publishPageMutation as publishPageGql,
+    savePageDraftMutation as savePageDraftGql,
+    updateThemeMutation as updateThemeGql,
+} from '@/vdb/components/builder/builder.graphql.js';
+import {
+    getBuilderGlobalQuery,
+    publishBuilderGlobalMutation,
+    saveBuilderGlobalDraftMutation,
+} from '@/vdb/components/builder/globals.graphql.js';
 import { useEditor } from '@craftjs/core';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -25,9 +30,10 @@ type Mode = 'edit' | 'preview';
 export interface BuilderContext {
     /**
      * @description
-     * Page Information
+     * Page Information (for pages) or region (for globals)
      */
-    page: ResultOf<typeof getPageQuery>['page'];
+    page: ResultOf<typeof getPageQuery>['page'] | null;
+    region?: string;
     /**
      * @description
      * The theme for the Shop
@@ -54,12 +60,12 @@ export interface BuilderContext {
     changeMode: (mode: Mode) => void;
     /**
      * @description
-     * The function to save the page.
+     * The function to save the page or global.
      */
     save: (changeDescription?: string) => Promise<void>;
     /**
      * @description
-     * The function to publish the page.
+     * The function to publish the page or global.
      */
     publish: () => Promise<void>;
     /**
@@ -69,12 +75,12 @@ export interface BuilderContext {
     createPage: (input: { name: string; slug: string; description?: string }) => Promise<void>;
     /**
      * @description
-     * The function to create a page.
+     * The function to change to a different page.
      */
     changePage: (pageId: string) => Promise<void>;
     /**
      * @description
-     * function to refresh the page
+     * function to refresh the page or global
      */
     refresh: ReturnType<typeof useQuery>['refetch'];
     /**
@@ -103,6 +109,12 @@ export interface BuilderContext {
      * Creating State
      */
     isCreating: boolean;
+
+    /**
+     * @description
+     * Whether this is a global builder (vs page builder)
+     */
+    isGlobal: boolean;
 }
 
 export function getBuilderPageQueryOptions(pageId: string) {
@@ -113,12 +125,21 @@ export function getBuilderPageQueryOptions(pageId: string) {
     });
 }
 
+export function getBuilderGlobalQueryOptions(region: string) {
+    return queryOptions({
+        queryKey: ['builder-global', region],
+        queryFn: () => api.query(getBuilderGlobalQuery, { region }),
+        enabled: !!region,
+    });
+}
+
 export const BuilderContext = createContext<BuilderContext | null>(null);
 
 export function BuilderProvider({
     pageId,
+    region,
     children,
-}: Readonly<{ pageId?: string; children: React.ReactNode }>) {
+}: Readonly<{ pageId?: string; region?: string; children: React.ReactNode }>) {
     const navigate = useNavigate();
     const { actions, query } = useEditor();
     const queryClient = useQueryClient();
@@ -126,12 +147,27 @@ export function BuilderProvider({
     const [mode, setMode] = useState<Mode>('edit');
     const [content, setContent] = useState<string>();
 
-    // Fetch draft version
-    const { data: pageData, isLoading, refetch } = useQuery(getBuilderPageQueryOptions(pageId ?? ''));
-    // Save draft mutation
-    const saveDraftMutation = useMutation({
+    // Determine if this is a global builder
+    const isGlobal = !!region;
+
+    // Fetch page data if it's a page builder
+    const {
+        data: pageData,
+        isLoading: isPageLoading,
+        refetch: refetchPage,
+    } = useQuery(getBuilderPageQueryOptions(pageId ?? ''));
+
+    // Fetch global data if it's a global builder
+    const {
+        data: globalData,
+        isLoading: isGlobalLoading,
+        refetch: refetchGlobal,
+    } = useQuery(getBuilderGlobalQueryOptions(region ?? ''));
+
+    // Save draft mutation for pages
+    const savePageDraftMutation = useMutation({
         mutationFn: (input: { content: string; theme?: string; changeDescription?: string }) =>
-            api.mutate(savePageDraftMutation, {
+            api.mutate(savePageDraftGql, {
                 input: {
                     pageId: pageId!,
                     ...input,
@@ -139,6 +175,19 @@ export function BuilderProvider({
             }),
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['page-draft', pageId] });
+            toast.success('Draft saved');
+        },
+        onError: () => toast.error('Failed to save'),
+    });
+
+    // Save draft mutation for globals
+    const saveGlobalDraftMutation = useMutation({
+        mutationFn: (content: string) =>
+            api.mutate(saveBuilderGlobalDraftMutation, {
+                input: { region: region!, content },
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['builder-global', region] });
             toast.success('Draft saved');
         },
         onError: () => toast.error('Failed to save'),
@@ -158,10 +207,10 @@ export function BuilderProvider({
 
     const changeMode = (mode: Mode) => setMode(mode);
 
-    // Publish mutation
-    const publishMutation = useMutation({
+    // Publish mutation for pages
+    const publishPageMutation = useMutation({
         mutationFn: (input: { content: string; theme?: string; changeDescription?: string }) =>
-            api.mutate(publishPageMutation, {
+            api.mutate(publishPageGql, {
                 input: {
                     pageId: pageId!,
                     ...input,
@@ -175,18 +224,31 @@ export function BuilderProvider({
         onError: () => toast.error('Failed to publish'),
     });
 
+    // Publish mutation for globals
+    const publishGlobalMutation = useMutation({
+        mutationFn: (content: string) =>
+            api.mutate(publishBuilderGlobalMutation, {
+                input: { region: region!, content },
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['builder-global', region] });
+            toast.success('Global published');
+        },
+        onError: () => toast.error('Failed to publish'),
+    });
+
     // Create page mutation
     const createMutation = useMutation({
         mutationFn: (input: { name: string; slug: string; description?: string }) => {
             const createInput = { ...input, content: '' };
             if (!pageId) createInput.content = getPageContent();
-            return api.mutate(createPageMutation, { input: createInput });
+            return api.mutate(createPageGql, { input: createInput });
         },
     });
 
     const themeUpdateMutation = useMutation({
         mutationFn: (input: { id: string; value: string }) =>
-            api.mutate(updateThemeMutation, {
+            api.mutate(updateThemeGql, {
                 input,
             }),
         onSuccess: () => {
@@ -196,70 +258,103 @@ export function BuilderProvider({
         onError: () => toast.error('Failed to update theme'),
     });
 
-    // Load content into editor
+    // Load content into editor based on whether it's a page or global
     useEffect(() => {
-        if (!isLoading) {
-            const content =
-                pageData?.page?.draftVersion?.content || pageData?.page?.publishedVersion?.content;
-            const theme = pageData?.theme.value;
-            if (theme) {
-                setThemeOnCanvas(theme);
-            }
-            if (content) {
-                try {
-                    const decompressedContent = decompressContent(content);
-                    actions.deserialize(decompressedContent);
-                    setIsContentLoaded(true);
-                } catch (error) {
-                    console.error('Failed to load page content:', error);
+        if (isGlobal) {
+            // Handle global content loading
+            if (!isGlobalLoading) {
+                const content = globalData?.builderGlobal?.draftContent || globalData?.builderGlobal?.content;
+                if (content) {
+                    try {
+                        const decompressed = decompressContent(content);
+                        actions.deserialize(decompressed);
+                        setIsContentLoaded(true);
+                    } catch {
+                        setIsContentLoaded(true);
+                    }
+                } else {
                     setIsContentLoaded(true);
                 }
-            } else {
-                // Empty Page
-                setIsContentLoaded(true);
+            }
+        } else {
+            // Handle page content loading
+            if (!isPageLoading) {
+                const content =
+                    pageData?.page?.draftVersion?.content || pageData?.page?.publishedVersion?.content;
+                const theme = pageData?.theme.value;
+                if (theme) {
+                    setThemeOnCanvas(theme);
+                }
+                if (content) {
+                    try {
+                        const decompressedContent = decompressContent(content);
+                        actions.deserialize(decompressedContent);
+                        setIsContentLoaded(true);
+                    } catch (error) {
+                        console.error('Failed to load page content:', error);
+                        setIsContentLoaded(true);
+                    }
+                } else {
+                    // Empty Page
+                    setIsContentLoaded(true);
+                }
             }
         }
-    }, [pageData, isLoading, pageId]);
+    }, [pageData, globalData, isPageLoading, isGlobalLoading, pageId, region, isGlobal]);
 
-    // Reset loaded state when pageId changes
+    // Reset loaded state when pageId or region changes
     useEffect(() => {
         setIsContentLoaded(false);
-    }, [pageId]);
+    }, [pageId, region]);
 
-    // Save handler
+    // Save handler - handles both pages and globals
     const save = useCallback(
         async (changeDescription?: string) => {
-            if (!pageId) {
-                console.error('Cannot save without pageId');
-                return;
-            }
-
             const pageContent = getPageContent();
 
-            await saveDraftMutation.mutateAsync({
-                content: pageContent,
-                changeDescription,
-            });
+            if (isGlobal) {
+                if (!region) {
+                    console.error('Cannot save global without region');
+                    return;
+                }
+                await saveGlobalDraftMutation.mutateAsync(pageContent);
+            } else {
+                if (!pageId) {
+                    console.error('Cannot save page without pageId');
+                    return;
+                }
+                await savePageDraftMutation.mutateAsync({
+                    content: pageContent,
+                    changeDescription,
+                });
+            }
         },
-        [pageId, query, saveDraftMutation],
+        [isGlobal, pageId, region, query, savePageDraftMutation, saveGlobalDraftMutation],
     );
 
-    // Publish handler
+    // Publish handler - handles both pages and globals
     const publish = useCallback(
         async (changeDescription?: string) => {
-            if (!pageId) {
-                console.error('Cannot publish without pageId');
-                return;
-            }
-
             const pageContent = getPageContent();
 
-            await publishMutation.mutateAsync({
-                content: pageContent,
-                changeDescription,
-            });
+            if (isGlobal) {
+                if (!region) {
+                    console.error('Cannot publish global without region');
+                    return;
+                }
+                await publishGlobalMutation.mutateAsync(pageContent);
+            } else {
+                if (!pageId) {
+                    console.error('Cannot publish page without pageId');
+                    return;
+                }
+                await publishPageMutation.mutateAsync({
+                    content: pageContent,
+                    changeDescription,
+                });
+            }
         },
-        [pageId, publishMutation],
+        [isGlobal, pageId, region, publishPageMutation, publishGlobalMutation],
     );
 
     // Create page handler
@@ -269,7 +364,7 @@ export function BuilderProvider({
             void queryClient.invalidateQueries({ queryKey: ['pages'] });
             navigate({ to: `/dashboard/builder/$id`, params: { id: result.createPage.id } });
         },
-        [createPageMutation],
+        [createMutation],
     );
 
     const changePage = useCallback(
@@ -286,15 +381,21 @@ export function BuilderProvider({
         [themeUpdateMutation],
     );
 
+    // Determine loading state based on whether it's a page or global
+    const isLoading = isGlobal ? isGlobalLoading : isPageLoading;
+    const refetch = isGlobal ? refetchGlobal : refetchPage;
+
     return (
         <BuilderContext.Provider
             value={{
                 // Data
-                page: pageData?.page ?? null,
-                theme: pageData?.theme,
+                page: isGlobal ? null : (pageData?.page ?? null),
+                region: isGlobal ? region : undefined,
+                theme: isGlobal ? undefined : pageData?.theme,
                 isLoading: isLoading || !isContentLoaded,
                 mode,
                 content,
+                isGlobal,
 
                 // Actions
                 changeMode,
@@ -307,8 +408,8 @@ export function BuilderProvider({
                 getPageContent,
 
                 // States
-                isSaving: saveDraftMutation.isPending,
-                isPublishing: publishMutation.isPending,
+                isSaving: isGlobal ? saveGlobalDraftMutation.isPending : savePageDraftMutation.isPending,
+                isPublishing: isGlobal ? publishGlobalMutation.isPending : publishPageMutation.isPending,
                 isCreating: createMutation.isPending,
             }}
         >

@@ -2,8 +2,6 @@ import type { SerializedNode, SerializedNodes } from '@craftjs/core';
 import { RootContainer } from '@vendure/storefront-blocks/atoms';
 import { ComponentMap } from '@vendure/storefront-blocks/components-map';
 import type { FacetGroup, Product, ShopProduct } from '@vendure/storefront-blocks/types';
-import { FooterRenderer } from './compounds/footer/main';
-import { HeaderRenderer } from './compounds/header/main';
 import { HeroBannerRenderer } from './compounds/hero/banner';
 import { CheckoutPageRenderer } from './page/checkout';
 import { ProductPageRenderer } from './page/product';
@@ -49,12 +47,10 @@ function RenderRoot({ node, tree, theme, shopcode, data }: NodeRendererProps) {
                 ? currentChildNode.type
                 : currentChildNode.type.resolvedName
         ) as keyof typeof ComponentMap;
+        // Header and Footer are rendered by the global layout
+        if (componentName == 'Header' || componentName == 'Footer') return null;
         if (componentName == 'HeroBanner')
             return <HeroBannerRenderer key={nodeId} node={currentChildNode} tree={tree} />;
-        if (componentName == 'Header')
-            return <HeaderRenderer key={nodeId} node={currentChildNode} tree={tree} />;
-        if (componentName == 'Footer')
-            return <FooterRenderer key={nodeId} node={currentChildNode} tree={tree} />;
         if (componentName == 'FeaturedCollections')
             return (
                 <FeaturedCollectionsRenderer

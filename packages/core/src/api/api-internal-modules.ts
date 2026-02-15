@@ -15,6 +15,7 @@ import { IdCodecService } from './common/id-codec.service';
 import { AdministratorResolver } from './resolvers/admin/administrator.resolver';
 import { AssetResolver } from './resolvers/admin/asset.resolver';
 import { AuthResolver } from './resolvers/admin/auth.resolver';
+import { BuilderGlobalResolver } from './resolvers/admin/builder-global.resolver';
 import { ChannelResolver } from './resolvers/admin/channel.resolver';
 import { CollectionResolver } from './resolvers/admin/collection.resolver';
 import { CountryResolver } from './resolvers/admin/country.resolver';
@@ -88,6 +89,7 @@ import { TaxRateEntityResolver } from './resolvers/entity/tax-rate-entity.resolv
 import { UserEntityResolver } from './resolvers/entity/user-entity.resolver';
 import { ZoneEntityResolver } from './resolvers/entity/zone-entity.resolver';
 import { ShopAuthResolver } from './resolvers/shop/shop-auth.resolver';
+import { ShopBuilderGlobalResolver } from './resolvers/shop/shop-builder-global.resolver';
 import { ShopCustomerResolver } from './resolvers/shop/shop-customer.resolver';
 import { ShopEnvironmentResolver } from './resolvers/shop/shop-environment.resolver';
 import { ShopOrderResolver } from './resolvers/shop/shop-order.resolver';
@@ -100,6 +102,7 @@ const adminResolvers = [
     AdministratorResolver,
     AssetResolver,
     AuthResolver,
+    BuilderGlobalResolver,
     ChannelResolver,
     CollectionResolver,
     CountryResolver,
@@ -133,6 +136,7 @@ const adminResolvers = [
 
 const shopResolvers = [
     ShopAuthResolver,
+    ShopBuilderGlobalResolver,
     ShopCustomerResolver,
     ShopOrderResolver,
     ShopProductsResolver,

@@ -1,0 +1,9 @@
+type PublishedBuilderGlobal {
+    region: String!
+    content: String!
+}
+
+extend type Query {
+    "Get all published builder globals (header, footer, etc.)"
+    publishedBuilderGlobals: [PublishedBuilderGlobal!]!
+}

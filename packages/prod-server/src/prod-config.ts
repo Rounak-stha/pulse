@@ -5,11 +5,11 @@ import type { DataSourceOptions } from '@vendure/core';
 import {
     DefaultLogger,
     DefaultSearchPlugin,
-    khaltiPaymentHandler,
     GoogleAuthPlugin,
-    SyncPagesPlugin,
+    khaltiPaymentHandler,
     LogLevel,
     SettingsStoreScopes,
+    SyncPagesPlugin,
     VendureConfig,
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
@@ -56,6 +56,7 @@ export const config: VendureConfig = {
     },
     dbConnectionOptions: {
         logging: false,
+        synchronize: true,
         migrations: [path.join(__dirname, 'migrations/*.ts')],
         ...getDbConfig(),
     },
@@ -105,7 +106,7 @@ export const config: VendureConfig = {
             googleClientId: getRequiredEnv('GOOGLE_CLIENT_ID'),
             googleClientSecret: getRequiredEnv('GOOGLE_CLIENT_SECRET'),
         }),
-        SyncPagesPlugin
+        SyncPagesPlugin,
     ],
 };
 

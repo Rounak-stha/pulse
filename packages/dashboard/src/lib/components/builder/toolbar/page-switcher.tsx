@@ -1,9 +1,15 @@
 import { api } from '@/vdb/graphql/api.js';
 import { PageFragment } from '@/vdb/graphql/fragments.js';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, FileText, Plus } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { ChevronDown, FileText, GlobeIcon, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { getPagesQuery } from '../buider.graphql.js';
+import { getPagesQuery } from '../builder.graphql.js';
+
+const GLOBALS = [
+    { region: 'header', label: 'Header' },
+    { region: 'footer', label: 'Footer' },
+];
 
 interface PageSwitcherProps {
     currentPage: PageFragment | null;
@@ -17,6 +23,7 @@ export const PageSwitcher: React.FC<PageSwitcherProps> = ({
     openCreatePageDialog,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const { data, isLoading } = useQuery({
         queryKey: ['pages'],
@@ -25,10 +32,9 @@ export const PageSwitcher: React.FC<PageSwitcherProps> = ({
 
     const pages = data?.pages.items || [];
 
-    const systemPages = useMemo(() =>    pages.filter(page => page.system), [pages]);
+    const systemPages = useMemo(() => pages.filter(page => page.system), [pages]);
     const customPages = useMemo(() => pages.filter(page => !page.system), [pages]);
 
-    console.log({pages})
     return (
         <div className="relative">
             <button
@@ -58,6 +64,25 @@ export const PageSwitcher: React.FC<PageSwitcherProps> = ({
                     </div>
 
                     <div className="p-3 space-y-4">
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3">Globals</p>
+                        <div>
+                        {GLOBALS.map(({ region, label }) => (
+                            <button
+                            key={region}
+                            onClick={() => {
+                                navigate({ to: `/dashboard/builder/globals/${region}` });
+                                setIsOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded text-sm transition-colors"
+                            >
+                            <GlobeIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{label}</span>
+                            </button>
+                        ))}
+                        </div>
+                    </div>
+
                     <div className="space-y-1">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3">System Pages</p>
                         <div className="max-h-64 overflow-y-auto">

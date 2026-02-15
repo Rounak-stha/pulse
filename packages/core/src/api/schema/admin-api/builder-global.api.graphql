@@ -1,0 +1,34 @@
+type BuilderGlobal implements Node {
+    id: ID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    region: String!
+    content: String!
+    draftContent: String!
+}
+
+input SaveBuilderGlobalDraftInput {
+    region: String!
+    content: String!
+}
+
+input PublishBuilderGlobalInput {
+    region: String!
+    content: String!
+}
+
+extend type Query {
+    "Get a builder global by region (e.g., 'header', 'footer')"
+    builderGlobal(region: String!): BuilderGlobal
+
+    "Get all builder globals for the current shop"
+    builderGlobals: [BuilderGlobal!]!
+}
+
+extend type Mutation {
+    "Save a draft for a builder global region"
+    saveBuilderGlobalDraft(input: SaveBuilderGlobalDraftInput!): BuilderGlobal!
+
+    "Publish a builder global region"
+    publishBuilderGlobal(input: PublishBuilderGlobalInput!): BuilderGlobal!
+}

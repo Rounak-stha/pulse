@@ -1,6 +1,7 @@
 import { useBuilder } from '@/vdb/providers/builder.js';
 import { useEditor } from '@craftjs/core';
 import {
+    ArrowLeftIcon,
     EyeIcon,
     MonitorIcon,
     Redo2Icon,
@@ -15,6 +16,7 @@ import { Button } from '../../ui/button.js';
 import { DeviceType } from '../types.js';
 import { CreatePageDialog } from './create-page-dialog.js';
 import { PageSwitcher } from './page-switcher.js';
+import { useNavigate } from '@tanstack/react-router';
 
 interface ToolbarInnerProps {
     device: DeviceType;
@@ -23,6 +25,11 @@ interface ToolbarInnerProps {
     onOpenRightSidebar?: () => void;
 }
 
+const REGION_LABELS: Record<string, string> = {
+    header: 'Header',
+    footer: 'Footer',
+};
+
 export const Toolbar: React.FC<ToolbarInnerProps> = ({
     device,
     setDevice,
@@ -30,12 +37,13 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
     onOpenRightSidebar,
 }) => {
     const [newPageDialogOpen, setNewPageDialogOpen] = useState(false);
+    const navigate = useNavigate();
     const builderContext = useBuilder();
     const { actions, enabled } = useEditor(state => ({
         enabled: state.options.enabled,
     }));
 
-    const { createPage, save, page, changePage, mode, changeMode, publish } = builderContext;
+    const { createPage, save, page, changePage, mode, changeMode, publish, isGlobal, region } = builderContext;
     const { selected } = useEditor(state => {
         const [currentNodeId] = state.events.selected;
         return { selected: currentNodeId };
@@ -59,7 +67,7 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
         actions.setOptions((opts: any) => {
             opts.enabled = !opts.enabled;
         });
-    }, [actions]);
+    }, [actions, mode, changeMode]);
 
     const handleCreatePage = async (input: { name: string; slug: string; description?: string }) => {
         await createPage(input); // navigate if page exists else no
@@ -75,6 +83,10 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
         if (!page) setNewPageDialogOpen(true);
         else publish();
     };
+
+    // For global context, use different navigation and labels
+    const isGlobalContext = isGlobal;
+    const regionLabel = isGlobalContext && region ? REGION_LABELS[region] || region : null;
 
     return (
         <div className="h-14 bg-background border-b border-border flex items-center justify-between px-4 gap-4">
@@ -101,12 +113,31 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                     </svg>
                 </button>
 
-                <h1 className="text-sm font-semibold text-foreground hidden sm:block">Builder</h1>
-                <PageSwitcher
-                    currentPage={page}
-                    onPageChange={changePage}
-                    openCreatePageDialog={() => setNewPageDialogOpen(true)}
-                />
+                {isGlobalContext ? (
+                    <>
+                        <button
+                            onClick={() => navigate({ to: '/dashboard/builder' })}
+                            className="p-2 hover:bg-muted rounded"
+                            title="Back to pages"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-muted-foreground uppercase">Global</span>
+                            <span className="text-sm font-semibold">{regionLabel}</span>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="text-sm font-semibold text-foreground hidden sm:block">Builder</h1>
+                        <PageSwitcher
+                            currentPage={page}
+                            onPageChange={changePage}
+                            openCreatePageDialog={() => setNewPageDialogOpen(true)}
+                        />
+                    </>
+                )}
             </div>
 
             <div className="flex flex-1 items-center justify-end gap-2">
@@ -150,16 +181,16 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                 </button>
 
                 <div className="flex items-center gap-2">
-                    <Button onClick={handleSave} size="sm" variant="outline" className="hidden sm:flex">
+                    <Button onClick={save} size="sm" variant="outline" className="hidden sm:flex">
                         <SaveIcon className="w-4 h-4 inline sm:mr-2" />
                         <span className="hidden sm:inline">Save</span>
                     </Button>
-                    <Button onClick={handlePublish} size="sm" className="hidden sm:flex">
+                    <Button onClick={publish} size="sm" className="hidden sm:flex">
                         <SendIcon className="w-4 h-4 inline sm:mr-2" />
                         <span className="hidden sm:inline">Publish</span>
                     </Button>
                      {/* Mobile Save/Publish (Simplified or just Icons if space is tight) */}
-                     <Button onClick={handleSave} size="icon" variant="ghost" className="sm:hidden">
+                     <Button onClick={save} size="icon" variant="ghost" className="sm:hidden">
                         <SaveIcon className="w-4 h-4" />
                     </Button>
                 </div>
@@ -188,11 +219,14 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
                     </button>
                  )}
             </div>
-            <CreatePageDialog
-                open={newPageDialogOpen}
-                onOpenChange={setNewPageDialogOpen}
-                onSubmit={handleCreatePage}
-            />
+            
+            {!isGlobalContext && (
+                <CreatePageDialog
+                    open={newPageDialogOpen}
+                    onOpenChange={setNewPageDialogOpen}
+                    onSubmit={handleCreatePage}
+                />
+            )}
         </div>
     );
 };

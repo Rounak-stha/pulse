@@ -4,6 +4,7 @@ import { Asset } from './asset/asset.entity';
 import { AuthenticationMethod } from './authentication-method/authentication-method.entity';
 import { ExternalAuthenticationMethod } from './authentication-method/external-authentication-method.entity';
 import { NativeAuthenticationMethod } from './authentication-method/native-authentication-method.entity';
+import { BuilderGlobal } from './builder-global/builder-global.entity';
 import { Channel } from './channel/channel.entity';
 import { CollectionAsset } from './collection/collection-asset.entity';
 import { CollectionTranslation } from './collection/collection-translation.entity';
@@ -86,6 +87,7 @@ export const coreEntitiesMap = {
     Asset,
     AuthenticatedSession,
     AuthenticationMethod,
+    BuilderGlobal,
     Cancellation,
     Channel,
     Collection,

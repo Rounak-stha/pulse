@@ -110,7 +110,6 @@ export default async function ShopProductsPage({
     const theme = parseTheme(data.theme?.value);
     const { products, facetGroups, totalItems } = mapProductsToShopData(data);
 
-    console.log({ products, facetGroups, totalItems });
     return (
         <BuilderTreeRenderer
             tree={tree}

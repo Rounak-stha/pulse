@@ -37,3 +37,24 @@ export const getPageBySlugQuery: TypedDocumentNode<GetPageBySlugQuery, GetPageBy
         }
     }
 `;
+
+type PublishedBuilderGlobal = {
+    region: string;
+    content: string;
+};
+
+type GetPublishedBuilderGlobalsQuery = {
+    publishedBuilderGlobals: PublishedBuilderGlobal[];
+};
+
+export const getPublishedBuilderGlobalsQuery: TypedDocumentNode<
+    GetPublishedBuilderGlobalsQuery,
+    Record<string, never>
+> = gql`
+    query GetPublishedBuilderGlobals {
+        publishedBuilderGlobals {
+            region
+            content
+        }
+    }
+`;

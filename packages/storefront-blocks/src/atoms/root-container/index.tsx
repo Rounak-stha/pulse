@@ -9,7 +9,7 @@ export function RootContainer({ children, ref, theme }: RootContainerProps) {
             {!children && (
                 <div className="pt-96 flex items-center justify-center pointer-events-none">
                     <div className="text-center space-y-3">
-                        <div className="text-gray-400 text-lg font-medium">Drop components here hahaha</div>
+                        <div className="text-gray-400 text-lg font-medium">Drop components here</div>
                         <div className="text-gray-300 text-sm">
                             Drag and drop blocks from the builder to start building
                         </div>

@@ -2,6 +2,7 @@ import { Badge } from '@/vdb/components/builder/blocks/atoms/badge/index.js';
 import { Button } from '@/vdb/components/builder/blocks/atoms/button/index.js';
 import { Headline } from '@/vdb/components/builder/blocks/atoms/headline/index.js';
 import { RootContainer } from '@/vdb/components/builder/blocks/atoms/root-container/index.js';
+import { GlobalRootContainer } from '@/vdb/components/builder/blocks/atoms/global-root-container/index.js';
 import { Subtext } from '@/vdb/components/builder/blocks/atoms/sub-text/index.js';
 import { Footer } from '@/vdb/components/builder/blocks/compounds/footer/main/index.js';
 import { Header } from '@/vdb/components/builder/blocks/compounds/header/main/index.js';
@@ -28,6 +29,7 @@ import {
 
 export const BuilderComponents = {
     RootContainer,
+    GlobalRootContainer,
     HeroBanner,
     Header,
     FeaturedCollections,

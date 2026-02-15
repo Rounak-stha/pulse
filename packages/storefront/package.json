@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "set NODE_TLS_REJECT_UNAUTHORIZED='0' node server.js",
         "build": "npm run build --prefix=../storefront-blocks && next build",
         "start": "next start",
         "lint": "eslint"

@@ -15,7 +15,7 @@ import {
     FooterProps,
     SocialLink,
 } from '@/builder-blocks/compounds/footer/index.js';
-import { getPagesQuery } from '@/vdb/components/builder/buider.graphql.js';
+import { getPagesQuery } from '@/vdb/components/builder/builder.graphql.js';
 import { Input } from '@/vdb/components/ui/input.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/vdb/components/ui/select.js';
 import { api } from '@/vdb/graphql/api.js';

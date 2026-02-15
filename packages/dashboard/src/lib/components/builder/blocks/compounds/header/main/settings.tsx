@@ -10,7 +10,7 @@ import {
 } from '../../../../common/index.js';
 
 import { HeaderProps, LinkItem, LinkType } from '@/builder-blocks/compounds/header/index.js';
-import { getPagesQuery } from '@/vdb/components/builder/buider.graphql.js';
+import { getPagesQuery } from '@/vdb/components/builder/builder.graphql.js';
 import { Input } from '@/vdb/components/ui/input.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/vdb/components/ui/select.js';
 import { api } from '@/vdb/graphql/api.js';
@@ -284,7 +284,6 @@ function LinkSelect({ linkType, setLabel, setValue, label, value }: LinkSelectPr
     const pages = data?.pages.items || [];
 
     const selectInternalLink = (id: string) => {
-        [];
         const page = pages.find(page => page.id == id);
 
         if (!page) return;
