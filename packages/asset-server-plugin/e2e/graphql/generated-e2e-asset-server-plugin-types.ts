@@ -343,6 +343,15 @@ export type BooleanStructFieldConfig = StructField & {
   ui?: Maybe<Scalars['JSON']['output']>;
 };
 
+export type BuilderGlobal = Node & {
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  draftContent: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  region: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 /** Returned if an attempting to cancel lines from an Order which is still active */
 export type CancelActiveOrderError = ErrorResult & {
   errorCode: ErrorCode;
@@ -2902,6 +2911,8 @@ export type Mutation = {
   modifyOrder: ModifyOrderResult;
   /** Move a Collection to a different parent or index */
   moveCollection: Collection;
+  /** Publish a builder global region */
+  publishBuilderGlobal: BuilderGlobal;
   /** Publish a draft version (admin only) */
   publishPage: Page;
   refundOrder: RefundOrderResult;
@@ -2945,6 +2956,8 @@ export type Mutation = {
   restorePageVersion: PageVersion;
   runPendingSearchIndexUpdates: Success;
   runScheduledTask: Success;
+  /** Save a draft for a builder global region */
+  saveBuilderGlobalDraft: BuilderGlobal;
   /** Save a new draft version (admin only) */
   savePageDraft: PageVersion;
   setCustomerForDraftOrder: SetCustomerForDraftOrderResult;
@@ -3588,6 +3601,11 @@ export type MutationMoveCollectionArgs = {
 };
 
 
+export type MutationPublishBuilderGlobalArgs = {
+  input: PublishBuilderGlobalInput;
+};
+
+
 export type MutationPublishPageArgs = {
   input: PublishPageInput;
 };
@@ -3688,6 +3706,11 @@ export type MutationRestorePageVersionArgs = {
 
 export type MutationRunScheduledTaskArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type MutationSaveBuilderGlobalDraftArgs = {
+  input: SaveBuilderGlobalDraftInput;
 };
 
 
@@ -5180,6 +5203,11 @@ export type ProvinceTranslationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PublishBuilderGlobalInput = {
+  content: Scalars['String']['input'];
+  region: Scalars['String']['input'];
+};
+
 export type PublishPageInput = {
   changeDescription?: InputMaybe<Scalars['String']['input']>;
   content: Scalars['String']['input'];
@@ -5206,12 +5234,18 @@ export type QuantityTooGreatError = ErrorResult & {
 export type Query = {
   activeAdministrator?: Maybe<Administrator>;
   activeChannel: Channel;
+  /** Returns the shop for the currently authenticated user */
+  activeShop: Shop;
   administrator?: Maybe<Administrator>;
   administrators: AdministratorList;
   /** Get a single Asset by id */
   asset?: Maybe<Asset>;
   /** Get a list of Assets */
   assets: AssetList;
+  /** Get a builder global by region (e.g., 'header', 'footer') */
+  builderGlobal?: Maybe<BuilderGlobal>;
+  /** Get all builder globals for the current shop */
+  builderGlobals: Array<BuilderGlobal>;
   channel?: Maybe<Channel>;
   channels: ChannelList;
   /** Get a Collection either by id or slug. If neither id nor slug is specified, an error will result. */
@@ -5332,6 +5366,11 @@ export type QueryAssetArgs = {
 
 export type QueryAssetsArgs = {
   options?: InputMaybe<AssetListOptions>;
+};
+
+
+export type QueryBuilderGlobalArgs = {
+  region: Scalars['String']['input'];
 };
 
 
@@ -5923,6 +5962,11 @@ export type Sale = Node & StockMovement & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type SaveBuilderGlobalDraftInput = {
+  content: Scalars['String']['input'];
+  region: Scalars['String']['input'];
+};
+
 export type SavePageVersionInput = {
   changeDescription?: InputMaybe<Scalars['String']['input']>;
   content: Scalars['String']['input'];
@@ -6197,9 +6241,13 @@ export type ShippingMethodTranslationInput = {
 export type Shop = Node & {
   code: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
   domain?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  logo?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  seoDescription?: Maybe<Scalars['String']['output']>;
+  seoTitle?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
 };
 
@@ -6939,9 +6987,13 @@ export type UpdateShippingMethodInput = {
 
 export type UpdateShopInput = {
   code?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   domain?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
+  logo?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  seoDescription?: InputMaybe<Scalars['String']['input']>;
+  seoTitle?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateShopResult = Shop;

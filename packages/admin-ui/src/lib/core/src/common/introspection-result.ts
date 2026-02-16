@@ -162,6 +162,7 @@
       "Allocation",
       "Asset",
       "AuthenticationMethod",
+      "BuilderGlobal",
       "Cancellation",
       "Channel",
       "Collection",

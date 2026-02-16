@@ -172,3 +172,18 @@ export const updateThemeMutation = graphql(`
         }
     }
 `);
+
+export const getActiveShopQuery = graphql(`
+    query GetActiveShop {
+        activeShop {
+            id
+            name
+            code
+            domain
+            description
+            logo
+            seoTitle
+            seoDescription
+        }
+    }
+`);

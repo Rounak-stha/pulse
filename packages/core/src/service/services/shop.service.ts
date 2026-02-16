@@ -3,6 +3,7 @@ import {
     CreateShopInput,
     CreateThemeInput,
     Permission,
+    UpdateShopInput,
     UpdateThemeInput,
 } from '@vendure/common/lib/generated-types';
 import { ID, Type } from '@vendure/common/lib/shared-types';
@@ -134,6 +135,14 @@ export class ShopService {
         return await shopCache.value();
     }
 
+    async getActiveShop(ctx: RequestContext): Promise<Shop> {
+        const shop = await this.connection.getRepository(ctx, Shop).findOne({ where: { id: ctx.shopId } });
+        if (!shop) {
+            throw new ShopNotFoundError(String(ctx.shopId));
+        }
+        return shop;
+    }
+
     findById(ctx: RequestContext, id: ID): Promise<Shop | undefined> {
         const channelId = ctx.channelId;
         const isSuperAdmin = ctx.userHasPermissions([Permission.SuperAdmin]);
@@ -186,6 +195,25 @@ export class ShopService {
         const shop = new Shop(input);
         const createdShop = await this.connection.getRepository(ctx, Shop).save(shop);
         return createdShop;
+    }
+
+    async updateShop(ctx: RequestContext, input: UpdateShopInput): Promise<Shop> {
+        const shop = await this.connection.getRepository(ctx, Shop).findOne({
+            where: { id: input.id },
+        });
+        if (!shop) {
+            throw new ShopNotFoundError(String(input.id));
+        }
+        if (input.name !== undefined) shop.name = input.name;
+        if (input.code !== undefined) shop.code = input.code;
+        if (input.domain !== undefined) shop.domain = input.domain;
+        if (input.description !== undefined) shop.description = input.description;
+        if (input.logo !== undefined) shop.logo = input.logo;
+        if (input.seoTitle !== undefined) shop.seoTitle = input.seoTitle;
+        if (input.seoDescription !== undefined) shop.seoDescription = input.seoDescription;
+        const updated = await this.connection.getRepository(ctx, Shop).save(shop);
+        await this.refreshCache(ctx);
+        return updated;
     }
 
     async createTheme(ctx: RequestContext, input: CreateThemeInput): Promise<Theme> {

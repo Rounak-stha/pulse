@@ -59,11 +59,8 @@ export function ProductSearchInput({ label = 'Products', onProductSelect }: Prod
                 <Card className="absolute top-full z-50 mt-1 w-full border shadow-lg">
                     <ScrollArea className="max-h-80">
                         {products.length > 0 ? (
-                            <div className="p-1">
+                            <div className="p-1 overflow-ellipsis">
                                 {products.map(product => {
-                                    const variant = product.variants[0];
-                                    const price = variant?.prices[0];
-
                                     return (
                                         <button
                                             key={product.id}
@@ -87,11 +84,9 @@ export function ProductSearchInput({ label = 'Products', onProductSelect }: Prod
                                             )}
                                             <div className="flex flex-col gap-0.5">
                                                 <p className="font-medium">{product.name}</p>
-
-                                                <p
-                                                    className="text-muted-foreground text-sm"
-                                                    dangerouslySetInnerHTML={{ __html: product.description }}
-                                                />
+                                                <p className="text-sm text-muted-foreground">
+                                                    {product.variants.length} Variants
+                                                </p>
                                             </div>
                                         </button>
                                     );

@@ -55,6 +55,9 @@ type Query {
 
     "Get SHop Theme"
     theme: Theme
+
+    "Returns the shop metadata for the current storefront"
+    activeShop: Shop!
 }
 
 type PublicPaymentMethod {

@@ -5,6 +5,10 @@ type Shop implements Node {
     name: String!
     code: String!
     domain: String
+    description: String
+    logo: String
+    seoTitle: String
+    seoDescription: String
 }
 
 type Theme implements Node {

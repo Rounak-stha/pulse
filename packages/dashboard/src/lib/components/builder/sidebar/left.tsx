@@ -1,6 +1,7 @@
 import { LayersIcon, LayoutIcon, PaletteIcon, SettingsIcon } from 'lucide-react';
 import { useState } from 'react';
 import { BlocksPanel } from './blocks/index.js';
+import { StoreSettingsPanel } from './store-settings/index.js';
 import { ThemePanel } from './theme/index.js';
 
 type TabType = 'blocks' | 'theme' | 'pages' | 'settings';
@@ -44,12 +45,7 @@ export const LeftSidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                     </div>
                 )}
 
-                {activeTab === 'settings' && (
-                    <div>
-                        <h3 className="font-semibold text-sm text-foreground mb-3">Builder Settings</h3>
-                        <p className="text-xs text-muted-foreground">Global builder configuration</p>
-                    </div>
-                )}
+                {activeTab === 'settings' && <StoreSettingsPanel />}
             </div>
         </div>
     );

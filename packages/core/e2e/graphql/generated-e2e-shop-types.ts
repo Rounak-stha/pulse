@@ -2857,6 +2857,11 @@ export type PublicShippingMethod = {
   translations: Array<ShippingMethodTranslation>;
 };
 
+export type PublishedBuilderGlobal = {
+  content: Scalars['String']['output'];
+  region: Scalars['String']['output'];
+};
+
 export type Query = {
   /** The active Channel */
   activeChannel: Channel;
@@ -2908,6 +2913,8 @@ export type Query = {
   product?: Maybe<Product>;
   /** Get a list of Products */
   products: ProductList;
+  /** Get all published builder globals (header, footer, etc.) */
+  publishedBuilderGlobals: Array<PublishedBuilderGlobal>;
   /** Search Products based on the criteria set by the `SearchInput` */
   search: SearchResponse;
   /** Get SHop Theme */

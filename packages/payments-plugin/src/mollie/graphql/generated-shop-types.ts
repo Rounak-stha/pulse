@@ -3047,6 +3047,12 @@ export type PublicShippingMethod = {
   translations: Array<ShippingMethodTranslation>;
 };
 
+export type PublishedBuilderGlobal = {
+  __typename?: 'PublishedBuilderGlobal';
+  content: Scalars['String']['output'];
+  region: Scalars['String']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** The active Channel */
@@ -3100,6 +3106,8 @@ export type Query = {
   product?: Maybe<Product>;
   /** Get a list of Products */
   products: ProductList;
+  /** Get all published builder globals (header, footer, etc.) */
+  publishedBuilderGlobals: Array<PublishedBuilderGlobal>;
   /** Search Products based on the criteria set by the `SearchInput` */
   search: SearchResponse;
   /** Get SHop Theme */

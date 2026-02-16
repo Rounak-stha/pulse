@@ -6,11 +6,13 @@ import {
     MutationRestorePageVersionArgs,
     MutationSavePageDraftArgs,
     MutationUpdatePageArgs,
+    MutationUpdateShopArgs,
     MutationUpdateThemeArgs,
     Permission,
     PublishedPage,
     QueryPageArgs,
     QueryPagesArgs,
+    QueryShopArgs,
 } from '@vendure/common/lib/generated-types';
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
 
@@ -18,6 +20,7 @@ import { UserInputError } from '../../../common';
 import { Theme } from '../../../entity';
 import { PageVersion } from '../../../entity/page/page-version.entity';
 import { Page } from '../../../entity/page/page.entity';
+import { Shop } from '../../../entity/shop/shop.entity';
 import { PageService } from '../../../service/services/page.service';
 import { ShopService } from '../../../service/services/shop.service';
 import { RequestContext } from '../../common/request-context';
@@ -109,6 +112,25 @@ export class PageResolver {
     @Allow(Permission.UpdatePage)
     async updatePage(@Ctx() ctx: RequestContext, @Args() args: MutationUpdatePageArgs): Promise<Page> {
         return this.pageService.update(ctx, args.input);
+    }
+
+    @Query()
+    @Allow(Permission.ReadPage)
+    async shop(@Ctx() ctx: RequestContext, @Args() args: QueryShopArgs): Promise<Shop | undefined> {
+        return this.shopService.findById(ctx, args.id);
+    }
+
+    @Query()
+    @Allow(Permission.ReadPage)
+    async activeShop(@Ctx() ctx: RequestContext): Promise<Shop> {
+        return this.shopService.getActiveShop(ctx);
+    }
+
+    @Transaction()
+    @Mutation()
+    @Allow(Permission.UpdatePage)
+    async updateShop(@Ctx() ctx: RequestContext, @Args() args: MutationUpdateShopArgs): Promise<Shop> {
+        return this.shopService.updateShop(ctx, args.input);
     }
 
     @Query()

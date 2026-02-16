@@ -22,8 +22,6 @@ export default async function ShopLayout({
     const headerTree = parsePageTree(headerGlobal?.content);
     const footerTree = parsePageTree(footerGlobal?.content);
 
-    console.log({ data, headerTree, footerTree });
-
     return (
         <>
             <GlobalHeaderRenderer tree={headerTree} />

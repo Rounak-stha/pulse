@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import {
     ColorInput,
-    ImageUploadInput,
     SelectInput,
     SettingsTabs,
     ToggleInput,
@@ -117,27 +116,16 @@ export function HeaderSettings() {
                     />
 
                     {props.showLogo && (
-                        <>
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Logo Text</label>
-                                <input
-                                    type="text"
-                                    value={props.logoText || 'Brand'}
-                                    onChange={e => setProp((p: HeaderProps) => (p.logoText = e.target.value))}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
-                                />
-                            </div>
-
-                            <ImageUploadInput
-                                label="Logo Image (optional)"
-                                value={props.logoImage}
-                                onChange={val => setProp((p: HeaderProps) => (p.logoImage = val))}
-                            />
-
-                            <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded">
-                                💡 If both text and image are provided, both will be displayed
-                            </div>
-                        </>
+                        <div className="text-sm text-muted-foreground p-3 bg-muted/50 rounded space-y-2">
+                            <p>
+                                The store name and logo are managed in your{' '}
+                                <strong className="text-foreground">Store Settings</strong>.
+                            </p>
+                            <p className="text-xs">
+                                Open the <strong>Settings</strong> tab in the left sidebar to update
+                                your brand name and logo.
+                            </p>
+                        </div>
                     )}
                 </div>
             )}

@@ -58,3 +58,27 @@ export const getPublishedBuilderGlobalsQuery: TypedDocumentNode<
         }
     }
 `;
+
+type ActiveShopQuery = {
+    activeShop: {
+        id: string;
+        name: string;
+        description: string | null;
+        logo: string | null;
+        seoTitle: string | null;
+        seoDescription: string | null;
+    };
+};
+
+export const getActiveShopQuery: TypedDocumentNode<ActiveShopQuery, Record<string, never>> = gql`
+    query GetActiveShop {
+        activeShop {
+            id
+            name
+            description
+            logo
+            seoTitle
+            seoDescription
+        }
+    }
+`;

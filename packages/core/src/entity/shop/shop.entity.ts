@@ -34,6 +34,18 @@ export class Shop extends VendureEntity {
     @Column({ nullable: true })
     domain: string;
 
+    @Column({ nullable: true })
+    description: string;
+
+    @Column({ nullable: true })
+    logo: string;
+
+    @Column({ nullable: true })
+    seoTitle: string;
+
+    @Column({ nullable: true })
+    seoDescription: string;
+
     @OneToMany(() => Channel, channel => channel.shop)
     channels: Channel[];
 }
