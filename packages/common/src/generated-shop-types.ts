@@ -2982,6 +2982,8 @@ export type Query = {
   activePaymentMethods: Array<Maybe<PublicPaymentMethod>>;
   /** Get active shipping methods */
   activeShippingMethods: Array<Maybe<PublicShippingMethod>>;
+  /** Returns the shop metadata for the current storefront */
+  activeShop: Shop;
   /** An array of supported Countries */
   availableCountries: Array<Country>;
   /** Returns a Collection either by its id or slug. If neither 'id' nor 'slug' is specified, an error will result. */
@@ -3317,6 +3319,20 @@ export type ShippingMethodTranslation = {
   id: Scalars['ID']['output'];
   languageCode: LanguageCode;
   name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type Shop = Node & {
+  __typename?: 'Shop';
+  code: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  domain?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  logo?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  seoDescription?: Maybe<Scalars['String']['output']>;
+  seoTitle?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
 };
 

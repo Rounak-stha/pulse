@@ -328,6 +328,19 @@ type ShopPageVersion implements Node {
     theme: JSON
 }
 
+type Shop implements Node {
+    id: ID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    name: String!
+    code: String!
+    domain: String
+    description: String
+    logo: String
+    seoTitle: String
+    seoDescription: String
+}
+
 type Theme implements Node {
     id: ID!
     value: JSON!
