@@ -1,5 +1,3 @@
-'use client';
-
 import type { SerializedNodes } from '@craftjs/core';
 import { FooterRenderer } from './compounds/footer/main';
 import { HeaderRenderer } from './compounds/header/main';

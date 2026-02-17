@@ -1,4 +1,5 @@
 'use client';
+import { ApolloProvider } from '@/app/providers/apollo';
 import { activeOrderQuery } from '@/lib/queries/checkout';
 import { useQuery } from '@apollo/client/react';
 import type { SerializedNode, SerializedNodes } from '@craftjs/core';
@@ -37,6 +38,14 @@ const STEP_SEQUENCE: CheckoutStep[] = [
 ];
 
 export function CheckoutPageRenderer({ node, tree, shopcode }: CheckoutPageRendererProps) {
+    return (
+        <ApolloProvider>
+            <CheckoutPageRendererInner node={node} tree={tree} shopcode={shopcode} />
+        </ApolloProvider>
+    );
+}
+
+function CheckoutPageRendererInner({ node, tree, shopcode }: CheckoutPageRendererProps) {
     const [step, setStep] = useState<CheckoutStep>('ORDER_SUMMARY');
     const [completedOrderCode, setCompletedOrderCode] = useState<string>();
     const { data, refetch } = useQuery(activeOrderQuery, {

@@ -1,6 +1,7 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 
+import { ApolloProvider } from '@/app/providers/apollo';
 import { addItemToOrderMutation } from '@/lib/queries/cart';
 import { useMutation } from '@apollo/client/react';
 import { AddToCart as AddToCartPure } from '@vendure/storefront-blocks/compounds';
@@ -12,6 +13,14 @@ type AddToCartProps = AddToCartPropsPure & {
 };
 
 export const AddToCart: FC<AddToCartProps> = props => {
+    return (
+        <ApolloProvider>
+            <AddToCartInner {...props} />
+        </ApolloProvider>
+    );
+};
+
+const AddToCartInner: FC<AddToCartProps> = props => {
     const [addToCart] = useMutation(addItemToOrderMutation, {
         context: {
             headers: {

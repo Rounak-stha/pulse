@@ -10,6 +10,11 @@ type QueryConfig<TData, TVariables extends OperationVariables> = {
     variables: TVariables;
 };
 
+type FetchPageDataOptions = {
+    tags?: string[];
+    revalidate?: number | false;
+};
+
 type PageDataResult<T> = {
     data: T | null;
     error: string | null;
@@ -19,11 +24,13 @@ type PageDataResult<T> = {
 export async function fetchPageData<T1, V1 extends OperationVariables>(
     shopcode: string,
     queries: [QueryConfig<T1, V1>],
+    options?: FetchPageDataOptions,
 ): Promise<PageDataResult<T1>>;
 
 export async function fetchPageData<T1, V1 extends OperationVariables, T2, V2 extends OperationVariables>(
     shopcode: string,
     queries: [QueryConfig<T1, V1>, QueryConfig<T2, V2>],
+    options?: FetchPageDataOptions,
 ): Promise<PageDataResult<T1 & T2>>;
 
 export async function fetchPageData<
@@ -36,6 +43,7 @@ export async function fetchPageData<
 >(
     shopcode: string,
     queries: [QueryConfig<T1, V1>, QueryConfig<T2, V2>, QueryConfig<T3, V3>],
+    options?: FetchPageDataOptions,
 ): Promise<PageDataResult<T1 & T2 & T3>>;
 
 export async function fetchPageData<
@@ -50,12 +58,14 @@ export async function fetchPageData<
 >(
     shopcode: string,
     queries: [QueryConfig<T1, V1>, QueryConfig<T2, V2>, QueryConfig<T3, V3>, QueryConfig<T4, V4>],
+    options?: FetchPageDataOptions,
 ): Promise<PageDataResult<T1 & T2 & T3 & T4>>;
 
 // Implementation signature
 export async function fetchPageData<TData, TVariables extends OperationVariables>(
     shopcode: string,
     queries: QueryConfig<TData, TVariables>[],
+    options?: FetchPageDataOptions,
 ): Promise<PageDataResult<TData>> {
     const client = getClient();
 
@@ -64,7 +74,15 @@ export async function fetchPageData<TData, TVariables extends OperationVariables
             client.query({
                 query,
                 variables,
-                context: { headers: { shopcode } },
+                context: {
+                    headers: { shopcode },
+                    fetchOptions: {
+                        next: {
+                            revalidate: options?.revalidate ?? 60,
+                            tags: [`shop:${shopcode}`, ...(options?.tags ?? [])],
+                        },
+                    },
+                },
                 errorPolicy: 'all',
             }),
         ),

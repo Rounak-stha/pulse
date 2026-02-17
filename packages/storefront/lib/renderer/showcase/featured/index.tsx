@@ -28,6 +28,12 @@ export async function FeaturedCollectionsRenderer({ node, shopcode }: RendererPr
             headers: {
                 shopcode: shopcode,
             },
+            fetchOptions: {
+                next: {
+                    revalidate: 60,
+                    tags: [`shop:${shopcode}`, 'collections'],
+                },
+            },
         },
         errorPolicy: 'all',
     });

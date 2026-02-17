@@ -3,6 +3,8 @@ import { fetchPageData, parsePageTree, parseTheme } from '@/lib/page-data';
 import { getPageBySlugQuery } from '@/lib/queries/page';
 import { getProductsQuery, GetProductsQuery } from '@/lib/queries/shop';
 import { BuilderTreeRenderer } from '@/lib/renderer';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import type { FacetGroup, ShopProduct } from '@vendure/storefront-blocks/types';
 
 function mapProductsToShopData(data: GetProductsQuery): {
@@ -68,6 +70,10 @@ function mapProductsToShopData(data: GetProductsQuery): {
     };
 }
 
+export const metadata: Metadata = {
+    title: 'Shop',
+};
+
 export default async function ShopProductsPage({
     params,
     searchParams: searchParamsPromise,
@@ -96,14 +102,14 @@ export default async function ShopProductsPage({
                 },
             },
         },
-    ]);
+    ], { tags: ['page:shop', 'products'], revalidate: 30 });
 
     if (error) {
         return <ErrorView title="Well… this is awkward" message={error} />;
     }
 
     if (!data?.pageBySlug?.publishedVersion) {
-        return <ErrorView title="Well… this is awkward" message="You stumbled into a nonexistent page." />;
+        notFound();
     }
 
     const tree = parsePageTree(data.pageBySlug.publishedVersion.content);

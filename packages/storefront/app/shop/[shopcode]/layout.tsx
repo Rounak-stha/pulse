@@ -13,7 +13,7 @@ export default async function ShopLayout({
 
     const { data } = await fetchPageData(shopcode, [
         { query: getPublishedBuilderGlobalsQuery, variables: {} },
-    ]);
+    ], { tags: ['globals'], revalidate: 120 });
 
     const globals = data?.publishedBuilderGlobals ?? [];
     const headerGlobal = globals.find(g => g.region === 'header');

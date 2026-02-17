@@ -1,4 +1,5 @@
 import type { SerializedNode, SerializedNodes } from '@craftjs/core';
+import { Suspense } from 'react';
 import { RootContainer } from '@vendure/storefront-blocks/atoms';
 import { ComponentMap } from '@vendure/storefront-blocks/components-map';
 import type { FacetGroup, Product, ShopProduct } from '@vendure/storefront-blocks/types';
@@ -53,12 +54,13 @@ function RenderRoot({ node, tree, theme, shopcode, data }: NodeRendererProps) {
             return <HeroBannerRenderer key={nodeId} node={currentChildNode} tree={tree} />;
         if (componentName == 'FeaturedCollections')
             return (
-                <FeaturedCollectionsRenderer
-                    key={nodeId}
-                    node={currentChildNode}
-                    tree={tree}
-                    shopcode={shopcode}
-                />
+                <Suspense key={nodeId} fallback={<div className="h-64 animate-pulse bg-gray-200 rounded-lg" />}>
+                    <FeaturedCollectionsRenderer
+                        node={currentChildNode}
+                        tree={tree}
+                        shopcode={shopcode}
+                    />
+                </Suspense>
             );
         if (componentName == 'ProductPage') {
             const product = isProductPage(data) ? data.product : null;
