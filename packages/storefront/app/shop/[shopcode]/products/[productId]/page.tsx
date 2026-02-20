@@ -6,31 +6,41 @@ import { BuilderTreeRenderer } from '@/lib/renderer';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export async function generateMetadata({ params }: PageProps<'/shop/[shopcode]/product/[productId]'>): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: PageProps<'/shop/[shopcode]/products/[productId]'>): Promise<Metadata> {
     const { shopcode, productId } = await params;
-    const { data } = await fetchPageData(shopcode, [
-        { query: getProductQuery, variables: { id: productId } },
-    ], { tags: [`product:${productId}`] });
+    const { data } = await fetchPageData(
+        shopcode,
+        [{ query: getProductQuery, variables: { id: productId } }],
+        { tags: [`product:${productId}`] },
+    );
 
     const product = data?.product;
 
     return {
         title: product?.name,
         description: product?.description ?? undefined,
-        openGraph: product ? {
-            title: product.name,
-            description: product.description ?? undefined,
-            images: product.featuredAsset ? [{ url: product.featuredAsset.preview }] : undefined,
-        } : undefined,
+        openGraph: product
+            ? {
+                  title: product.name,
+                  description: product.description ?? undefined,
+                  images: product.featuredAsset ? [{ url: product.featuredAsset.preview }] : undefined,
+              }
+            : undefined,
     };
 }
 
-export default async function ProductPage({ params }: PageProps<'/shop/[shopcode]/product/[productId]'>) {
+export default async function ProductPage({ params }: PageProps<'/shop/[shopcode]/products/[productId]'>) {
     const { shopcode, productId } = await params;
-    const { data, error } = await fetchPageData(shopcode, [
-        { query: getPageBySlugQuery, variables: { slug: 'product' } },
-        { query: getProductQuery, variables: { id: productId } },
-    ], { tags: [`page:product`, `product:${productId}`] });
+    const { data, error } = await fetchPageData(
+        shopcode,
+        [
+            { query: getPageBySlugQuery, variables: { slug: 'products' } },
+            { query: getProductQuery, variables: { id: productId } },
+        ],
+        { tags: [`page:product`, `product:${productId}`] },
+    );
 
     if (error) {
         return <ErrorView title="Well… this is awkward" message={error} />;
