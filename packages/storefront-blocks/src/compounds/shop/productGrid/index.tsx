@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import type { FC } from 'react';
 import { cn } from '../../../lib/utils.js';
 import { useShopPreview } from '../context.js';
@@ -69,14 +68,11 @@ export const ProductGrid: FC<ProductGridProps> = ({
 
     if (view === 'list') {
         return (
-            <div
-                ref={ref}
-                className={cn('flex flex-col', gapClasses[gap], selected && 'ring-2 ring-ring')}
-            >
+            <div ref={ref} className={cn('flex flex-col', gapClasses[gap], selected && 'ring-2 ring-ring')}>
                 {products.map(product => (
                     <a
                         key={product.productId}
-                        href={`/products/${product.slug}`}
+                        href={`/products/${product.productId}`}
                         onClick={e => {
                             if (onProductClick) {
                                 e.preventDefault();
@@ -135,7 +131,7 @@ export const ProductGrid: FC<ProductGridProps> = ({
             {products.map(product => (
                 <a
                     key={product.productId}
-                    href={`/products/${product.slug}`}
+                    href={`/products/${product.productId}`}
                     onClick={e => {
                         if (onProductClick) {
                             e.preventDefault();
@@ -149,7 +145,12 @@ export const ProductGrid: FC<ProductGridProps> = ({
                         cardStyle === 'detailed' && 'border border-border shadow-sm hover:shadow-md',
                     )}
                 >
-                    <div className={cn('w-full overflow-hidden bg-muted', aspectRatioClasses[imageAspectRatio])}>
+                    <div
+                        className={cn(
+                            'w-full overflow-hidden bg-muted',
+                            aspectRatioClasses[imageAspectRatio],
+                        )}
+                    >
                         {product.image?.preview ? (
                             <img
                                 src={product.image.preview}

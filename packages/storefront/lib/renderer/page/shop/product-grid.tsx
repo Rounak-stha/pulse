@@ -8,7 +8,7 @@ export const ProductGridRenderer: FC<ProductGridProps> = props => {
     const router = useRouter();
 
     const onProductClick = (product: ProductGridProps['products'][number]) => {
-        router.push(`/products/${product.slug}`);
+        router.push(`/products/${product.productId}`);
     };
 
     return <ProductGridPure {...props} onProductClick={onProductClick} />;
