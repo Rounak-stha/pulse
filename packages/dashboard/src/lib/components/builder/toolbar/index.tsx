@@ -76,12 +76,12 @@ export const Toolbar: React.FC<ToolbarInnerProps> = ({
     };
 
     const handleSave = async () => {
-        if (!page) setNewPageDialogOpen(true);
+        if (!page && !region) setNewPageDialogOpen(true);
         else save();
     };
 
     const handlePublish = async () => {
-        if (!page) setNewPageDialogOpen(true);
+        if (!page && !region) setNewPageDialogOpen(true);
         else publish();
     };
 
