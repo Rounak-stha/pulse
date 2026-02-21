@@ -12,6 +12,7 @@ export const DefaultAddToCartProps: AddToCartProps = {
         id: '',
         currencyCode: 'NPR',
         price: 0,
+        priceWithTax: 0,
         stockLevel: 'IN_STOCK',
         name: 'Variant Name',
         sku: 'Variant SKU',

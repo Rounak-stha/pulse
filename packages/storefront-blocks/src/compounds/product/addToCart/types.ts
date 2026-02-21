@@ -5,6 +5,9 @@ export interface AddToCartProps {
     product: Product;
     variant: Product['variants'][number];
     onAddToCart?: (variantId: string, quantity: number) => void;
+    cartQuantity?: number;
+    onViewCart?: () => void;
+    maxQuantity?: number;
     showQuantitySelector: boolean;
     showWishlist: boolean;
     showCompare: boolean;

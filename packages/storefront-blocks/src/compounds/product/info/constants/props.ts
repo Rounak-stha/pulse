@@ -19,6 +19,7 @@ export const DefaultProductInfoProps: ProductInfoProps = {
         stockLevel: 'IN_STOCK',
         currencyCode: 'NPR',
         price: 100,
+        priceWithTax: 113,
         name: 'DemoName',
         assets: [],
         featuredAsset: null,

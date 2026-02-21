@@ -1,4 +1,5 @@
 'use client';
+import { ShoppingCart } from 'lucide-react';
 import React from 'react';
 import { cn } from '../../../lib/utils.js';
 import { DefaultHeaderProps } from './constants/props.js';
@@ -26,6 +27,9 @@ export const Header: React.FC<HeaderProps> = ({
     showCTA = true,
     ctaText = 'Get Started',
     ctaStyle = 'primary',
+    showCart = true,
+    cartItemCount,
+    onCartClick,
     onLogoClick,
     onLinkClick,
     onCTAClick,
@@ -69,6 +73,31 @@ export const Header: React.FC<HeaderProps> = ({
             style={ctaStyle === 'outline' ? { color: textColor, borderColor: textColor } : {}}
         >
             {ctaText}
+        </button>
+    );
+
+    const displayCount = cartItemCount != null && cartItemCount > 9 ? '9+' : cartItemCount;
+
+    const CartIconContent = (
+        <button
+            onClick={onCartClick}
+            className="relative hover:opacity-70 transition-opacity"
+            aria-label="Cart"
+        >
+            <ShoppingCart className="h-5 w-5" style={{ color: textColor }} />
+            {cartItemCount != null && cartItemCount > 0 && (
+                <span
+                    className={cn(
+                        'absolute -top-2 -right-2',
+                        'min-w-[1.25rem] h-5 text-xs font-bold rounded-full',
+                        'flex items-center justify-center',
+                        'bg-blue-600 text-white',
+                        'transition-all duration-200',
+                    )}
+                >
+                    {displayCount}
+                </span>
+            )}
         </button>
     );
 
@@ -130,8 +159,13 @@ export const Header: React.FC<HeaderProps> = ({
                         </nav>
                     )}
 
-                    {/* CTA */}
-                    {showCTA && <div>{CTAContent}</div>}
+                    {/* Cart & CTA */}
+                    {(showCart || showCTA) && (
+                        <div className="flex items-center gap-4">
+                            {showCart && CartIconContent}
+                            {showCTA && CTAContent}
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

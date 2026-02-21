@@ -1,6 +1,9 @@
 import { fetchPageData, parsePageTree } from '@/lib/page-data';
 import { getPublishedBuilderGlobalsQuery } from '@/lib/queries/page';
 import { GlobalFooterRenderer, GlobalHeaderRenderer } from '@/lib/renderer/globals';
+import { ShopProviders } from './shop-providers';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ShopLayout({
     children,
@@ -23,10 +26,10 @@ export default async function ShopLayout({
     const footerTree = parsePageTree(footerGlobal?.content);
 
     return (
-        <>
+        <ShopProviders shopcode={shopcode}>
             <GlobalHeaderRenderer tree={headerTree} />
             {children}
             <GlobalFooterRenderer tree={footerTree} />
-        </>
+        </ShopProviders>
     );
 }

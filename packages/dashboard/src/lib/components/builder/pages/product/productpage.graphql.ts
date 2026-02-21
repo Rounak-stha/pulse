@@ -23,6 +23,7 @@ export const productPageQuery = graphql(`
                 sku
                 stockLevel
                 price
+                priceWithTax
                 currencyCode
                 featuredAsset {
                     id

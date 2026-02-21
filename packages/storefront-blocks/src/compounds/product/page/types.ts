@@ -23,6 +23,7 @@ export interface Product {
         sku: string;
         stockLevel: StockLevel;
         price: number;
+        priceWithTax: number;
         currencyCode: string;
         featuredAsset: {
             id: string;

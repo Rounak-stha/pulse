@@ -121,3 +121,76 @@ export const addItemToOrderMutation: TypedDocumentNode<
     }
     ${ACTIVE_ORDER_FRAGMENT}
 `;
+
+// Active Order Query
+type ActiveOrderQuery = {
+    activeOrder: ActiveOrder | null;
+};
+
+export const activeOrderQuery: TypedDocumentNode<ActiveOrderQuery> = gql`
+    query ActiveOrder {
+        activeOrder {
+            ...ActiveOrder
+        }
+    }
+    ${ACTIVE_ORDER_FRAGMENT}
+`;
+
+// Adjust Order Line
+type AdjustOrderLineResult = ActiveOrder | ErrorResult;
+
+type AdjustOrderLineMutation = {
+    adjustOrderLine: AdjustOrderLineResult;
+};
+
+type AdjustOrderLineMutationVariables = {
+    orderLineId: string;
+    quantity: number;
+};
+
+export const adjustOrderLineMutation: TypedDocumentNode<
+    AdjustOrderLineMutation,
+    AdjustOrderLineMutationVariables
+> = gql`
+    mutation AdjustOrderLine($orderLineId: ID!, $quantity: Int!) {
+        adjustOrderLine(orderLineId: $orderLineId, quantity: $quantity) {
+            ... on Order {
+                ...ActiveOrder
+            }
+            ... on ErrorResult {
+                errorCode
+                message
+            }
+        }
+    }
+    ${ACTIVE_ORDER_FRAGMENT}
+`;
+
+// Remove Order Line
+type RemoveOrderLineResult = ActiveOrder | ErrorResult;
+
+type RemoveOrderLineMutation = {
+    removeOrderLine: RemoveOrderLineResult;
+};
+
+type RemoveOrderLineMutationVariables = {
+    orderLineId: string;
+};
+
+export const removeOrderLineMutation: TypedDocumentNode<
+    RemoveOrderLineMutation,
+    RemoveOrderLineMutationVariables
+> = gql`
+    mutation RemoveOrderLine($orderLineId: ID!) {
+        removeOrderLine(orderLineId: $orderLineId) {
+            ... on Order {
+                ...ActiveOrder
+            }
+            ... on ErrorResult {
+                errorCode
+                message
+            }
+        }
+    }
+    ${ACTIVE_ORDER_FRAGMENT}
+`;

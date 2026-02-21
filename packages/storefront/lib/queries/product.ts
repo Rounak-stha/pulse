@@ -31,6 +31,7 @@ export const getProductQuery: TypedDocumentNode<GetProductQuery, GetProductQuery
                 sku
                 stockLevel
                 price
+                priceWithTax
                 currencyCode
                 featuredAsset {
                     id

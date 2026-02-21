@@ -199,6 +199,12 @@ export function HeaderSettings() {
             {activeTab === 'cta' && (
                 <div className="space-y-4">
                     <ToggleInput
+                        label="Show Cart Icon"
+                        value={props.showCart ?? true}
+                        onChange={val => setProp((p: HeaderProps) => (p.showCart = val))}
+                    />
+
+                    <ToggleInput
                         label="Show CTA Button"
                         value={props.showCTA ?? true}
                         onChange={val => setProp((p: HeaderProps) => (p.showCTA = val))}

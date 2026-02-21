@@ -15,3 +15,7 @@ export * from './info/types.js';
 export * from './page/constants/props.js';
 export * from './page/index.js';
 export * from './page/types.js';
+
+export * from './cartDrawer/constants/props.js';
+export * from './cartDrawer/index.js';
+export * from './cartDrawer/types.js';

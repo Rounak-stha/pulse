@@ -31,6 +31,7 @@ export const Header: React.FC<HeaderProps> = props => {
             selected={selected}
             logoText={shop?.name || props.logoText}
             logoImage={shop?.logo || props.logoImage}
+            cartItemCount={props.showCart ? 3 : undefined}
         />
     );
 };

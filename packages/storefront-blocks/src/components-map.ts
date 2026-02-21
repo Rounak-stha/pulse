@@ -1,6 +1,7 @@
 import { Badge, Button, Headline, RootContainer, Subtext } from './atoms/index.js';
 import {
     AddToCart,
+    CartDrawer,
     CheckoutPage,
     Confirmation,
     CustomerInfo,
@@ -36,6 +37,7 @@ export const ComponentMap = {
     ProductGallery,
     ProductInfo,
     AddToCart,
+    CartDrawer,
     CheckoutPage,
     OrderSummary,
     CustomerInfo,

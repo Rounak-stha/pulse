@@ -33,6 +33,11 @@ export interface HeaderProps {
     ctaText?: string;
     ctaStyle?: 'primary' | 'secondary' | 'outline';
 
+    // Cart
+    showCart?: boolean;
+    cartItemCount?: number;
+    onCartClick?: () => void;
+
     // Callbacks
     onLogoClick?: () => void;
     onLinkClick?: (link: LinkItem) => void;

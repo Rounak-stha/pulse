@@ -31,7 +31,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         }).format(price);
     };
 
-    console.log({ product });
     return (
         <div ref={ref} className={cn('space-y-6', className)}>
             <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">{product.name}</h1>
@@ -47,7 +46,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
                         priceSize === 'large' && 'text-4xl lg:text-5xl',
                     )}
                 >
-                    {formatPrice(selectedVariant.price, selectedVariant.currencyCode)}
+                    {formatPrice(selectedVariant.priceWithTax, selectedVariant.currencyCode)}
                 </div>
             </div>
 
