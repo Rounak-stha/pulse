@@ -15,6 +15,24 @@ type PaymentProps = PaymentPropsPure & {
     onOrderComplete?: (orderCode: string) => void;
 };
 
+/**
+ * Extracts a redirect URL from the order's payments metadata.
+ * Any payment handler that needs an external redirect (e.g. Khalti, Stripe, PayPal)
+ * should put the URL in `metadata.public.paymentUrl`.
+ */
+function getPaymentRedirectUrl(
+    payments: Array<{ state: string; metadata: Record<string, unknown> | null }>,
+): string | undefined {
+    for (const payment of payments) {
+        const pub = payment.metadata?.public as Record<string, unknown> | undefined;
+        const url = pub?.paymentUrl;
+        if (typeof url === 'string' && url.length > 0) {
+            return url;
+        }
+    }
+    return undefined;
+}
+
 export const Payment: FC<PaymentProps> = ({ shopcode, onOrderComplete, ...props }) => {
     const [error, setError] = useState<string>();
     const { data: methodsData } = useQuery(eligiblePaymentMethodsQuery, {
@@ -48,6 +66,15 @@ export const Payment: FC<PaymentProps> = ({ shopcode, onOrderComplete, ...props 
             });
             const res = result.data?.addPaymentToOrder;
             if (res && res.__typename === 'Order') {
+                // Check if the payment handler returned an external redirect URL
+                // (e.g. Khalti, Stripe Checkout, PayPal, etc.)
+                const redirectUrl = getPaymentRedirectUrl(res.payments ?? []);
+                if (redirectUrl) {
+                    // External payment page — full navigation required
+                    window.location.href = redirectUrl;
+                    return;
+                }
+                // Inline payment (e.g. COD) — order is complete
                 onOrderComplete?.(res.code);
                 return;
             }

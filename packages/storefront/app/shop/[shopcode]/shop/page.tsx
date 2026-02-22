@@ -3,9 +3,10 @@ import { fetchPageData, parsePageTree, parseTheme } from '@/lib/page-data';
 import { getPageBySlugQuery } from '@/lib/queries/page';
 import { getProductsQuery, GetProductsQuery } from '@/lib/queries/shop';
 import { BuilderTreeRenderer } from '@/lib/renderer';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import type { FacetGroup, ShopProduct } from '@vendure/storefront-blocks/types';
+import type { Metadata } from 'next';
+import { cacheTag } from 'next/cache';
+import { notFound } from 'next/navigation';
 
 function mapProductsToShopData(data: GetProductsQuery): {
     products: ShopProduct[];
@@ -74,6 +75,21 @@ export const metadata: Metadata = {
     title: 'Shop',
 };
 
+async function getShopPageLayout(shopcode: string) {
+    'use cache';
+    cacheTag('page:shop', `shop:${shopcode}`);
+    return fetchPageData(shopcode, [{ query: getPageBySlugQuery, variables: { slug: 'shop' } }]);
+}
+
+async function getShopProducts(
+    shopcode: string,
+    options: { take: number; skip: number; sort?: { name?: 'ASC' | 'DESC'; createdAt?: 'ASC' | 'DESC' } },
+) {
+    'use cache';
+    cacheTag('products', `shop:${shopcode}`);
+    return fetchPageData(shopcode, [{ query: getProductsQuery, variables: { options } }]);
+}
+
 export default async function ShopProductsPage({
     params,
     searchParams: searchParamsPromise,
@@ -90,31 +106,27 @@ export default async function ShopProductsPage({
     else if (sort === 'NAME_DESC') sortOption = { name: 'DESC' };
     else if (sort === 'NEWEST') sortOption = { createdAt: 'DESC' };
 
-    const { data, error } = await fetchPageData(shopcode, [
-        { query: getPageBySlugQuery, variables: { slug: 'shop' } },
-        {
-            query: getProductsQuery,
-            variables: {
-                options: {
-                    take: perPage,
-                    skip: (page - 1) * perPage,
-                    ...(sortOption ? { sort: sortOption } : {}),
-                },
-            },
-        },
-    ], { tags: ['page:shop', 'products'], revalidate: 30 });
+    const [layoutResult, productsResult] = await Promise.all([
+        getShopPageLayout(shopcode),
+        getShopProducts(shopcode, {
+            take: perPage,
+            skip: (page - 1) * perPage,
+            ...(sortOption ? { sort: sortOption } : {}),
+        }),
+    ]);
 
+    const error = layoutResult.error || productsResult.error;
     if (error) {
         return <ErrorView title="Well… this is awkward" message={error} />;
     }
 
-    if (!data?.pageBySlug?.publishedVersion) {
+    if (!layoutResult.data?.pageBySlug?.publishedVersion) {
         notFound();
     }
 
-    const tree = parsePageTree(data.pageBySlug.publishedVersion.content);
-    const theme = parseTheme(data.theme?.value);
-    const { products, facetGroups, totalItems } = mapProductsToShopData(data);
+    const tree = parsePageTree(layoutResult.data.pageBySlug.publishedVersion.content);
+    const theme = parseTheme(layoutResult.data.theme?.value);
+    const { products, facetGroups, totalItems } = mapProductsToShopData(productsResult.data!);
 
     return (
         <BuilderTreeRenderer

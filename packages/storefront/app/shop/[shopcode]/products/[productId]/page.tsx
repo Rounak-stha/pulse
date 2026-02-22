@@ -3,18 +3,24 @@ import { fetchPageData, parsePageTree, parseTheme } from '@/lib/page-data';
 import { getPageBySlugQuery } from '@/lib/queries/page';
 import { getProductQuery } from '@/lib/queries/product';
 import { BuilderTreeRenderer } from '@/lib/renderer';
+import { cacheTag } from 'next/cache';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+
+async function getProductPageData(shopcode: string, productId: string) {
+    'use cache';
+    cacheTag(`page:product`, `product:${productId}`, `shop:${shopcode}`);
+    return fetchPageData(shopcode, [
+        { query: getPageBySlugQuery, variables: { slug: 'products' } },
+        { query: getProductQuery, variables: { id: productId } },
+    ]);
+}
 
 export async function generateMetadata({
     params,
 }: PageProps<'/shop/[shopcode]/products/[productId]'>): Promise<Metadata> {
     const { shopcode, productId } = await params;
-    const { data } = await fetchPageData(
-        shopcode,
-        [{ query: getProductQuery, variables: { id: productId } }],
-        { tags: [`product:${productId}`] },
-    );
+    const { data } = await getProductPageData(shopcode, productId);
 
     const product = data?.product;
 
@@ -33,14 +39,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: PageProps<'/shop/[shopcode]/products/[productId]'>) {
     const { shopcode, productId } = await params;
-    const { data, error } = await fetchPageData(
-        shopcode,
-        [
-            { query: getPageBySlugQuery, variables: { slug: 'products' } },
-            { query: getProductQuery, variables: { id: productId } },
-        ],
-        { tags: [`page:product`, `product:${productId}`] },
-    );
+    const { data, error } = await getProductPageData(shopcode, productId);
 
     if (error) {
         return <ErrorView title="Well… this is awkward" message={error} />;
@@ -50,7 +49,6 @@ export default async function ProductPage({ params }: PageProps<'/shop/[shopcode
         notFound();
     }
 
-    // All properties are fully typed
     const tree = parsePageTree(data.pageBySlug.publishedVersion.content);
     const theme = parseTheme(data.theme?.value);
     const product = data.product;

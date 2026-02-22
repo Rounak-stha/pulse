@@ -1,4 +1,5 @@
 'use client';
+import { DesignSystemProvider } from '@vendure/storefront-blocks/design-system/context.js';
 
 import { ApolloProvider } from '@/app/providers/apollo';
 import { CartProvider, useCart } from '@/app/providers/cart';
@@ -15,15 +16,17 @@ export function ShopProviders({
 }>) {
     return (
         <ApolloProvider>
-            <CartProvider shopcode={shopcode}>
-                {children}
-                <CartDrawerConnected shopcode={shopcode} />
-            </CartProvider>
+            <DesignSystemProvider>
+                <CartProvider shopcode={shopcode}>
+                    {children}
+                    <CartDrawerConnected />
+                </CartProvider>
+            </DesignSystemProvider>
         </ApolloProvider>
     );
 }
 
-function CartDrawerConnected({ shopcode }: Readonly<{ shopcode: string }>) {
+function CartDrawerConnected() {
     const { order, drawerOpen, closeDrawer, adjustQuantity, removeLine } = useCart();
     const router = useRouter();
 
