@@ -32,7 +32,7 @@ export const khaltiPaymentHandler = new PaymentMethodHandler({
 
     async createPayment(ctx, order, amount, args): Promise<CreatePaymentResult> {
         const shop = ctx.shop;
-        const baseUrl = `https://${shop.code}.${ROOT_DOMIN}`;
+        const baseUrl = `https://${shop.code}.${ROOT_DOMAIN}`;
         try {
             const res = await fetch(`${KHALTI_BASE_URL}/epayment/initiate/`, {
                 method: 'POST',
