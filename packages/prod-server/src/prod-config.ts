@@ -6,6 +6,7 @@ import {
     DefaultLogger,
     DefaultSearchPlugin,
     GoogleAuthPlugin,
+    codPaymentHandler,
     khaltiPaymentHandler,
     LogLevel,
     SettingsStoreScopes,
@@ -61,7 +62,7 @@ export const config: VendureConfig = {
         ...getDbConfig(),
     },
     paymentOptions: {
-        paymentMethodHandlers: [khaltiPaymentHandler],
+        paymentMethodHandlers: [codPaymentHandler, khaltiPaymentHandler],
     },
     settingsStoreFields: {
         MyPlugin: [

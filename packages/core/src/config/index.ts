@@ -71,6 +71,7 @@ export * from './order/stock-allocation-strategy';
 export * from './order/use-existing-strategy';
 export * from './order/use-guest-if-existing-empty-strategy';
 export * from './order/use-guest-strategy';
+export * from './payment/cod-payment-method-handler';
 export * from './payment/default-payment-process';
 export * from './payment/dummy-payment-method-handler';
 export * from './payment/example-payment-method-handler';

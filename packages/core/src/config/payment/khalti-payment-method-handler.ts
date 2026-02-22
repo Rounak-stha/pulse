@@ -5,6 +5,7 @@ import fetch from 'node-fetch';
 import { CreatePaymentResult, PaymentMethodHandler } from './payment-method-handler';
 
 const KHALTI_BASE_URL = 'https://dev.khalti.com/api/v2';
+const ROOT_DOMAIN = process.env.ROOT_DOMIN || '';
 
 type KhaltiPaymentInitiateResponse = {
     pidx: string;
@@ -31,6 +32,7 @@ export const khaltiPaymentHandler = new PaymentMethodHandler({
 
     async createPayment(ctx, order, amount, args): Promise<CreatePaymentResult> {
         const shop = ctx.shop;
+        const baseUrl = `https://${shop.code}.${ROOT_DOMIN}`;
         try {
             const res = await fetch(`${KHALTI_BASE_URL}/epayment/initiate/`, {
                 method: 'POST',
@@ -39,8 +41,8 @@ export const khaltiPaymentHandler = new PaymentMethodHandler({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    return_url: `${shop.code}.tdata.app/order/confirm`,
-                    website_url: `${shop.code}.tdata.app`,
+                    return_url: `${baseUrl}/order/confirm`,
+                    website_url: baseUrl,
                     amount,
                     purchase_order_id: order.code,
                     purchase_order_name: `Order ${order.code}`,
@@ -58,7 +60,9 @@ export const khaltiPaymentHandler = new PaymentMethodHandler({
                 state: 'Authorized',
                 transactionId: data.pidx,
                 metadata: {
-                    paymentUrl: data.payment_url,
+                    public: {
+                        paymentUrl: data.payment_url,
+                    },
                 },
             };
         } catch (e) {
