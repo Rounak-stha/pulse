@@ -279,9 +279,19 @@ export const setOrderShippingMethodMutation: TypedDocumentNode<
     ${CHECKOUT_ORDER_FRAGMENT}
 `;
 
+type OrderPayment = {
+    id: string;
+    state: string;
+    metadata: Record<string, unknown> | null;
+};
+
+type ActiveOrderWithPayments = ActiveOrder & {
+    payments: OrderPayment[];
+};
+
 type AddPaymentToOrderMutation = {
     addPaymentToOrder:
-        | ActiveOrder
+        | ActiveOrderWithPayments
         | { __typename: 'IneligiblePaymentMethodError'; errorCode: string; message: string }
         | { __typename: 'NoActiveOrderError'; errorCode: string; message: string }
         | { __typename: 'OrderPaymentStateError'; errorCode: string; message: string }
@@ -305,6 +315,11 @@ export const addPaymentToOrderMutation: TypedDocumentNode<
         addPaymentToOrder(input: $input) {
             ... on Order {
                 ...CheckoutOrder
+                payments {
+                    id
+                    state
+                    metadata
+                }
             }
             ... on ErrorResult {
                 errorCode
@@ -359,4 +374,26 @@ export const availableCountriesQuery: TypedDocumentNode<AvailableCountriesQuery>
             name
         }
     }
+`;
+
+type OrderByCodeQuery = {
+    orderByCode: (ActiveOrder & { payments: OrderPayment[] }) | null;
+};
+
+type OrderByCodeVariables = {
+    code: string;
+};
+
+export const orderByCodeQuery: TypedDocumentNode<OrderByCodeQuery, OrderByCodeVariables> = gql`
+    query OrderByCode($code: String!) {
+        orderByCode(code: $code) {
+            ...CheckoutOrder
+            payments {
+                id
+                state
+                metadata
+            }
+        }
+    }
+    ${CHECKOUT_ORDER_FRAGMENT}
 `;

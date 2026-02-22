@@ -22,7 +22,10 @@ export function proxy(request: NextRequest) {
             response = NextResponse.rewrite(new URL('/landing', request.url));
         } else {
             const path = request.nextUrl.pathname;
-            response = NextResponse.rewrite(new URL(`${PathPrefix.shop}/${subDomain}${path}`, request.url));
+            const search = request.nextUrl.search;
+            response = NextResponse.rewrite(
+                new URL(`${PathPrefix.shop}/${subDomain}${path}${search}`, request.url),
+            );
         }
         return response;
     }
