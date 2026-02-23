@@ -6,6 +6,7 @@ import {
     DefaultLogger,
     DefaultSearchPlugin,
     GoogleAuthPlugin,
+    StorefrontCachePlugin,
     codPaymentHandler,
     khaltiPaymentHandler,
     LogLevel,
@@ -108,6 +109,7 @@ export const config: VendureConfig = {
             googleClientSecret: getRequiredEnv('GOOGLE_CLIENT_SECRET'),
         }),
         SyncPagesPlugin,
+        StorefrontCachePlugin.init(),
     ],
 };
 

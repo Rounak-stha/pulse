@@ -7,6 +7,7 @@ import {
     DefaultSchedulerPlugin,
     DefaultSearchPlugin,
     GoogleAuthPlugin,
+    StorefrontCachePlugin,
     codPaymentHandler,
     khaltiPaymentHandler,
     LogLevel,
@@ -126,6 +127,7 @@ export const devConfig: VendureConfig = {
             googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
         }),
         SyncPagesPlugin,
+        StorefrontCachePlugin.init(),
     ],
 };
 

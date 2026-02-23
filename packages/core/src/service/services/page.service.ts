@@ -15,6 +15,8 @@ import { UserInputError } from '../../common';
 import { ListQueryOptions } from '../../common/types/common-types';
 import { Logger } from '../../config';
 import { TransactionalConnection } from '../../connection';
+import { EventBus } from '../../event-bus';
+import { PagePublishEvent } from '../../event-bus/events/page-publish-event';
 import DefaultPages from '../../entity/page/default-pages.json';
 import { PageVersion, PageVersionStatus } from '../../entity/page/page-version.entity';
 import { Page } from '../../entity/page/page.entity';
@@ -27,6 +29,7 @@ export class PageService {
     constructor(
         private connection: TransactionalConnection,
         private listQueryBuilder: ListQueryBuilder,
+        private eventBus: EventBus,
     ) {}
 
     async findAll(
@@ -245,6 +248,7 @@ export class PageService {
         page.lastPublishedAt = new Date();
         page.draftVersion = await this.saveDraft(ctx, input); // Sync Draft and Published Version when Published
         await this.connection.getRepository(ctx, Page).save(page);
+        await this.eventBus.publish(new PagePublishEvent(ctx, page));
         return page;
     }
 

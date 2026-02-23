@@ -3,10 +3,15 @@ import { Injectable } from '@nestjs/common';
 import { RequestContext } from '../../api/common/request-context';
 import { TransactionalConnection } from '../../connection';
 import { BuilderGlobal } from '../../entity/builder-global/builder-global.entity';
+import { EventBus } from '../../event-bus';
+import { BuilderGlobalPublishEvent } from '../../event-bus/events/builder-global-publish-event';
 
 @Injectable()
 export class BuilderGlobalService {
-    constructor(private connection: TransactionalConnection) {}
+    constructor(
+        private connection: TransactionalConnection,
+        private eventBus: EventBus,
+    ) {}
 
     async findByRegion(ctx: RequestContext, region: string): Promise<BuilderGlobal | null> {
         return this.connection.getRepository(ctx, BuilderGlobal).findOne({
@@ -53,7 +58,9 @@ export class BuilderGlobalService {
             global.content = input.content;
             global.draftContent = input.content;
         }
-        return this.connection.getRepository(ctx, BuilderGlobal).save(global);
+        const saved = await this.connection.getRepository(ctx, BuilderGlobal).save(global);
+        await this.eventBus.publish(new BuilderGlobalPublishEvent(ctx, saved));
+        return saved;
     }
 
     async getAllPublished(

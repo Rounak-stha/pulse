@@ -13,5 +13,6 @@ export * from './plugin-utils';
 export * from './redis-cache-plugin/redis-cache-plugin';
 export * from './redis-cache-plugin/redis-cache-strategy';
 export * from './redis-cache-plugin/types';
+export * from './storefront-cache-plugin/index';
 export * from './sync-pages-plugin/index';
 export * from './vendure-plugin';
