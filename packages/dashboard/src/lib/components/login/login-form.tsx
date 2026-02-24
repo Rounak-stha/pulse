@@ -52,25 +52,9 @@ export function LoginForm({ signinError, isVerifying, onSubmit, googleScriptLoad
                         </span>
                     </h1>
                     <p className="mt-4 text-lg text-zinc-400 leading-relaxed">
-                        Everything you need to launch, manage, and grow your online business — from
-                        products to payments to customers.
+                        Everything you need to launch, manage, and grow your online business — from products
+                        to payments to customers.
                     </p>
-
-                    {/* Stats row */}
-                    <div className="mt-10 flex gap-10">
-                        <div>
-                            <p className="text-3xl font-bold">2k+</p>
-                            <p className="text-sm text-zinc-500">Active stores</p>
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold">99.9%</p>
-                            <p className="text-sm text-zinc-500">Uptime</p>
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold">150+</p>
-                            <p className="text-sm text-zinc-500">Countries</p>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Feature pills */}
@@ -108,10 +92,7 @@ export function LoginForm({ signinError, isVerifying, onSubmit, googleScriptLoad
 
                     <Card className="border bg-card/50 backdrop-blur-sm">
                         <CardContent className="pt-6">
-                            <GoogleButton
-                                disabled={isVerifying || !googleScriptLoaded}
-                                onClick={onSubmit}
-                            />
+                            <GoogleButton disabled={isVerifying || !googleScriptLoaded} onClick={onSubmit} />
                         </CardContent>
                     </Card>
 

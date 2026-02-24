@@ -96,25 +96,9 @@ export function SignupForm({
                         </span>
                     </h1>
                     <p className="mt-4 text-lg text-zinc-400 leading-relaxed">
-                        No code, no hassle. Create a beautiful online store with built-in payments,
-                        inventory, and a drag-and-drop website builder.
+                        No code, no hassle. Create a beautiful online store with built-in payments, inventory,
+                        and a drag-and-drop website builder.
                     </p>
-
-                    {/* Stats row */}
-                    <div className="mt-10 flex gap-10">
-                        <div>
-                            <p className="text-3xl font-bold">2k+</p>
-                            <p className="text-sm text-zinc-500">Active stores</p>
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold">99.9%</p>
-                            <p className="text-sm text-zinc-500">Uptime</p>
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold">150+</p>
-                            <p className="text-sm text-zinc-500">Countries</p>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Feature pills */}
@@ -194,8 +178,7 @@ export function SignupForm({
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
-                                                    Your store's subdomain (e.g.{' '}
-                                                    <b>shopcode.bazaar.com</b>).
+                                                    Your store's subdomain (e.g. <b>shopcode.bazaar.com</b>).
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
