@@ -3,14 +3,14 @@ import { AssetServerPlugin, configureS3AssetStorage } from '@vendure/asset-serve
 import { ADMIN_API_PATH, API_PORT, SHOP_API_PATH } from '@vendure/common/lib/shared-constants';
 import type { DataSourceOptions } from '@vendure/core';
 import {
+    codPaymentHandler,
     DefaultLogger,
     DefaultSearchPlugin,
     GoogleAuthPlugin,
-    StorefrontCachePlugin,
-    codPaymentHandler,
     khaltiPaymentHandler,
     LogLevel,
     SettingsStoreScopes,
+    StorefrontCachePlugin,
     SyncPagesPlugin,
     VendureConfig,
 } from '@vendure/core';
@@ -53,7 +53,7 @@ export const config: VendureConfig = {
         requireVerification: true,
         customPermissions: [],
         cookieOptions: {
-            secret: 'abc',
+            secret: getRequiredEnv('COOKIE_SECRET'),
         },
     },
     dbConnectionOptions: {

@@ -77,6 +77,8 @@ steps:
           - 'RUN_JOB_QUEUE_FROM_SERVER=RUN_JOB_QUEUE_FROM_SERVER:latest'
           - '--update-secrets'
           - 'ROOT_DOMAIN=ROOT_DOMAIN:latest'
+          - '--update-secrets'
+          - 'COOKIE_SECRET=COOKIE_SECRET:latest'
 
           # -------------------------------------------------------------------
           # B. CLOUD RUN CONFIGURATION FLAGS
