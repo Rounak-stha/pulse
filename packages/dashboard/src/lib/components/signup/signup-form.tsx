@@ -178,7 +178,7 @@ export function SignupForm({
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
-                                                    Your store's subdomain (e.g. <b>shopcode.bazaar.com</b>).
+                                                    Your store's subdomain (e.g. <b>shopcode.tdata.app</b>).
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
