@@ -12,6 +12,7 @@ import {
     SettingsStoreScopes,
     StorefrontCachePlugin,
     SyncPagesPlugin,
+    UuidIdStrategy,
     VendureConfig,
 } from '@vendure/core';
 import { DashboardPlugin } from '@vendure/dashboard/plugin';
@@ -61,6 +62,9 @@ export const config: VendureConfig = {
         synchronize: true,
         migrations: [path.join(__dirname, 'migrations/*.ts')],
         ...getDbConfig(),
+    },
+    entityOptions: {
+        entityIdStrategy: new UuidIdStrategy(),
     },
     paymentOptions: {
         paymentMethodHandlers: [codPaymentHandler, khaltiPaymentHandler],
