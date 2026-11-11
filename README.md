@@ -1,67 +1,133 @@
-<p align="center">
-  <a href="https://vendure.io">
-    <img alt="Vendure logo" height="60" width="auto" src="https://a.storyblok.com/f/328257/699x480/8dbb4c7a3c/logo-icon.png">
-  </a>
-</p>
+# Pulse
 
-<h1 align="center">
-  Vendure
-</h1>
-<h3 align="center">
-    Own Your Commerce. Build Without Workarounds. Ship Faster.
-</h3>
-<h4 align="center">
-  <a href="https://docs.vendure.io">Documentation</a> |
-  <a href="https://vendure.io">Website</a>
-</h4>
+Multi-tenant commerce built on top of Vendure, designed for scalable storefronts, marketplaces, and B2B commerce experiences.
 
 <p align="center">
-  <a href="https://github.com/vendure-ecommerce/vendure/blob/master/LICENSE.md">
-    <img src="https://img.shields.io/badge/license-GPL-blue.svg" alt="Vendure is released under the GPLv3 license." />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=vendure_io">
-    <img src="https://img.shields.io/twitter/follow/vendure_io" alt="Follow @vendure_io" />
-  </a>
-  <a href="https://vendure.io/community">
-    <img src="https://img.shields.io/badge/join-our%20discord-7289DA.svg" alt="Join our Discord" />
-  </a>
-  <a href="https://github.com/vendure-ecommerce/vendure/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
+  <img src="https://img.shields.io/badge/Node-%3E%3D18-4c9a2a" alt="Node.js 18+" />
+  <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6" alt="TypeScript 5.8" />
+  <img src="https://img.shields.io/badge/Monorepo-Lerna-7C3AED" alt="Lerna monorepo" />
+  <img src="https://img.shields.io/badge/Stack-Vendure%20%2B%20GraphQL-0A0A0A" alt="Vendure + GraphQL" />
 </p>
 
-## What is Vendure 
+## Overview
 
-Vendure is an open-source headless commerce platform built with _TypeScript_ and _Node.js_. It provides a robust foundation for building enterprise-grade digital commerce applications with exceptional scalability and maintainability.
+Pulse is a commerce platform built with the Vendure ecosystem and tailored for multi-tenant operations. It combines a headless commerce engine, admin tooling, storefront patterns, and plugin-based extensibility to support online retailers and complex commerce workflows.
 
-- **Built for heavy customization**: Extensible plugin architecture allows you to tailor every aspect of your commerce solution
-- **Modern, AI-optimized tech stack**: Built on TypeScript, Node.js, NestJS, and GraphQL for outstanding performance and developer experience
-- **Headless architecture**: API-first design enables seamless multichannel commerce across any frontend
-- **Enterprise-ready**: Trusted by thousands of teams worldwide, from startups to Fortune 500 companies
-- **Rich feature set**: Comprehensive out-of-the-box functionality with customizable admin dashboard and commerce framework
+### Highlights
 
-Whether you're building a B2B platform, multi-vendor marketplace, or D2C storefront, Vendure provides the flexible foundation to create unique commerce experiences tailored to your business needs.
+- Multi-tenant commerce architecture
+- Vendure-based backend and GraphQL APIs
+- TypeScript-first monorepo structure
+- React-based admin/dashboard tooling
+- Storefront block system with runtime and builder packages
+- Extensible plugins for payments, emails, search, and assets
+- MySQL, PostgreSQL, MariaDB, and SQLite support via TypeORM
 
-## Getting Started
+## Architecture
 
-Visit our [Getting Started guide](https://docs.vendure.io/guides/getting-started/installation/) to get Vendure up and running locally in _less than 2 minutes_ with a single command.
+This repository is organized as a Lerna monorepo under `packages/`.
 
-**Need Help?** Our community is here to help, join [our Discord](https://www.vendure.io/community) for support and discussions!
+- `packages/core` — core commerce framework and platform logic
+- `packages/common` — shared types and utilities
+- `packages/dashboard` — administration UI and builder tooling
+- `packages/storefront` — runtime storefront rendering
+- `packages/storefront-blocks` — reusable storefront block components
+- `packages/dev-server` — local development server
+- `packages/testing` — testing and e2e helpers
 
-## Upgrades & Plugins 
+Additional platform capabilities are delivered through plugin packages such as:
 
-New updates get released on a bi-weekly cadence, check out our [release notes](https://github.com/vendure-ecommerce/vendure/releases) to keep up-to-date with the latest releases.
+- `payments-plugin`
+- `email-plugin`
+- `elasticsearch-plugin`
+- `asset-server-plugin`
 
-Have a look at all of our [ready-made Vendure plugins](https://vendure.io/plugins?page=1).
+The project uses TypeORM and exposes both Admin API and Shop API layers through GraphQL.
 
-## Contribution
+## Getting started
 
-Contributions to Vendure are welcome and highly appreciated! Whether you're fixing bugs, adding features, or improving documentation, your help makes Vendure better for everyone.
+### Requirements
 
-Our **[Contribution Guide](./CONTRIBUTING.md)** is covering everything from setting up your development environment to submitting your first pull request.
+- Node.js 18 or newer
+- npm
 
-**Ready to get started?** Check out [these issues](https://github.com/vendure-ecommerce/vendure/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22%F0%9F%91%8B%20contributions%20welcome%22) for a good first task to start!
+### Install dependencies
 
-## License
+```bash
+npm install
+```
 
-Licensed under the [GPLv3 license](./LICENSE.md). Commercial license (VCL) [available](https://vendure.io/pricing).
+### Build the project
+
+```bash
+npm run build
+```
+
+### Run tests
+
+```bash
+npm run test
+```
+
+For a single package:
+
+```bash
+cd packages/<name>
+npm run test
+```
+
+### Run e2e tests
+
+```bash
+npm run e2e
+```
+
+### Start the dev server
+
+```bash
+cd packages/dev-server
+npm run dev
+```
+
+### Regenerate GraphQL types
+
+```bash
+npm run codegen
+```
+
+## Repository structure
+
+```text
+.
+├── docs/
+├── documentation/
+├── packages/
+├── scripts/
+├── AGENTS.md
+├── CHANGELOG.md
+├── CHANGELOG_NEXT.md
+├── CONTRIBUTING.md
+├── Dockerfile
+├── docker-compose.yml
+├── LICENSE.md
+├── README.md
+├── package.json
+├── tsconfig.json
+└── ...
+```
+
+## Documentation
+
+- `documentation/builder/builder-architecture.md` — builder architecture and rendering model
+- `docs/` — Docusaurus-based documentation site
+- `packages/` — source code for the commerce platform
+
+## Development notes
+
+The repository follows a strict TypeScript setup with ESLint and Prettier. The codebase uses conventional commits and prefers predictable import ordering and clear package boundaries.
+
+For builder work and storefront/dashboard integration changes, follow the architecture guidance in `documentation/builder/builder-architecture.md` before modifying those packages.
+
+## Contributing
+
+Contributions are welcome. Please follow the repository conventions and validate changes with the relevant tests before submitting a PR.
